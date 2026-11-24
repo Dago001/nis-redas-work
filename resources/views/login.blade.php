@@ -213,7 +213,7 @@
                         pattern="[0-9]{4,5}"
                         minlength="4"
                         maxlength="5"
-                        placeholder="Enter 4 or 5 digit service number (e.g. 12345)"
+                        placeholder="Service No"
                         value="{{ old('username') }}"
                         autocomplete="username"
                         required>
