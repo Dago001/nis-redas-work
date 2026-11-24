@@ -38,7 +38,7 @@ class DirectorateSubmissionTest extends TestCase
             'hrm' => ['nimcos' => ['total_membership' => '5']],
             'general_report' => ['challenges' => 'None'],
             'supporting_documents' => [
-                UploadedFile::fake()->create('minutes.pdf', 100, 'application/pdf'),
+                UploadedFile::fake()->createWithContent('minutes.pdf', "%PDF-1.4\n%EOF\n"),
             ],
         ]);
 

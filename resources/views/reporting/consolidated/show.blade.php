@@ -1,6 +1,7 @@
 @extends('desk-admin.layout')
 
 @section('content')
+<main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
         <h1 class="page-title">{{ $report->reference }} — {{ $report->title }}</h1>
@@ -98,4 +99,5 @@
         </ul>
     </div>
 </div>
+</main>
 @endsection

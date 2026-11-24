@@ -1,6 +1,7 @@
 @extends('desk-admin.layout')
 
 @section('content')
+<main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
         <h1 class="page-title">{{ ucfirst($level) }} Consolidated Reports ({{ strtoupper($scope) }})</h1>
@@ -103,4 +104,5 @@
         @endif
     </div>
 </div>
+</main>
 @endsection

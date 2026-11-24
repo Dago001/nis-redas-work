@@ -3,6 +3,7 @@
 @section('title', 'PRS Structured Statistical Indicators')
 
 @section('content')
+<main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
         <h1 class="page-title">National Statistical Indicators ({{ $period }})</h1>
@@ -34,4 +35,5 @@
         <div style="margin-top:12px;">{{ $rows->links() }}</div>
     </div>
 </div>
+</main>
 @endsection

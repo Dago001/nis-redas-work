@@ -7,59 +7,78 @@
 </div>
 
 <script>
-    /* Notification panel toggle */
-    const notifBtn = document.getElementById('notifBtn');
-    const notifPanel = document.getElementById('notifPanel');
-    if (notifBtn && notifPanel) {
-        notifBtn.addEventListener('click', e => { e.stopPropagation(); notifPanel.style.display = notifPanel.style.display === 'block' ? 'none' : 'block'; });
-        document.addEventListener('click', () => { notifPanel.style.display = 'none'; });
-    }
+    (function () {
+        /* Notification panel & user menu toggles */
+        const notifBtn = document.getElementById('notifBtn');
+        const notifPanel = document.getElementById('notifPanel');
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userMenuDrop = document.getElementById('userMenuDrop');
 
-    /* User menu toggle */
-    const userMenuBtn = document.getElementById('userMenuBtn');
-    const userMenuDrop = document.getElementById('userMenuDrop');
-    if (userMenuBtn && userMenuDrop) {
-        userMenuBtn.addEventListener('click', e => { e.stopPropagation(); userMenuDrop.style.display = userMenuDrop.style.display === 'block' ? 'none' : 'block'; });
-        document.addEventListener('click', () => { userMenuDrop.style.display = 'none'; });
-    }
+        if (notifBtn && notifPanel) {
+            notifBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                notifPanel.style.display = notifPanel.style.display === 'block' ? 'none' : 'block';
+                if (userMenuDrop) userMenuDrop.style.display = 'none';
+            });
+        }
+        if (userMenuBtn && userMenuDrop) {
+            userMenuBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                userMenuDrop.style.display = userMenuDrop.style.display === 'block' ? 'none' : 'block';
+                if (notifPanel) notifPanel.style.display = 'none';
+            });
+        }
+        if (notifPanel || userMenuDrop) {
+            document.addEventListener('click', () => {
+                if (notifPanel) notifPanel.style.display = 'none';
+                if (userMenuDrop) userMenuDrop.style.display = 'none';
+            });
+        }
 
-    /* Sidebar toggle */
-    const sidebar = document.getElementById('redasSidebar');
-    const main = document.getElementById('redasMain');
-    const overlay = document.getElementById('sidebarOverlay');
-    const toggle = document.getElementById('sidebarToggle');
+        /* Sidebar toggle */
+        const sidebar = document.getElementById('redasSidebar');
+        const main = document.getElementById('redasMain');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.getElementById('sidebarToggle');
 
-    if (toggle) {
-        toggle.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.toggle('mobile-open');
-                overlay.classList.toggle('active');
-            } else {
-                sidebar.classList.toggle('collapsed');
-                main.classList.toggle('sidebar-collapsed');
-            }
+        if (toggle && sidebar) {
+            toggle.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.toggle('mobile-open');
+                    if (overlay) overlay.classList.toggle('active');
+                } else {
+                    sidebar.classList.toggle('collapsed');
+                    if (main) main.classList.toggle('sidebar-collapsed');
+                }
+            });
+        }
+        if (overlay && sidebar) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+            });
+        }
+
+        /* View modal population */
+        document.querySelectorAll('[data-action="view"]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+                setText('modalTitle', btn.dataset.title || '—');
+                setText('modalDate', btn.dataset.date || '—');
+                setText('modalType', btn.dataset.type || '—');
+                setText('modalRemarks', btn.dataset.remarks || 'No remarks provided.');
+                const s = btn.dataset.status || '';
+                const statusEl = document.getElementById('modalStatus');
+                if (statusEl) {
+                    const cls = s.toLowerCase().includes('approved') ? 'badge-approved'
+                        : s.toLowerCase().includes('pending') ? 'badge-pending'
+                            : s.toLowerCase().includes('reject') || s.toLowerCase().includes('return') ? 'badge-rejected'
+                                : 'badge-draft';
+                    statusEl.innerHTML = `<span class="status-badge ${cls}">${s}</span>`;
+                }
+            });
         });
-    }
-    if (overlay) {
-        overlay.addEventListener('click', () => { sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); });
-    }
-
-    /* View modal population */
-    document.querySelectorAll('[data-action="view"]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('modalTitle').textContent = btn.dataset.title || '—';
-            document.getElementById('modalDate').textContent = btn.dataset.date || '—';
-            document.getElementById('modalType').textContent = btn.dataset.type || '—';
-            document.getElementById('modalRemarks').textContent = btn.dataset.remarks || 'No remarks provided.';
-            const s = btn.dataset.status || '';
-            const statusEl = document.getElementById('modalStatus');
-            const cls = s.toLowerCase().includes('approved') ? 'badge-approved'
-                : s.toLowerCase().includes('pending') ? 'badge-pending'
-                    : s.toLowerCase().includes('reject') || s.toLowerCase().includes('return') ? 'badge-rejected'
-                        : 'badge-draft';
-            statusEl.innerHTML = `<span class="status-badge ${cls}">${s}</span>`;
-        });
-    });
+    })();
 </script>
 
 <script>
@@ -82,28 +101,6 @@
                 });
             });
         }
-
-        /* ── Sidebar/topbar standard toggles ── */
-        const sidebar = document.getElementById('redasSidebar');
-        const main = document.getElementById('redasMain');
-        const overlay = document.getElementById('sidebarOverlay');
-        const toggle = document.getElementById('sidebarToggle');
-        if (toggle) {
-            toggle.addEventListener('click', () => {
-                if (window.innerWidth <= 768) { sidebar.classList.toggle('mobile-open'); overlay.classList.toggle('active'); }
-                else { sidebar.classList.toggle('collapsed'); main.classList.toggle('sidebar-collapsed'); }
-            });
-        }
-        overlay?.addEventListener('click', () => { sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); });
-
-        /* ── Notification / user dropdowns ── */
-        const notifBtn = document.getElementById('notifBtn');
-        const notifPanel = document.getElementById('notifPanel');
-        const userBtn = document.getElementById('userMenuBtn');
-        const userDrop = document.getElementById('userMenuDrop');
-        notifBtn?.addEventListener('click', e => { e.stopPropagation(); notifPanel.style.display = notifPanel.style.display === 'block' ? 'none' : 'block'; userDrop.style.display = 'none'; });
-        userBtn?.addEventListener('click', e => { e.stopPropagation(); userDrop.style.display = userDrop.style.display === 'block' ? 'none' : 'block'; notifPanel.style.display = 'none'; });
-        document.addEventListener('click', () => { notifPanel.style.display = 'none'; userDrop.style.display = 'none'; });
 
         /* ── Workflow path update based on command selection ── */
         const cmdSelect = document.getElementById('commandName');

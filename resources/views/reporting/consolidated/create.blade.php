@@ -1,6 +1,7 @@
 @extends('desk-admin.layout')
 
 @section('content')
+<main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
         <h1 class="page-title">Prepare {{ ucfirst($level) }} Consolidated Report ({{ strtoupper($scope) }})</h1>
@@ -99,4 +100,5 @@
         <button type="submit" class="btn-nis btn-primary-nis">Save Consolidated Draft</button>
     </div>
 </form>
+</main>
 @endsection

@@ -61,7 +61,7 @@ class StateCombinedFormTest extends TestCase
 
         // The state layout owns consent + attachments; the embedded investigation
         // declaration must be suppressed (exactly one required consent checkbox).
-        $this->assertSame(1, substr_count($response->getContent(), 'name="data_consent"'));
+        $this->assertSame(1, substr_count($response->getContent(), '<input type="checkbox" name="data_consent"'));
         $response->assertSee('name="attachments[]"', false);
         $response->assertSee('name="command_name"', false);
     }

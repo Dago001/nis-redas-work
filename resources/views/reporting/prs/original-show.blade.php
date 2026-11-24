@@ -3,6 +3,7 @@
 @section('title', 'PRS Original Report Inspection')
 
 @section('content')
+<main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
         <h1 class="page-title">Original Report RET-{{ str_pad((string) $application->id, 5, '0', STR_PAD_LEFT) }}</h1>
@@ -39,4 +40,5 @@
         @endforelse
     </div>
 </div>
+</main>
 @endsection

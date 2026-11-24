@@ -88,18 +88,17 @@ class AuthLoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
-    public function test_login_fails_when_role_does_not_match_user_record(): void
+    public function test_login_fails_when_password_is_incorrect(): void
     {
         $user = $this->createUser([
-            'name' => 'Role Mismatch Test',
+            'name' => 'Bad Password Test',
             'service_number' => 'NIS/OF/8888',
             'email' => 'wrongrole@example.com',
         ]);
 
         $response = $this->from('/login')->post('/login', [
             'login' => $user->service_number,
-            'password' => $this->password,
-            'role' => 'state',
+            'password' => 'WrongPassword999!',
         ]);
 
         $response->assertRedirect('/login');

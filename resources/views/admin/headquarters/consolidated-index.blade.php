@@ -3,6 +3,7 @@
 @section('title', 'Consolidated Reports Review')
 
 @section('content')
+<main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
         <h1 class="page-title">Consolidated Reports (HQ Approval)</h1>
@@ -43,4 +44,5 @@
         <div style="margin-top:12px;">{{ $reports->links() }}</div>
     </div>
 </div>
+</main>
 @endsection

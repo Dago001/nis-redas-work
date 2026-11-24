@@ -3,6 +3,7 @@
 @section('title', 'PRS Central Reporting Dashboard')
 
 @section('content')
+<main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
         <h1 class="page-title">PRS Central Reporting Dashboard (Option C)</h1>
@@ -140,4 +141,5 @@
         </div>
     </div>
 </div>
+</main>
 @endsection

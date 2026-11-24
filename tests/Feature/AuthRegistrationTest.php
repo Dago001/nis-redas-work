@@ -8,7 +8,8 @@ use Tests\TestCase;
 class AuthRegistrationTest extends TestCase
 {
     use RefreshDatabase;
-    public function test_users_can_register_with_a_supported_role_selection(): void
+
+    public function test_self_registration_post_is_disabled_and_does_not_create_users(): void
     {
         $response = $this->from('/register')->post('/register', [
             'name' => 'Jane Doe',
@@ -20,14 +21,10 @@ class AuthRegistrationTest extends TestCase
             'terms' => 'on',
         ]);
 
-        $response->assertRedirect('/login');
+        $response->assertStatus(405);
 
-        $this->assertDatabaseHas('users', [
+        $this->assertDatabaseMissing('users', [
             'email' => 'jane@example.com',
-            'service_number' => 'NIS/ADM/1234',
-            'user_category' => 'state_user',
-            'primary_location_type' => 'state',
-            'role' => 'officer',
         ]);
     }
 }
