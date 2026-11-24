@@ -72,4 +72,44 @@ class PageSmokeTest extends TestCase
         $this->actingAs($dirAdmin)->get(route('prs.dashboard'))->assertForbidden();
         $this->actingAs($genAdmin)->get(route('admin.consolidated.index'))->assertForbidden();
     }
+
+    public function test_every_super_admin_sidebar_link_returns_200(): void
+    {
+        $superAdmin = User::factory()->create([
+            'service_number' => '35562',
+            'role' => 'super_admin',
+            'user_category' => 'super_admin',
+            'primary_location_type' => 'headquarters',
+            'primary_location_code' => 'HQ',
+            'access_level' => 6,
+            'mfa_enabled' => true,
+            'must_change_password' => false,
+        ]);
+
+        $sidebarRoutes = [
+            'superadmin.dashboard',
+            'superadmin.returns',
+            'admin.dashboard',
+            'prs.dashboard',
+            'admin.consolidated.index',
+            'admin.consolidation',
+            'prs.indicators',
+            'user.reports',
+            'user.archive',
+            'admin.users',
+            'admin.users.create',
+            'admin.audit-log.index',
+            'admin.settings.index',
+            'user.profile',
+        ];
+
+        foreach ($sidebarRoutes as $routeName) {
+            $response = $this->actingAs($superAdmin)->get(route($routeName));
+            $this->assertSame(
+                200,
+                $response->getStatusCode(),
+                "Super Admin sidebar route [{$routeName}] returned {$response->getStatusCode()} instead of 200."
+            );
+        }
+    }
 }

@@ -289,8 +289,8 @@ Route::middleware([Authenticate::class, 'access:category=desk_admin|zonal_comman
     })->name('supervisor.dashboard');
 });
 
-// Admin area — read-only routes shared by HQ admins (approvers) and general admins (view-only)
-Route::middleware([Authenticate::class, 'access:category=hq_admin|admin,location=headquarters,role=admin|minLevel=5', 'abac.geo'])->group(function () {
+// Admin area — read-only routes shared by HQ admins (approvers), general admins, and super admins
+Route::middleware([Authenticate::class, 'access:category=hq_admin|admin|super_admin,location=headquarters,role=admin|super_admin|minLevel=5', 'abac.geo'])->group(function () {
     Route::get('/admin/dashboard', [HqAdminController::class, 'index'])->name('admin.dashboard');
 
     Route::get('/admin/hq/returns', [HqAdminController::class, 'returns'])->name('admin.hq.returns');
@@ -304,8 +304,8 @@ Route::middleware([Authenticate::class, 'access:category=hq_admin|admin,location
     Route::get('/admin/consolidation', [\App\Http\Controllers\Admin\ConsolidationController::class, 'index'])->name('admin.consolidation');
 });
 
-// HQ admin only — final review actions and platform administration
-Route::middleware([Authenticate::class, 'access:category=hq_admin,location=headquarters,role=admin|minLevel=5', 'abac.geo'])->group(function () {
+// HQ admin & Super Admin — final review actions and platform administration
+Route::middleware([Authenticate::class, 'access:category=hq_admin|super_admin,location=headquarters,role=admin|super_admin|minLevel=5', 'abac.geo'])->group(function () {
     Route::get('/admin/submissions', [SubmissionReviewController::class, 'index'])->name('admin.submissions');
     Route::patch('/admin/submissions/{application}/approve', [SubmissionReviewController::class, 'approve'])->middleware('throttle:database')->name('admin.submissions.approve');
     Route::patch('/admin/submissions/{application}/reject', [SubmissionReviewController::class, 'reject'])->middleware('throttle:database')->name('admin.submissions.reject');
