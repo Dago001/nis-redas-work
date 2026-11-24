@@ -1,65 +1,318 @@
 @extends('super-admin.layout')
 
-@section('title', 'Executive Dashboard')
+@section('title', 'Super Admin Dashboard')
 
 @section('content')
+<style>
+    .sa-kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+    .sa-kpi-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-top: 3px solid #006633;
+        border-radius: 14px;
+        padding: 16px 18px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-decoration: none;
+        color: inherit;
+        transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .sa-kpi-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    }
+    .sa-kpi-card.blue { border-top-color: #2563eb; }
+    .sa-kpi-card.green { border-top-color: #16a34a; }
+    .sa-kpi-card.amber { border-top-color: #d97706; }
+    .sa-kpi-card.red { border-top-color: #dc2626; }
+    .sa-kpi-card.purple { border-top-color: #7c3aed; }
+    .sa-kpi-card.teal { border-top-color: #0d9488; }
+
+    .sa-kpi-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    .sa-kpi-label {
+        font-size: .74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+        color: #64748b;
+    }
+    .sa-kpi-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: .95rem;
+    }
+    .sa-kpi-value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.1;
+    }
+    .sa-kpi-sub {
+        font-size: .76rem;
+        color: #64748b;
+    }
+    .sa-section-title {
+        font-size: .78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .06em;
+        color: #475569;
+        margin: 0 0 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .sa-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        font-size: .72rem;
+        font-weight: 600;
+    }
+    .sa-badge.ok { background: #dcfce7; color: #15803d; }
+    .sa-badge.warn { background: #fef3c7; color: #b45309; }
+    .sa-badge.danger { background: #fee2e2; color: #b91c1c; }
+    .sa-badge.info { background: #e0f2fe; color: #0369a1; }
+    .sa-badge.muted { background: #f1f5f9; color: #475569; }
+</style>
 
 <main class="redas-content">
-    <div class="page-header">
+    <div class="page-header" style="margin-bottom:20px;">
         <div>
-            <h1 class="page-title">Executive Dashboard</h1>
-            <p class="page-subtitle">National picture of all returns — every formation, status and period. This portal is <strong>view-only</strong>.</p>
+            <h1 class="page-title">Super Admin Command Center</h1>
+            <p class="page-subtitle">National governance, identity &amp; access management, security auditing, and Option C reporting oversight.</p>
         </div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <a href="{{ route('superadmin.returns') }}" class="btn-nis btn-outline-nis">
-                <i class="fas fa-folder-open"></i> All Returns
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <a href="{{ route('admin.users.create') }}" class="btn-nis btn-primary-nis">
+                <i class="fas fa-user-plus"></i> Create User
+            </a>
+            <a href="{{ route('admin.users') }}" class="btn-nis btn-outline-nis">
+                <i class="fas fa-users-cog"></i> Manage Users
+            </a>
+            <a href="{{ route('prs.dashboard') }}" class="btn-nis btn-outline-nis">
+                <i class="fas fa-chart-pie"></i> PRS Dashboard
+            </a>
+            <a href="{{ route('admin.audit-log.index') }}" class="btn-nis btn-outline-nis">
+                <i class="fas fa-shield-halved"></i> Audit Logs
+            </a>
+            <a href="{{ route('admin.settings.index') }}" class="btn-nis btn-ghost">
+                <i class="fas fa-cogs"></i> Settings
             </a>
         </div>
     </div>
 
-    <div class="stats-grid" style="margin-bottom:20px;">
-        <div class="stat-card info">
-            <div class="stat-header">
-                <span class="stat-label">Total Returns</span>
-                <span class="stat-icon"><i class="fas fa-file-lines"></i></span>
+    {{-- Row 1: Identity, Security & Governance KPIs --}}
+    <div class="sa-section-title"><i class="fas fa-shield-halved text-nis"></i> Identity &amp; Security Governance</div>
+    <div class="sa-kpi-grid">
+        <a href="{{ route('admin.users') }}" class="sa-kpi-card blue">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">Total Users</span>
+                <span class="sa-kpi-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-users"></i></span>
             </div>
-            <div class="stat-value">{{ number_format($stats['total']) }}</div>
-            <div class="stat-change neutral">All time, all formations</div>
-        </div>
-        <div class="stat-card green">
-            <div class="stat-header">
-                <span class="stat-label">Approved</span>
-                <span class="stat-icon"><i class="fas fa-circle-check"></i></span>
+            <div class="sa-kpi-value">{{ number_format($governance['total_users']) }}</div>
+            <div class="sa-kpi-sub">{{ number_format($governance['active_users']) }} active &bull; {{ number_format($governance['disabled_users']) }} disabled</div>
+        </a>
+
+        <a href="{{ route('admin.users') }}" class="sa-kpi-card green">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">MFA Adoption</span>
+                <span class="sa-kpi-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-mobile-screen-button"></i></span>
             </div>
-            <div class="stat-value">{{ number_format($stats['approved']) }}</div>
-            <div class="stat-change up">Cleared the full workflow</div>
-        </div>
-        <div class="stat-card purple">
-            <div class="stat-header">
-                <span class="stat-label">In Flight</span>
-                <span class="stat-icon"><i class="fas fa-clock"></i></span>
+            <div class="sa-kpi-value">{{ $governance['mfa_rate'] }}%</div>
+            <div class="sa-kpi-sub">{{ number_format($governance['mfa_enabled_users']) }} of {{ number_format($governance['total_users']) }} Google Authenticator enrolled</div>
+        </a>
+
+        <a href="{{ route('admin.users') }}" class="sa-kpi-card amber">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">Pending Password Change</span>
+                <span class="sa-kpi-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-key"></i></span>
             </div>
-            <div class="stat-value">{{ number_format($stats['pending']) }}</div>
-            <div class="stat-change neutral">Moving through review stages</div>
-        </div>
-        <div class="stat-card danger">
-            <div class="stat-header">
-                <span class="stat-label">Returned</span>
-                <span class="stat-icon"><i class="fas fa-rotate-left"></i></span>
+            <div class="sa-kpi-value">{{ number_format($governance['pending_password_changes']) }}</div>
+            <div class="sa-kpi-sub">First-login accounts awaiting password reset</div>
+        </a>
+
+        <a href="{{ route('admin.audit-log.index') }}" class="sa-kpi-card red">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">Security Events (24h)</span>
+                <span class="sa-kpi-icon" style="background:#fee2e2;color:#b91c1c;"><i class="fas fa-triangle-exclamation"></i></span>
             </div>
-            <div class="stat-value">{{ number_format($stats['returned']) }}</div>
-            <div class="stat-change down">Sent back for correction</div>
-        </div>
-        <div class="stat-card gold">
-            <div class="stat-header">
-                <span class="stat-label">Avg. Turnaround</span>
-                <span class="stat-icon"><i class="fas fa-stopwatch"></i></span>
+            <div class="sa-kpi-value">{{ number_format($governance['security_alerts_24h']) }}</div>
+            <div class="sa-kpi-sub">WAF blocks, lockouts &amp; failed attempts</div>
+        </a>
+    </div>
+
+    {{-- Row 2: National Reporting & Option C KPIs --}}
+    <div class="sa-section-title"><i class="fas fa-chart-bar text-nis"></i> National Reporting &amp; Option C Oversight</div>
+    <div class="sa-kpi-grid">
+        <a href="{{ route('superadmin.returns') }}" class="sa-kpi-card blue">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">Original Returns</span>
+                <span class="sa-kpi-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-file-lines"></i></span>
             </div>
-            <div class="stat-value">{{ $stats['avg_turnaround_days'] !== null ? $stats['avg_turnaround_days'] . 'd' : '—' }}</div>
-            <div class="stat-change neutral">Submission to final approval</div>
+            <div class="sa-kpi-value">{{ number_format($stats['total']) }}</div>
+            <div class="sa-kpi-sub">All formations &amp; reporting periods</div>
+        </a>
+
+        <a href="{{ route('superadmin.returns', ['status' => 'approved']) }}" class="sa-kpi-card green">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">Approved Returns</span>
+                <span class="sa-kpi-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-circle-check"></i></span>
+            </div>
+            <div class="sa-kpi-value">{{ number_format($stats['approved']) }}</div>
+            <div class="sa-kpi-sub">Cleared full approval chain</div>
+        </a>
+
+        <a href="{{ route('superadmin.returns', ['status' => 'pending']) }}" class="sa-kpi-card purple">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">In Flight</span>
+                <span class="sa-kpi-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fas fa-clock"></i></span>
+            </div>
+            <div class="sa-kpi-value">{{ number_format($stats['pending']) }}</div>
+            <div class="sa-kpi-sub">Moving through review stages</div>
+        </a>
+
+        <a href="{{ route('admin.consolidated.index') }}" class="sa-kpi-card teal">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">Consolidated Reports</span>
+                <span class="sa-kpi-icon" style="background:#ccfbf1;color:#0f766e;"><i class="fas fa-layer-group"></i></span>
+            </div>
+            <div class="sa-kpi-value">{{ number_format($governance['consolidated_total']) }}</div>
+            <div class="sa-kpi-sub">{{ $governance['consolidated_approved'] }} approved &bull; {{ $governance['consolidated_submitted'] }} submitted</div>
+        </a>
+
+        <div class="sa-kpi-card amber">
+            <div class="sa-kpi-top">
+                <span class="sa-kpi-label">Avg. Turnaround</span>
+                <span class="sa-kpi-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-stopwatch"></i></span>
+            </div>
+            <div class="sa-kpi-value">{{ $stats['avg_turnaround_days'] !== null ? $stats['avg_turnaround_days'] . 'd' : '—' }}</div>
+            <div class="sa-kpi-sub">{{ number_format($stats['returned']) }} returned for correction</div>
         </div>
     </div>
 
+    {{-- Row 3: User Governance & Live Audit Log Control Center --}}
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:20px;margin-bottom:20px;">
+        <div class="redas-card">
+            <div class="card-head">
+                <div class="card-head-title">
+                    <div class="card-head-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-users-cog"></i></div>
+                    User Accounts &amp; Access Control
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <a href="{{ route('admin.users.create') }}" style="font-size:.78rem;color:var(--nis-600);font-weight:700;text-decoration:none;">+ New User</a>
+                    <a href="{{ route('admin.users') }}" style="font-size:.78rem;color:#475569;font-weight:600;text-decoration:none;">Manage all <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
+                </div>
+            </div>
+            <div class="card-body no-pad">
+                <div class="table-responsive">
+                    <table class="redas-table" style="min-width:480px;">
+                        <thead>
+                            <tr>
+                                <th>Service No</th>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>MFA / Status</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentUsers as $u)
+                                <tr>
+                                    <td style="font-family:monospace;font-weight:700;">{{ $u->service_number ?? '—' }}</td>
+                                    <td>
+                                        <div style="font-weight:600;color:#0f172a;">{{ $u->name }}</div>
+                                        <div style="font-size:.74rem;color:#64748b;">{{ $u->email }}</div>
+                                    </td>
+                                    <td><span class="sa-badge info">{{ str_replace('_', ' ', $u->user_category ?? $u->role) }}</span></td>
+                                    <td>
+                                        @if($u->mfa_enabled)
+                                            <span class="sa-badge ok"><i class="fas fa-check"></i> MFA</span>
+                                        @else
+                                            <span class="sa-badge warn">No MFA</span>
+                                        @endif
+                                        @if(! $u->is_enabled)
+                                            <span class="sa-badge danger">Disabled</span>
+                                        @endif
+                                    </td>
+                                    <td style="text-align:right;">
+                                        <a href="{{ route('admin.users.edit', $u) }}" class="btn-nis btn-ghost" style="padding:5px 10px;font-size:.74rem;">Edit</a>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="5" style="text-align:center;color:var(--gray-400);padding:20px;">No user accounts found.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="redas-card">
+            <div class="card-head">
+                <div class="card-head-title">
+                    <div class="card-head-icon" style="background:#fee2e2;color:#b91c1c;"><i class="fas fa-shield-halved"></i></div>
+                    Recent Immutable Audit Logs
+                </div>
+                <a href="{{ route('admin.audit-log.index') }}" style="font-size:.78rem;color:var(--nis-600);font-weight:600;text-decoration:none;">Full Audit Trail <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
+            </div>
+            <div class="card-body no-pad">
+                <div class="table-responsive">
+                    <table class="redas-table" style="min-width:460px;">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Actor</th>
+                                <th>Action</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($recentAuditLogs as $log)
+                                <tr>
+                                    <td style="font-size:.76rem;color:#64748b;white-space:nowrap;">{{ optional($log->created_at)->format('d M H:i') }}</td>
+                                    <td style="font-size:.8rem;font-weight:600;">{{ $log->user->service_number ?? $log->user->name ?? 'System / Guest' }}</td>
+                                    <td style="font-family:monospace;font-size:.76rem;">{{ $log->action }}</td>
+                                    <td>
+                                        @php
+                                            $cls = match($log->status) {
+                                                'success' => 'ok',
+                                                'blocked', 'failure' => 'danger',
+                                                default => 'muted',
+                                            };
+                                        @endphp
+                                        <span class="sa-badge {{ $cls }}">{{ $log->status }}</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="4" style="text-align:center;color:var(--gray-400);padding:20px;">No audit events recorded yet.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Row 4: Executive Analytics Charts --}}
     <div class="redas-card" style="margin-bottom:20px;">
         <div class="card-head">
             <div class="card-head-title">
@@ -159,7 +412,7 @@
             <a href="{{ route('superadmin.returns', ['status' => 'approved']) }}" style="font-size:.78rem;color:var(--nis-600);font-weight:600;text-decoration:none;">View all <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>
         </div>
         <div class="card-body no-pad">
-            <div style="overflow:auto;">
+            <div class="table-responsive">
                 <table class="redas-table" style="min-width:680px;">
                     <thead>
                         <tr>

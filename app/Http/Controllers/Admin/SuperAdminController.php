@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\AuditLog;
+use App\Models\ConsolidatedReport;
 use App\Models\User;
 use App\Services\SubmissionWorkflow;
 use Illuminate\Http\Request;
@@ -140,11 +142,57 @@ class SuperAdminController extends Controller
             ->with('user:id,name,service_number,assigned_cgis_unit_code')
             ->where('status', 'approved')
             ->latest('updated_at')
-            ->limit(25)
+            ->limit(15)
+            ->get();
+
+        // Identity, Security & Option C Governance metrics for Super Admin
+        $totalUsers = User::query()->count();
+        $activeUsers = User::query()->where('is_enabled', true)->count();
+        $disabledUsers = $totalUsers - $activeUsers;
+        $mfaEnabledUsers = User::query()->where('mfa_enabled', true)->count();
+        $mfaRate = $totalUsers > 0 ? (int) round(($mfaEnabledUsers / $totalUsers) * 100) : 0;
+        $pendingPasswordChanges = User::query()->where('must_change_password', true)->count();
+
+        $securityAlerts24h = AuditLog::query()
+            ->where('created_at', '>=', now()->subHours(24))
+            ->whereIn('status', ['blocked', 'failure'])
+            ->count();
+
+        $consolidatedCounts = ConsolidatedReport::query()
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $governance = [
+            'total_users' => $totalUsers,
+            'active_users' => $activeUsers,
+            'disabled_users' => $disabledUsers,
+            'mfa_enabled_users' => $mfaEnabledUsers,
+            'mfa_rate' => $mfaRate,
+            'pending_password_changes' => $pendingPasswordChanges,
+            'security_alerts_24h' => $securityAlerts24h,
+            'consolidated_total' => (int) $consolidatedCounts->sum(),
+            'consolidated_approved' => (int) ($consolidatedCounts['approved'] ?? 0),
+            'consolidated_submitted' => (int) ($consolidatedCounts['submitted'] ?? 0),
+        ];
+
+        $recentUsers = User::query()
+            ->select(['id', 'name', 'service_number', 'email', 'role', 'user_category', 'mfa_enabled', 'is_enabled', 'must_change_password', 'created_at'])
+            ->latest('id')
+            ->limit(8)
+            ->get();
+
+        $recentAuditLogs = AuditLog::query()
+            ->with('user:id,name,service_number')
+            ->latest('created_at')
+            ->limit(8)
             ->get();
 
         return view('super-admin.dashboard', [
             'stats' => $stats,
+            'governance' => $governance,
+            'recentUsers' => $recentUsers,
+            'recentAuditLogs' => $recentAuditLogs,
             'statusChart' => $statusChart,
             'categoryChart' => $categoryChart,
             'directorateChart' => $directorateChart,
