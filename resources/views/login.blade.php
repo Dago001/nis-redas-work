@@ -197,7 +197,7 @@
         </form>
         @endif
 
-        <form id="loginForm" method="POST" action="{{ route('login.submit') }}" novalidate>
+        <form id="loginForm" method="POST" action="{{ route('login.submit') }}">
             @csrf
 
             <div class="auth-form-group">
@@ -213,12 +213,14 @@
                         pattern="[0-9]{4,5}"
                         minlength="4"
                         maxlength="5"
+                        title="Service No must be 4 or 5 digits only (0-9)"
                         placeholder="Service No"
                         value="{{ old('username') }}"
                         autocomplete="username"
                         required>
                     <span class="auth-input-icon"><i class="fas fa-id-badge"></i></span>
                 </div>
+                <div id="serviceNoClientError" class="inline-error" style="display:none;"><i class="fas fa-circle-xmark"></i><span>Numbers only (4 or 5 digits).</span></div>
                 @error('username')
                 <div class="inline-error"><i class="fas fa-circle-xmark"></i>{{ $message }}</div>
                 @enderror
@@ -308,5 +310,35 @@
         </div>
     </div>
 </div> --}}
+<script>
+    (function () {
+        const input = document.getElementById('username');
+        const errEl = document.getElementById('serviceNoClientError');
+        const form = document.getElementById('loginForm');
+        if (!input) return;
+
+        input.addEventListener('input', function () {
+            const cleaned = input.value.replace(/\D/g, '').slice(0, 5);
+            const hadNonDigit = cleaned !== input.value;
+            input.value = cleaned;
+            if (errEl) {
+                errEl.style.display = hadNonDigit ? 'flex' : 'none';
+            }
+            input.classList.toggle('is-invalid', hadNonDigit);
+        });
+
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                input.value = input.value.replace(/\D/g, '').slice(0, 5);
+                if (!/^[0-9]{4,5}$/.test(input.value)) {
+                    e.preventDefault();
+                    if (errEl) errEl.style.display = 'flex';
+                    input.classList.add('is-invalid');
+                    input.focus();
+                }
+            });
+        }
+    })();
+</script>
 </body>
 </html>
