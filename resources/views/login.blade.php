@@ -72,10 +72,10 @@
         .login-title {
             margin: 0;
             text-align: center;
-            font-size: 1.7rem;
-            line-height: 1.15;
-            font-weight: 800;
-            color: #0f172a;
+            font-size: 1.55rem;
+            line-height: 1.2;
+            font-weight: 600;
+            color: #334155;
         }
 
         .login-subtitle {
@@ -256,7 +256,7 @@
 
             <button type="submit" class="btn-auth" id="loginBtn">
                 <i class="fas fa-sign-in-alt"></i>
-                <span class="btn-text">Secure Sign In</span>
+                <span class="btn-text">Sign In</span>
             </button>
         </form>
 
