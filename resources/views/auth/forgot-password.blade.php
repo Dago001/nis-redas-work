@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Forgot Password</title>
     @include('partials.head-meta')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @laravelPWA
-    <link rel="stylesheet" href="/assets/app.css">
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
         body {
             margin: 0;
             padding: 0;

@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Reset password</title>
     @include('partials.head-meta')
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @laravelPWA
-    <link rel="stylesheet" href="/assets/app.css">
+    <style>*, *::before, *::after { box-sizing: border-box; }</style>
 </head>
 <body style="margin:0; padding:24px; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:Inter, system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, rgba(6, 36, 20, 0.58) 0%, rgba(10, 25, 47, 0.66) 100%), url('{{ asset('assets/images/nis-hq-bg.jpg') }}') center center / cover no-repeat fixed;">
 
