@@ -42,14 +42,14 @@
         color: #64748b;
     }
     .sa-kpi-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        display: flex;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        display: inline-flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        font-size: .95rem;
+        font-size: .85rem;
     }
     .sa-kpi-value {
         font-size: 1.75rem;
