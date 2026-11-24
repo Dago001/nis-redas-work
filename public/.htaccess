@@ -1,9 +1,15 @@
+ServerSignature Off
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
 
     RewriteEngine On
+
+    # Block direct web access to dotfiles (.env, .git, .htaccess) and sensitive backups
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteRule \.(sql|sqlite|sqlite3|log|bak|old|orig|swp|env|ini|sh|yml|yaml)$ - [F,L,NC]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -24,13 +30,34 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# Cache static assets for faster repeat page loads
+# Low-bandwidth Gzip compression for text assets & dynamic responses
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript text/csv
+    AddOutputFilterByType DEFLATE application/javascript application/json application/xml application/xhtml+xml
+    AddOutputFilterByType DEFLATE image/svg+xml font/ttf font/otf
+    Header append Vary Accept-Encoding
+</IfModule>
+
+# Aggressive caching for fingerprinted Vite assets & static media
 <IfModule mod_expires.c>
     ExpiresActive On
-    ExpiresByType image/png "access plus 1 month"
-    ExpiresByType image/jpeg "access plus 1 month"
-    ExpiresByType image/svg+xml "access plus 1 month"
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType font/woff2 "access plus 6 months"
+    ExpiresByType image/png "access plus 6 months"
+    ExpiresByType image/jpeg "access plus 6 months"
+    ExpiresByType image/webp "access plus 6 months"
+    ExpiresByType image/svg+xml "access plus 6 months"
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+    # Content-hashed Vite build assets are immutable for 1 year (zero revalidation on slow networks)
+    <FilesMatch "\.(css|js|woff2|woff|ttf|png|jpg|jpeg|webp|svg|ico)$">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </FilesMatch>
+
+    # Strip server/PHP version leakage
+    Header unset X-Powered-By
+    Header always unset X-Powered-By
 </IfModule>

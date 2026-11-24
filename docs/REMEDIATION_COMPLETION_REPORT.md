@@ -48,18 +48,19 @@
 | `composer audit` | Composer 2.10.1 | **Passed** (`No security vulnerability advisories found.` — all 33 prior advisories resolved) |
 | Migrations + Seeding + Rollback (`step=15`) + Re-migrate | SQLite & MySQL 8.4.7 | **Passed** (all 43 migrations + `redas:reporting-units:sync-zones`) |
 | `npm run build` (Vite 7.3.3) | Node 26.13.0 | **Passed** (`✓ built in 2.07s`) |
-| Full Test Suite (`php artisan test`) | SQLite `:memory:` | **159 passed, 0 failed (781 assertions)** |
-| Full Test Suite (`php artisan test`) | **MySQL 8.4.7** (`redas_test`) | **159 passed, 0 failed (781 assertions, 44.42s)** |
-| Live Browser UI Walkthrough (`http://127.0.0.1:8012`) | Chrome/Playwright via `browser` subagent | **HTTP 200 and 0 JavaScript console errors** across `/desk-admin/dashboard`, `/prs/dashboard`, `/prs/indicators`, `/consolidated`, `/user/archive`, and `/user/reports`; `<main class="redas-content">` padding verified on all Option C views |
+| Full Test Suite (`php artisan test`) | SQLite `:memory:` | **164 passed, 0 failed (820 assertions)** |
+| Full Test Suite (`php artisan test`) | **MySQL 8.4.7** (`redas_test`, `ATTR_EMULATE_PREPARES=false`) | **164 passed, 0 failed (820 assertions, 43.61s)** |
+| Live Browser UI Walkthrough (Desktop + **390×844 Mobile**) | Chrome/Playwright via `browser` subagent | **HTTP 200 and 0 JavaScript console errors** across `/desk-admin/dashboard`, `/prs/dashboard`, `/prs/indicators`, `/consolidated`, `/user/archive`, and `/user/reports`; **0 horizontal overflow**, fixed mobile bottom nav bar, working slide-out drawer, **0 external CDN font requests**, and live **HTTP 403 WAF block** on SQLi probe |
 
 ---
 
 ## 4. Follow-Up Fixes & Organisational Sign-Off Prerequisites
 
 ### Follow-Up Items Resolved
-1. **Baseline Test Alignment:** Updated `AuthLoginTest`, `AuthRegistrationTest`, `RegistrationFormFieldsTest`, `StateCombinedFormTest`, and `DirectorateSubmissionTest` (valid PDF magic bytes for `finfo` MIME validation) so all **159 tests** pass with zero failures on both SQLite and MySQL 8.4.7.
-2. **UI & JavaScript Polish:** Removed duplicate `notifBtn` / `userMenuBtn` / `sidebar` script declarations in `desk-admin/layout.blade.php`, `admin/headquarters/layout.blade.php`, and `partials/footer.blade.php`, and wrapped all 10 Option C views in `<main class="redas-content">`.
-3. **Dependency Security Patching:** Ran `composer update` and verified `composer audit` reports **0 security vulnerability advisories**.
+1. **Baseline Test Alignment:** Updated `AuthLoginTest`, `AuthRegistrationTest`, `RegistrationFormFieldsTest`, `StateCombinedFormTest`, and `DirectorateSubmissionTest` (valid PDF magic bytes for `finfo` MIME validation) so all **164 tests** pass with zero failures on both SQLite and MySQL 8.4.7.
+2. **Defense-in-Depth Security Hardening:** Added `SecurityHeadersMiddleware` (CSP, HSTS, `X-Frame-Options: DENY`, `nosniff`, `Permissions-Policy`, `Cache-Control: no-store` on sensitive responses), `WafShieldMiddleware` (blocks SQLi, XSS, path traversal, and null-byte probes and logs `security.waf_blocked` to immutable `audit_logs`), native MySQL binary prepared statements (`PDO::ATTR_EMULATE_PREPARES => false`), MFA POST throttling (`throttle:10,1`), and `.htaccess` dotfile/backup protection.
+3. **Low-Bandwidth & Mobile-App Experience:** Added `CompressResponseMiddleware` (gzip compression cutting HTML/JSON wire size by >50–80%), removed all render-blocking `fonts.bunny.net` CDN requests, upgraded `public/serviceworker.js` for Cache-First Vite static assets + safe offline handling (never caching confidential HTML/API), added `resources/css/mobile-app.css` + `partials/mobile-bottom-nav.blade.php`, and fixed button-row wrapping on `/user/reports` at 390px phone width.
+4. **Dependency Security Patching:** Ran `composer update` and verified `composer audit` reports **0 security vulnerability advisories**.
 
 ### Organisational Approvals Required Before Production Cutover
 - Confirm PRS viewer role membership (`directorate_admin` for `prs` + national HQ viewers).

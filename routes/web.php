@@ -332,9 +332,9 @@ Route::middleware([Authenticate::class, 'access:category=hq_admin,location=headq
 // MFA challenge routes (pending login stage)
 Route::middleware(['mfa.pending'])->group(function () {
     Route::get('/mfa/setup', [MfaController::class, 'setup'])->name('mfa.setup');
-    Route::post('/mfa/setup', [MfaController::class, 'verifySetup'])->name('mfa.setup.verify');
+    Route::post('/mfa/setup', [MfaController::class, 'verifySetup'])->middleware('throttle:10,1')->name('mfa.setup.verify');
     Route::get('/mfa/challenge', [MfaController::class, 'challenge'])->name('mfa.challenge');
-    Route::post('/mfa/challenge', [MfaController::class, 'verifyChallenge'])->name('mfa.challenge.verify');
+    Route::post('/mfa/challenge', [MfaController::class, 'verifyChallenge'])->middleware('throttle:10,1')->name('mfa.challenge.verify');
     Route::post('/mfa/complete', [MfaController::class, 'complete'])->name('mfa.complete');
     Route::post('/mfa/cancel', [MfaController::class, 'cancel'])->name('mfa.cancel');
 });

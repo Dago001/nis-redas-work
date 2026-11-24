@@ -5,6 +5,7 @@
     &nbsp;|&nbsp; <span style="color:var(--color-success);">● System Operational</span>
 </footer>
 </div>
+@include('partials.mobile-bottom-nav')
 
 <script>
     (function () {
@@ -359,7 +360,7 @@
         document.getElementById('printPreviewBtn')?.addEventListener('click', () => {
             const content = document.getElementById('previewBody')?.innerHTML;
             const w = window.open('', '_blank');
-            w.document.write(`<html><head><title>NIS Return Preview</title><link href="https://fonts.bunny.net/css?family=inter:400,600,700" rel="stylesheet"></head><body style="font-family:Inter,sans-serif;padding:40px;max-width:900px;margin:0 auto;">${content}</body></html>`);
+            w.document.write(`<html><head><title>NIS Return Preview</title></head><body style="font-family:Inter,sans-serif;padding:40px;max-width:900px;margin:0 auto;">${content}</body></html>`);
             w.document.close();
             w.print();
         });

@@ -110,7 +110,7 @@
                             </div>
                         </div>
 
-                        <div style="display:flex;gap:10px;margin-top:4px;">
+                        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px;">
                             <button type="button" class="btn-nis btn-ghost btn-sm" onclick="toggleAllSections(false)">
                                 <i class="fas fa-times-circle"></i> Deselect All
                             </button>

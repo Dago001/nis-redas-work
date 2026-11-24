@@ -37,8 +37,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->appendToGroup('web', \App\Http\Middleware\RequirePasswordChange::class);
 
-        // Runs for both web and api requests to flag unusual/blocked traffic.
-        $middleware->append(\App\Http\Middleware\LogSuspiciousActivity::class);
+        // Defense-in-depth global middleware:
+        // 1. SecurityHeadersMiddleware: CSP, HSTS, X-Frame-Options, nosniff, no-store on sensitive pages
+        // 2. WafShieldMiddleware: blocks SQLi, XSS, path traversal, and null-byte probes
+        // 3. CompressResponseMiddleware: gzip compression for low-bandwidth networks
+        // 4. LogSuspiciousActivity: flags unusual/blocked traffic
+        $middleware->append([
+            \App\Http\Middleware\SecurityHeadersMiddleware::class,
+            \App\Http\Middleware\WafShieldMiddleware::class,
+            \App\Http\Middleware\CompressResponseMiddleware::class,
+            \App\Http\Middleware\LogSuspiciousActivity::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Session/CSRF expiry (419): send the user back to where they were
