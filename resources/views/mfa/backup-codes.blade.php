@@ -144,7 +144,7 @@
             <span class="mfa-brand-name">NIS REDAS</span>
         </div>
 
-        <h1 class="mfa-title">Authenticator Enabled</h1>
+        <h1 class="mfa-title">MFA Enabled Successfully</h1>
         <p class="mfa-subtitle">Save these single-use backup codes in a safe place before continuing.</p>
 
         <div style="background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:var(--radius-md);padding:10px 14px;font-size:.84rem;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;">
