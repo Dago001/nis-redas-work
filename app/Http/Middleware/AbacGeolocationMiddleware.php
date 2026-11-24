@@ -49,6 +49,32 @@ class AbacGeolocationMiddleware
 
         $detectedState = strtoupper($location['state_code'] ?? '');
 
+        if ($detectedState === '') {
+            $unknownPolicy = strtolower((string) SettingService::get(
+                'geolocation_unknown_policy',
+                (string) config('geolocation.unknown_policy', 'deny')
+            ));
+
+            if ($unknownPolicy === 'allow') {
+                return $next($request);
+            }
+
+            AuditLogger::logAuthBlocked(
+                user: $user,
+                reason: 'Session request geolocation could not be verified.',
+                details: [
+                    'required_state' => $requiredState,
+                    'detected_state' => '',
+                    'detected_country' => $location['country'] ?? 'Unknown',
+                    'provider' => $location['provider'] ?? 'unknown',
+                ],
+                ip: $ip,
+                location: $location['state'] ?? 'Unknown',
+            );
+
+            abort(403, 'Access denied: your current location could not be verified.');
+        }
+
         if ($detectedState !== $requiredState) {
             AuditLogger::logAuthBlocked(
                 user: $user,

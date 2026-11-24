@@ -366,6 +366,25 @@ class AuthController extends Controller
             return ['allowed' => true, 'reason' => '', 'message' => ''];
         }
 
+        $detectedState = strtoupper($location['state_code'] ?? '');
+
+        if ($detectedState === '') {
+            $unknownPolicy = strtolower((string) SettingService::get(
+                'geolocation_unknown_policy',
+                (string) config('geolocation.unknown_policy', 'deny')
+            ));
+
+            if ($unknownPolicy === 'allow') {
+                return ['allowed' => true, 'reason' => '', 'message' => ''];
+            }
+
+            return [
+                'allowed' => false,
+                'reason' => 'Login attempt geolocation could not be verified.',
+                'message' => 'Access denied: your current location could not be verified.',
+            ];
+        }
+
         $allowedCountries = $this->allowedCountries();
         $detectedCountry = $location['country'] ?? 'Unknown';
 
@@ -376,8 +395,6 @@ class AuthController extends Controller
                 'message' => 'Access denied: login is not permitted from your current country.',
             ];
         }
-
-        $detectedState = strtoupper($location['state_code'] ?? '');
 
         if ($detectedState !== $requiredState) {
             return [

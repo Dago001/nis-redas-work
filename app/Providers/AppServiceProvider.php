@@ -2,9 +2,14 @@
 
 namespace App\Providers;
 
+use App\Models\Application;
+use App\Models\User;
+use App\Policies\ApplicationPolicy;
 use App\Services\JwtService;
+use App\Services\ReportAccess;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -29,6 +34,10 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production') && ! $this->app->runningInConsole()) {
             JwtService::assertConfigured();
         }
+
+        Gate::policy(Application::class, ApplicationPolicy::class);
+        Gate::define('viewPrsDashboard', static fn (User $user): bool => ReportAccess::isPrsViewer($user));
+        Gate::define('manageConsolidated', static fn (User $user): bool => ReportAccess::canManageConsolidated($user));
 
         // Rate limiters for API and database-bound requests.
         // Use a persistent cache driver in production (database, redis, memcached).

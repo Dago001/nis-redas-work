@@ -6,19 +6,70 @@ use App\Models\PrimaryLocationCode;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 class GeolocationService
 {
+    private const CANONICAL_STATES = [
+        'AB' => 'Abia',
+        'AD' => 'Adamawa',
+        'AK' => 'Akwa Ibom',
+        'AN' => 'Anambra',
+        'BA' => 'Bauchi',
+        'BY' => 'Bayelsa',
+        'BE' => 'Benue',
+        'BO' => 'Borno',
+        'CR' => 'Cross River',
+        'DE' => 'Delta',
+        'EB' => 'Ebonyi',
+        'ED' => 'Edo',
+        'EK' => 'Ekiti',
+        'EN' => 'Enugu',
+        'FC' => 'FCT',
+        'GO' => 'Gombe',
+        'IM' => 'Imo',
+        'JI' => 'Jigawa',
+        'KD' => 'Kaduna',
+        'KN' => 'Kano',
+        'KT' => 'Katsina',
+        'KE' => 'Kebbi',
+        'KO' => 'Kogi',
+        'KW' => 'Kwara',
+        'LA' => 'Lagos',
+        'NA' => 'Nasarawa',
+        'NI' => 'Niger',
+        'OG' => 'Ogun',
+        'ON' => 'Ondo',
+        'OS' => 'Osun',
+        'OY' => 'Oyo',
+        'PL' => 'Plateau',
+        'RI' => 'Rivers',
+        'SO' => 'Sokoto',
+        'TA' => 'Taraba',
+        'YO' => 'Yobe',
+        'ZA' => 'Zamfara',
+    ];
+
     /**
-     * Resolve a request IP to a normalized location.
+     * Resolve a request IP to a normalized location using HTTPS-only providers.
      *
      * @return array{country:string,state:string,state_code:string,provider:string}
      */
     public static function resolve(string $ip): array
     {
-        $fallbackState = strtoupper(SettingService::get('geolocation_fallback_state', 'FC'));
+        $ip = trim($ip);
+
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            return self::unknownResult();
+        }
 
         if (self::isPrivateIp($ip)) {
+            if (! (bool) config('geolocation.allow_private_fallback', false)) {
+                return self::unknownResult();
+            }
+
+            $fallbackState = strtoupper((string) SettingService::get('geolocation_fallback_state', 'FC'));
+
             return [
                 'country' => 'Nigeria',
                 'state' => self::stateNameFromCode($fallbackState) ?? 'FCT',
@@ -27,104 +78,300 @@ class GeolocationService
             ];
         }
 
-        $cacheKey = 'geoip.'.md5($ip);
-        $ttl = SettingService::getInt('geolocation_cache_ttl', 1440);
+        $cacheKey = 'geoip.v2.'.md5($ip);
+        $cached = Cache::get($cacheKey);
+        if (is_array($cached) && ($cached['provider'] ?? 'unknown') !== 'unknown') {
+            return $cached;
+        }
 
-        return Cache::remember($cacheKey, $ttl, function () use ($ip, $fallbackState) {
-            $provider = SettingService::get('geolocation_provider', 'ip-api');
+        $configuredProvider = SettingService::get('geolocation_provider')
+            ?: (string) config('geolocation.provider', 'ipapi_co');
+        $provider = self::normalizeProvider((string) $configuredProvider);
 
-            $location = match ($provider) {
-                'ip-api' => self::resolveIpApi($ip),
-                'ipapi' => self::resolveIpapiCo($ip),
-                default => self::resolveIpApi($ip),
-            };
+        $location = match ($provider) {
+            'ipapi_co' => self::resolveIpapiCo($ip),
+            'ip_api_pro' => self::resolveIpApiPro($ip),
+            'ipinfo' => self::resolveIpinfo($ip),
+            default => null,
+        };
 
-            if ($location === null) {
-                return [
-                    'country' => 'Unknown',
-                    'state' => self::stateNameFromCode($fallbackState) ?? 'FCT',
-                    'state_code' => $fallbackState,
-                    'provider' => 'fallback-unknown',
-                ];
-            }
+        if ($location === null) {
+            // Never cache unknown/failed responses and never silently fall back to FC.
+            return self::unknownResult();
+        }
 
-            return $location;
-        });
+        $ttlMinutes = SettingService::getInt('geolocation_cache_ttl', (int) config('geolocation.cache_ttl', 1440));
+        if ($ttlMinutes > 0) {
+            Cache::put($cacheKey, $location, now()->addMinutes($ttlMinutes));
+        }
+
+        return $location;
     }
 
     /**
-     * Resolve location using ip-api.com.
+     * @return array{country:string,state:string,state_code:string,provider:string}
+     */
+    public static function unknownResult(): array
+    {
+        return [
+            'country' => 'Unknown',
+            'state' => 'Unknown',
+            'state_code' => '',
+            'provider' => 'unknown',
+        ];
+    }
+
+    private static function normalizeProvider(string $provider): string
+    {
+        return match (strtolower(trim($provider))) {
+            'ip-api', 'ip_api_pro' => 'ip_api_pro',
+            'ipapi', 'ipapi_co' => 'ipapi_co',
+            'ipinfo' => 'ipinfo',
+            default => 'ipapi_co',
+        };
+    }
+
+    private static function providerUrl(string $provider, string $ip): ?string
+    {
+        $template = config("geolocation.providers.{$provider}");
+        if (! is_string($template) || ! str_starts_with(strtolower($template), 'https://')) {
+            Log::warning('Rejected non-HTTPS or unconfigured geolocation provider URL', [
+                'provider' => $provider,
+            ]);
+
+            return null;
+        }
+
+        return str_replace('{ip}', rawurlencode($ip), $template);
+    }
+
+    private static function httpClient()
+    {
+        $timeout = max(1, (int) config('geolocation.timeout', 3));
+        $retries = max(0, (int) config('geolocation.retries', 1));
+        $sleepMs = max(50, (int) config('geolocation.retry_sleep_ms', 200));
+
+        return Http::timeout($timeout)
+            ->retry($retries, $sleepMs, throw: false)
+            ->acceptJson();
+    }
+
+    /**
+     * Resolve location using ipapi.co over HTTPS.
      *
      * @return array{country:string,state:string,state_code:string,provider:string}|null
      */
-    private static function resolveIpApi(string $ip): ?array
+    private static function resolveIpapiCo(string $ip): ?array
     {
-        try {
-            $response = Http::timeout(5)
-                ->get("http://ip-api.com/json/{$ip}?fields=status,country,regionName,region,city");
+        $url = self::providerUrl('ipapi_co', $ip);
+        if ($url === null) {
+            return null;
+        }
 
+        try {
+            $token = self::apiToken();
+            $request = self::httpClient();
+            if ($token !== null) {
+                $request = $request->withToken($token);
+            }
+
+            $response = $request->get($url);
             if (! $response->successful()) {
                 return null;
             }
 
             $data = $response->json();
-
-            if (($data['status'] ?? '') !== 'success') {
+            if (! is_array($data) || ! empty($data['error'])) {
                 return null;
             }
 
-            $country = $data['country'] ?? 'Unknown';
-            $state = $data['regionName'] ?? $data['region'] ?? 'Unknown';
-            $stateCode = self::stateCodeFromName($state) ?? strtoupper($data['region'] ?? '');
-
-            return [
-                'country' => $country,
-                'state' => $state,
-                'state_code' => $stateCode,
-                'provider' => 'ip-api',
-            ];
+            return self::normalizeLocation(
+                country: $data['country_name'] ?? $data['country'] ?? null,
+                region: $data['region'] ?? null,
+                regionCode: $data['region_code'] ?? null,
+                provider: 'ipapi_co'
+            );
         } catch (\Throwable $e) {
-            Log::warning('Geolocation lookup failed', ['provider' => 'ip-api', 'ip' => $ip, 'error' => $e->getMessage()]);
+            Log::warning('Geolocation lookup failed', [
+                'provider' => 'ipapi_co',
+                'ip' => $ip,
+                'error' => $e->getMessage(),
+            ]);
 
             return null;
         }
     }
 
     /**
-     * Resolve location using ipapi.co.
+     * Resolve location using ip-api.com Pro over HTTPS (requires API key).
      *
      * @return array{country:string,state:string,state_code:string,provider:string}|null
      */
-    private static function resolveIpapiCo(string $ip): ?array
+    private static function resolveIpApiPro(string $ip): ?array
     {
-        try {
-            $token = SettingService::get('geolocation_api_token');
-            $url = $token
-                ? "https://ipapi.co/{$ip}/json/?token={$token}"
-                : "https://ipapi.co/{$ip}/json/";
+        $token = self::apiToken();
+        if ($token === null) {
+            Log::warning('Geolocation provider ip_api_pro requires an API key', [
+                'provider' => 'ip_api_pro',
+            ]);
 
-            $response = Http::timeout(5)->get($url);
+            return null;
+        }
+
+        $url = self::providerUrl('ip_api_pro', $ip);
+        if ($url === null) {
+            return null;
+        }
+
+        try {
+            $response = self::httpClient()
+                ->withQueryParameters([
+                    'fields' => 'status,country,regionName,region,city',
+                    'key' => $token,
+                ])
+                ->get($url);
 
             if (! $response->successful()) {
                 return null;
             }
 
             $data = $response->json();
+            if (! is_array($data) || ($data['status'] ?? '') !== 'success') {
+                return null;
+            }
 
-            $country = $data['country_name'] ?? $data['country'] ?? 'Unknown';
-            $state = $data['region'] ?? 'Unknown';
-            $stateCode = self::stateCodeFromName($state) ?? strtoupper($data['region_code'] ?? '');
-
-            return [
-                'country' => $country,
-                'state' => $state,
-                'state_code' => $stateCode,
-                'provider' => 'ipapi',
-            ];
+            return self::normalizeLocation(
+                country: $data['country'] ?? null,
+                region: $data['regionName'] ?? $data['region'] ?? null,
+                regionCode: $data['region'] ?? null,
+                provider: 'ip_api_pro'
+            );
         } catch (\Throwable $e) {
-            Log::warning('Geolocation lookup failed', ['provider' => 'ipapi', 'ip' => $ip, 'error' => $e->getMessage()]);
+            Log::warning('Geolocation lookup failed', [
+                'provider' => 'ip_api_pro',
+                'ip' => $ip,
+                'error' => $e->getMessage(),
+            ]);
 
             return null;
+        }
+    }
+
+    /**
+     * Resolve location using ipinfo.io over HTTPS.
+     *
+     * @return array{country:string,state:string,state_code:string,provider:string}|null
+     */
+    private static function resolveIpinfo(string $ip): ?array
+    {
+        $url = self::providerUrl('ipinfo', $ip);
+        if ($url === null) {
+            return null;
+        }
+
+        try {
+            $token = self::apiToken();
+            $request = self::httpClient();
+            if ($token !== null) {
+                $request = $request->withToken($token);
+            }
+
+            $response = $request->get($url);
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $data = $response->json();
+            if (! is_array($data)) {
+                return null;
+            }
+
+            $country = $data['country_name'] ?? $data['country'] ?? null;
+            if ($country === 'NG') {
+                $country = 'Nigeria';
+            }
+
+            return self::normalizeLocation(
+                country: $country,
+                region: $data['region'] ?? null,
+                regionCode: null,
+                provider: 'ipinfo'
+            );
+        } catch (\Throwable $e) {
+            Log::warning('Geolocation lookup failed', [
+                'provider' => 'ipinfo',
+                'ip' => $ip,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Validate provider response fields and map region to a valid Nigerian state code.
+     *
+     * @return array{country:string,state:string,state_code:string,provider:string}|null
+     */
+    private static function normalizeLocation(mixed $country, mixed $region, mixed $regionCode, string $provider): ?array
+    {
+        if (! is_string($country) || trim($country) === '' || strlen($country) > 100) {
+            return null;
+        }
+
+        if (! is_string($region) || trim($region) === '' || strlen($region) > 100) {
+            return null;
+        }
+
+        $country = trim($country);
+        $region = trim($region);
+
+        $stateCode = self::stateCodeFromName($region);
+        if ($stateCode === null && is_string($regionCode) && trim($regionCode) !== '') {
+            $candidate = strtoupper(trim($regionCode));
+            if (self::isKnownStateCode($candidate)) {
+                $stateCode = $candidate;
+            }
+        }
+
+        return [
+            'country' => $country,
+            'state' => $region,
+            'state_code' => $stateCode ?? '',
+            'provider' => $provider,
+        ];
+    }
+
+    private static function apiToken(): ?string
+    {
+        $token = SettingService::get('geolocation_api_token') ?: config('geolocation.token');
+        if (! is_string($token) || trim($token) === '') {
+            return null;
+        }
+
+        return trim($token);
+    }
+
+    private static function isKnownStateCode(string $code): bool
+    {
+        $code = strtoupper(trim($code));
+        if ($code === '') {
+            return false;
+        }
+
+        if (self::hasSeededLookupTable()) {
+            return PrimaryLocationCode::query()->where('code', $code)->exists();
+        }
+
+        return array_key_exists($code, self::CANONICAL_STATES);
+    }
+
+    private static function hasSeededLookupTable(): bool
+    {
+        try {
+            return Schema::hasTable('primary_location_codes') && PrimaryLocationCode::query()->exists();
+        } catch (\Throwable) {
+            return false;
         }
     }
 
@@ -134,12 +381,25 @@ class GeolocationService
     public static function stateCodeFromName(string $name): ?string
     {
         $normalized = self::normalizeStateName($name);
+        if ($normalized === '') {
+            return null;
+        }
 
-        $code = PrimaryLocationCode::query()
-            ->whereRaw('LOWER(location_name) = ?', [$normalized])
-            ->value('code');
+        if (self::hasSeededLookupTable()) {
+            $code = PrimaryLocationCode::query()
+                ->whereRaw('LOWER(location_name) = ?', [$normalized])
+                ->value('code');
 
-        return $code ? strtoupper($code) : null;
+            return $code ? strtoupper($code) : null;
+        }
+
+        foreach (self::CANONICAL_STATES as $code => $stateName) {
+            if (strtolower($stateName) === $normalized) {
+                return $code;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -147,14 +407,20 @@ class GeolocationService
      */
     public static function stateNameFromCode(string $code): ?string
     {
-        return PrimaryLocationCode::query()
-            ->where('code', strtoupper($code))
-            ->value('location_name');
+        $upper = strtoupper(trim($code));
+        if ($upper === '') {
+            return null;
+        }
+
+        if (self::hasSeededLookupTable()) {
+            return PrimaryLocationCode::query()
+                ->where('code', $upper)
+                ->value('location_name');
+        }
+
+        return self::CANONICAL_STATES[$upper] ?? null;
     }
 
-    /**
-     * Normalize a state name for lookup.
-     */
     private static function normalizeStateName(string $name): string
     {
         return strtolower(trim($name));

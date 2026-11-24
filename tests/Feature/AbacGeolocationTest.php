@@ -20,7 +20,7 @@ class AbacGeolocationTest extends TestCase
         SettingService::set('abac_location_enforcement', true, 'boolean');
         SettingService::set('abac_hq_bypass', false, 'boolean');
         SettingService::set('abac_allowed_countries', 'Nigeria', 'string');
-        SettingService::set('geolocation_provider', 'ip-api', 'string');
+        SettingService::set('geolocation_provider', 'ipapi_co', 'string');
         SettingService::set('geolocation_cache_ttl', 1440, 'integer');
         SettingService::set('geolocation_fallback_state', 'FC', 'string');
     }
@@ -28,11 +28,10 @@ class AbacGeolocationTest extends TestCase
     private function fakeIpApi(string $ip, string $country, string $regionName, string $region): void
     {
         Http::fake([
-            "http://ip-api.com/json/{$ip}?fields=status,country,regionName,region,city" => Http::response([
-                'status' => 'success',
-                'country' => $country,
-                'regionName' => $regionName,
-                'region' => $region,
+            "https://ipapi.co/{$ip}/json/" => Http::response([
+                'country_name' => $country,
+                'region' => $regionName,
+                'region_code' => $region,
                 'city' => 'Test City',
             ]),
         ]);
@@ -201,11 +200,10 @@ class AbacGeolocationTest extends TestCase
         $this->assertAuthenticatedAs($user);
 
         Http::fake([
-            'http://ip-api.com/json/*' => Http::response([
-                'status' => 'success',
-                'country' => 'Nigeria',
-                'regionName' => 'Kano',
-                'region' => 'KN',
+            'https://ipapi.co/*/json/' => Http::response([
+                'country_name' => 'Nigeria',
+                'region' => 'Kano',
+                'region_code' => 'KN',
                 'city' => 'Kano',
             ]),
         ]);

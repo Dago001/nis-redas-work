@@ -9,6 +9,8 @@ use App\Models\Application;
 use App\Models\ApplicationComment;
 use App\Models\User;
 use App\Models\UserNotification;
+use Illuminate\Support\Facades\DB;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SubmissionWorkflow
 {
@@ -129,6 +131,7 @@ class SubmissionWorkflow
 
     /**
      * Build a query for submissions currently sitting in the approver's queue.
+     * Deny-by-default: reviewers without a valid organisational scope see no records.
      */
     public static function pendingQueryForApprover(User $user)
     {
@@ -143,23 +146,7 @@ class SubmissionWorkflow
             ->where('workflow_stage', $stage)
             ->whereNotIn('status', ['approved', 'rejected']);
 
-        $scopeCode = self::scopeCodeForApprover($user);
-
-        if ($scopeCode !== null) {
-            if ($user->user_category === 'zonal_commander') {
-                $query->where(function ($q) use ($scopeCode) {
-                    $q->where('zonal_code', $scopeCode)
-                        ->orWhere(function ($inner) use ($scopeCode) {
-                            $inner->whereNull('zonal_code')
-                                ->where('scope_code', $scopeCode);
-                        });
-                });
-            } else {
-                $query->where('scope_code', $scopeCode);
-            }
-        }
-
-        return $query;
+        return ReportAccess::applyApproverScope($query, $user);
     }
 
     /**
@@ -167,53 +154,91 @@ class SubmissionWorkflow
      */
     public static function approve(Application $application, User $actor, ?string $comment = null): void
     {
-        $currentStage = $application->workflow_stage;
-        $nextStage = self::nextStage($application);
+        $requiredStage = self::stageForApprover($actor);
+        if ($requiredStage === null || $application->user_id === $actor->id || ! ReportAccess::matchesApproverScope($application, $actor)) {
+            throw new HttpException(403, 'Unauthorized approval action.');
+        }
 
-        $path = $application->workflow_path ?? [];
-        $path[] = [
-            'stage' => $nextStage,
-            'by' => $actor->id,
-            'at' => now()->toDateTimeString(),
-            'action' => 'approved',
-        ];
+        $nextStage = DB::transaction(function () use ($application, $actor, $comment, $requiredStage): string {
+            /** @var Application|null $locked */
+            $locked = Application::query()->whereKey($application->id)->lockForUpdate()->first();
 
-        $update = [
-            'workflow_stage' => $nextStage,
-            'status' => $nextStage === self::STAGE_APPROVED ? 'approved' : 'pending',
-            'workflow_path' => $path,
-            'last_action_by' => $actor->id,
-        ];
-
-        // When a desk admin releases a state submission, tag it with the zonal command
-        // it should be routed to so the correct zonal commander sees it.
-        if ($actor->user_category === 'desk_admin') {
-            $zonalCode = $actor->assigned_zonal_command_code ?: null;
-            if ($zonalCode !== null) {
-                $update['zonal_code'] = $zonalCode;
+            if (! $locked) {
+                throw new HttpException(404, 'Submission not found.');
             }
-        }
 
-        $application->update($update);
+            if ($locked->workflow_stage !== $requiredStage || in_array(strtolower((string) $locked->status), ['approved', 'rejected'], true)) {
+                throw new HttpException(409, 'Submission has already been processed at this stage.');
+            }
 
-        self::recordComment($application, $actor, $currentStage, ApplicationComment::ACTION_APPROVED, $comment);
+            $currentStage = $locked->workflow_stage;
+            $nextStage = self::nextStage($locked);
 
-        if ($nextStage === self::STAGE_APPROVED) {
-            self::notifySubmitter(
-                $application,
-                'Return approved',
-                'Your return RET-' . str_pad((string) $application->id, 5, '0', STR_PAD_LEFT) . ' has completed the review workflow and is approved.'
+            $path = $locked->workflow_path ?? [];
+            $path[] = [
+                'stage' => $nextStage,
+                'by' => $actor->id,
+                'at' => now()->toDateTimeString(),
+                'action' => 'approved',
+            ];
+
+            $update = [
+                'workflow_stage' => $nextStage,
+                'status' => $nextStage === self::STAGE_APPROVED ? 'approved' : 'pending',
+                'workflow_path' => $path,
+                'last_action_by' => $actor->id,
+            ];
+
+            // When a desk admin releases a state submission, tag it with the zonal command
+            // it should be routed to so the correct zonal commander sees it.
+            if ($actor->user_category === 'desk_admin') {
+                $zonalCode = $actor->assigned_zonal_command_code ?: null;
+                if ($zonalCode !== null) {
+                    $update['zonal_code'] = $zonalCode;
+                }
+            }
+
+            $locked->update($update);
+
+            self::recordComment($locked, $actor, $currentStage, ApplicationComment::ACTION_APPROVED, $comment);
+
+            AuditLogger::log(
+                user: $actor,
+                action: 'submission.approved',
+                status: 'success',
+                entityType: 'application',
+                entityId: $locked->id,
+                details: [
+                    'from_stage' => $currentStage,
+                    'to_stage' => $nextStage,
+                    'scope_code' => $locked->scope_code,
+                    'zonal_code' => $locked->zonal_code,
+                ]
             );
-        } else {
-            self::notifySubmitter(
-                $application,
-                'Return advanced',
-                'Your return RET-' . str_pad((string) $application->id, 5, '0', STR_PAD_LEFT) . ' was approved at ' . str_replace('_', ' ', $currentStage) . ' and moved to ' . str_replace('_', ' ', $nextStage) . '.'
-            );
-            self::notifyPendingReviewers($application);
-        }
 
-        SubmissionStageAdvanced::dispatch($application, $nextStage);
+            DB::afterCommit(function () use ($locked, $currentStage, $nextStage): void {
+                if ($nextStage === self::STAGE_APPROVED) {
+                    self::notifySubmitter(
+                        $locked,
+                        'Return approved',
+                        'Your return RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT).' has completed the review workflow and is approved.'
+                    );
+                } else {
+                    self::notifySubmitter(
+                        $locked,
+                        'Return advanced',
+                        'Your return RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT).' was approved at '.str_replace('_', ' ', $currentStage).' and moved to '.str_replace('_', ' ', $nextStage).'.'
+                    );
+                    self::notifyPendingReviewers($locked);
+                }
+
+                SubmissionStageAdvanced::dispatch($locked, $nextStage);
+            });
+
+            return $nextStage;
+        });
+
+        $application->refresh();
     }
 
     /**
@@ -221,33 +246,68 @@ class SubmissionWorkflow
      */
     public static function reject(Application $application, User $actor, ?string $comment = null): void
     {
-        $currentStage = $application->workflow_stage;
+        $requiredStage = self::stageForApprover($actor);
+        if ($requiredStage === null || $application->user_id === $actor->id || ! ReportAccess::matchesApproverScope($application, $actor)) {
+            throw new HttpException(403, 'Unauthorized rejection action.');
+        }
 
-        $path = $application->workflow_path ?? [];
-        $path[] = [
-            'stage' => self::STAGE_SUBMITTED,
-            'by' => $actor->id,
-            'at' => now()->toDateTimeString(),
-            'action' => 'rejected',
-        ];
+        DB::transaction(function () use ($application, $actor, $comment, $requiredStage): void {
+            /** @var Application|null $locked */
+            $locked = Application::query()->whereKey($application->id)->lockForUpdate()->first();
 
-        $application->update([
-            'workflow_stage' => self::STAGE_SUBMITTED,
-            'status' => 'returned',
-            'comments' => $comment,
-            'workflow_path' => $path,
-            'last_action_by' => $actor->id,
-        ]);
+            if (! $locked) {
+                throw new HttpException(404, 'Submission not found.');
+            }
 
-        self::recordComment($application, $actor, $currentStage, ApplicationComment::ACTION_REJECTED, $comment);
+            if ($locked->workflow_stage !== $requiredStage || in_array(strtolower((string) $locked->status), ['approved', 'rejected'], true)) {
+                throw new HttpException(409, 'Submission has already been processed at this stage.');
+            }
 
-        self::notifySubmitter(
-            $application,
-            'Return returned for correction',
-            'Your return RET-' . str_pad((string) $application->id, 5, '0', STR_PAD_LEFT) . ' was sent back at ' . str_replace('_', ' ', $currentStage) . '.' . ($comment ? ' Reason: ' . $comment : '')
-        );
+            $currentStage = $locked->workflow_stage;
 
-        SubmissionRejected::dispatch($application, $comment);
+            $path = $locked->workflow_path ?? [];
+            $path[] = [
+                'stage' => self::STAGE_SUBMITTED,
+                'by' => $actor->id,
+                'at' => now()->toDateTimeString(),
+                'action' => 'rejected',
+            ];
+
+            $locked->update([
+                'workflow_stage' => self::STAGE_SUBMITTED,
+                'status' => 'returned',
+                'comments' => $comment,
+                'workflow_path' => $path,
+                'last_action_by' => $actor->id,
+            ]);
+
+            self::recordComment($locked, $actor, $currentStage, ApplicationComment::ACTION_REJECTED, $comment);
+
+            AuditLogger::log(
+                user: $actor,
+                action: 'submission.returned',
+                status: 'success',
+                entityType: 'application',
+                entityId: $locked->id,
+                details: [
+                    'from_stage' => $currentStage,
+                    'scope_code' => $locked->scope_code,
+                    'zonal_code' => $locked->zonal_code,
+                ]
+            );
+
+            DB::afterCommit(function () use ($locked, $currentStage, $comment): void {
+                self::notifySubmitter(
+                    $locked,
+                    'Return returned for correction',
+                    'Your return RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT).' was sent back at '.str_replace('_', ' ', $currentStage).'.'.($comment ? ' Reason: '.$comment : '')
+                );
+
+                SubmissionRejected::dispatch($locked, $comment);
+            });
+        });
+
+        $application->refresh();
     }
 
     /**
@@ -318,8 +378,7 @@ class SubmissionWorkflow
         $ref = 'RET-' . str_pad((string) $application->id, 5, '0', STR_PAD_LEFT);
 
         foreach ($query->get() as $approver) {
-            if (self::scopeCodeForApprover($approver) !== null
-                && self::scopeCodeForApprover($approver) !== ($approver->user_category === 'zonal_commander' ? ($application->zonal_code ?: $application->scope_code) : $application->scope_code)) {
+            if (! ReportAccess::matchesApproverScope($application, $approver)) {
                 continue;
             }
 

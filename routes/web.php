@@ -129,21 +129,14 @@ Route::middleware([Authenticate::class, 'abac.geo'])->group(function () {
         $user = Auth::user();
         $archiveView = view()->exists('user.archive.index') ? 'user.archive.index' : 'user.states.archive';
 
-        $completedQuery = \App\Models\Application::query()
-            ->with('user')
-            ->where('status', 'approved')
+        $completedQuery = \App\Services\ReportAccess::applyVisibility(
+            \App\Models\Application::query()
+                ->with('user')
+                ->where('status', 'approved'),
+            $user
+        )
             ->latest('updated_at')
             ->limit(50);
-
-        // Approvers see completed returns in their scope; officers see their own.
-        if (\App\Services\SubmissionWorkflow::stageForApprover($user) !== null) {
-            $scopeCode = \App\Services\SubmissionWorkflow::scopeCodeForApprover($user);
-            if ($scopeCode !== null) {
-                $completedQuery->where('scope_code', $scopeCode);
-            }
-        } else {
-            $completedQuery->where('user_id', $user?->id);
-        }
 
         return view($archiveView, ['completedReturns' => $completedQuery->get()]);
     })->name('user.archive');

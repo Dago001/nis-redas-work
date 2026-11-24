@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Application;
 use App\Models\User;
+use App\Services\ReportAccess;
 use App\Services\ReportPdfService;
 use App\Services\SubmissionWorkflow;
 use Illuminate\Http\RedirectResponse;
@@ -36,29 +37,23 @@ class SubmissionReviewController extends Controller
             ->limit(50)
             ->get();
 
-        $approvedSubmissions = Application::query()
-            ->with('user')
-            ->where('status', 'approved')
-            ->when($this->scopeValue($user) !== null, function ($query) use ($user) {
-                $query->where($this->scopeColumn($user), $this->scopeValue($user));
-            })
+        $approvedSubmissions = ReportAccess::applyApproverScope(
+            Application::query()->with('user')->where('status', 'approved'),
+            $user
+        )
             ->latest('updated_at')
             ->limit(50)
             ->get();
 
-        $approvedCount = Application::query()
-            ->where('status', 'approved')
-            ->when($this->scopeValue($user) !== null, function ($query) use ($user) {
-                $query->where($this->scopeColumn($user), $this->scopeValue($user));
-            })
-            ->count();
+        $approvedCount = ReportAccess::applyApproverScope(
+            Application::query()->where('status', 'approved'),
+            $user
+        )->count();
 
-        $rejectedCount = Application::query()
-            ->where('status', 'returned')
-            ->when($this->scopeValue($user) !== null, function ($query) use ($user) {
-                $query->where($this->scopeColumn($user), $this->scopeValue($user));
-            })
-            ->count();
+        $rejectedCount = ReportAccess::applyApproverScope(
+            Application::query()->where('status', 'returned'),
+            $user
+        )->count();
 
         return view('desk-admin.dashboard', [
             'accessRole' => $accessRole,
@@ -251,17 +246,9 @@ class SubmissionReviewController extends Controller
      */
     private function authorizeAction(Application $application, User $user): void
     {
-        $requiredStage = SubmissionWorkflow::stageForApprover($user);
-
-        if ($requiredStage === null) {
+        if (! $user->can('review', $application)) {
             abort(403, 'Unauthorized action.');
         }
-
-        if ($application->workflow_stage !== $requiredStage) {
-            abort(403, 'This submission is not awaiting your review.');
-        }
-
-        $this->authorizeScope($application, $user);
     }
 
     /**
@@ -269,34 +256,8 @@ class SubmissionReviewController extends Controller
      */
     private function authorizeView(Application $application, User $user): void
     {
-        $isReviewer = SubmissionWorkflow::stageForApprover($user) !== null;
-        $isHqViewer = $user->hasCategory('admin', 'super_admin')
-            && $user->hasLocationType('headquarters');
-
-        if (! $isReviewer && ! $isHqViewer) {
+        if (! $user->can('view', $application)) {
             abort(403, 'Unauthorized.');
-        }
-
-        $this->authorizeScope($application, $user);
-    }
-
-    /**
-     * Scope check shared by view and action authorization.
-     */
-    private function authorizeScope(Application $application, User $user): void
-    {
-        $scopeCode = SubmissionWorkflow::scopeCodeForApprover($user);
-
-        if ($scopeCode !== null) {
-            $applicationScope = $application->scope_code;
-
-            if ($user->user_category === 'zonal_commander') {
-                $applicationScope = $application->zonal_code ?: $application->scope_code;
-            }
-
-            if ($applicationScope !== $scopeCode) {
-                abort(403, 'This submission is outside your provisioned scope.');
-            }
         }
     }
 
@@ -305,23 +266,15 @@ class SubmissionReviewController extends Controller
      */
     private function canReview(Application $application, User $user): bool
     {
-        $stage = SubmissionWorkflow::stageForApprover($user);
-
-        return $stage !== null
-            && $application->workflow_stage === $stage
-            && ! in_array(strtolower((string) $application->status), ['approved', 'rejected'], true);
+        return ReportAccess::canReview($application, $user);
     }
 
     /**
-     * Base query for report generation, scoped to the approver.
+     * Base query for report generation, scoped strictly to the approver (deny-by-default).
      */
     private function reportQuery(User $user, array $filters)
     {
-        return Application::query()
-            ->with('user')
-            ->when($this->scopeValue($user) !== null, function ($query) use ($user) {
-                $query->where($this->scopeColumn($user), $this->scopeValue($user));
-            })
+        return ReportAccess::applyApproverScope(Application::query()->with('user'), $user)
             ->when($filters['date_from'] ?? null, fn ($query, $from) => $query->whereDate('created_at', '>=', $from))
             ->when($filters['date_to'] ?? null, fn ($query, $to) => $query->whereDate('created_at', '<=', $to))
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))

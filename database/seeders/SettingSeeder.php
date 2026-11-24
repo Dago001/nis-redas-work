@@ -17,7 +17,7 @@ class SettingSeeder extends Seeder
             'abac_location_enforcement' => ['value' => true, 'type' => 'boolean', 'description' => 'Block login and requests from outside the user\'s registered state.'],
             'abac_hq_bypass' => ['value' => false, 'type' => 'boolean', 'description' => 'Allow HQ/admin users to authenticate from any location.'],
             'abac_allowed_countries' => ['value' => 'Nigeria', 'type' => 'string', 'description' => 'Comma-separated list of country names permitted for authentication.'],
-            'geolocation_provider' => ['value' => 'ip-api', 'type' => 'string', 'description' => 'IP geolocation service provider.'],
+            'geolocation_provider' => ['value' => 'ipapi_co', 'type' => 'string', 'description' => 'IP geolocation service provider (HTTPS only).'],
             'geolocation_cache_ttl' => ['value' => 1440, 'type' => 'integer', 'description' => 'Cache TTL for resolved IP locations in minutes.'],
             'geolocation_fallback_state' => ['value' => 'FC', 'type' => 'string', 'description' => 'State used for private/local IP addresses during development.'],
             'geolocation_api_token' => ['value' => null, 'type' => 'string', 'description' => 'Optional API token for paid geolocation providers.'],

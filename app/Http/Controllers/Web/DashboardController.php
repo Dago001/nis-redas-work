@@ -893,22 +893,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $isOwner = $user !== null && $application->user_id === $user->id;
-        $isApprover = $user !== null && SubmissionWorkflow::stageForApprover($user) !== null;
-
-        abort_unless($isOwner || $isApprover, 403);
-
-        if (! $isOwner) {
-            $scopeCode = SubmissionWorkflow::scopeCodeForApprover($user);
-
-            if ($scopeCode !== null) {
-                $applicationScope = $user->user_category === 'zonal_commander'
-                    ? ($application->zonal_code ?: $application->scope_code)
-                    : $application->scope_code;
-
-                abort_if($applicationScope !== $scopeCode, 403, 'This submission is outside your provisioned scope.');
-            }
-        }
+        abort_unless($user !== null && $user->can('download', $application), 403, 'This submission is outside your provisioned scope.');
 
         $slug = $application->return_data['directorate_slug']
             ?? $application->return_data['cgis_unit_slug']

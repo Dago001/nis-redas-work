@@ -208,6 +208,8 @@ class SuperAdminController extends Controller
 
     public function show(Application $application): View
     {
+        abort_unless(request()->user()?->can('view', $application), 403);
+
         $application->load(['user:id,name,service_number,email,assigned_cgis_unit_code', 'reviewComments.user']);
 
         $actorIds = collect($application->workflow_path ?? [])->pluck('by')->filter()->unique();

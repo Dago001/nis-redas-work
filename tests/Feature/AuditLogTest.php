@@ -21,16 +21,15 @@ class AuditLogTest extends TestCase
         SettingService::set('abac_location_enforcement', true, 'boolean');
         SettingService::set('abac_hq_bypass', false, 'boolean');
         SettingService::set('abac_allowed_countries', 'Nigeria', 'string');
-        SettingService::set('geolocation_provider', 'ip-api', 'string');
+        SettingService::set('geolocation_provider', 'ipapi_co', 'string');
         SettingService::set('geolocation_cache_ttl', 1440, 'integer');
         SettingService::set('geolocation_fallback_state', 'FC', 'string');
 
         Http::fake([
-            'http://ip-api.com/json/*' => Http::response([
-                'status' => 'success',
-                'country' => 'Nigeria',
-                'regionName' => 'Lagos',
-                'region' => 'LA',
+            'https://ipapi.co/*/json/' => Http::response([
+                'country_name' => 'Nigeria',
+                'region' => 'Lagos',
+                'region_code' => 'LA',
                 'city' => 'Lagos',
             ]),
         ]);
@@ -107,11 +106,10 @@ class AuditLogTest extends TestCase
         ]);
 
         Http::fake([
-            'http://ip-api.com/json/*' => Http::response([
-                'status' => 'success',
-                'country' => 'Nigeria',
-                'regionName' => 'Kano',
-                'region' => 'KN',
+            'https://ipapi.co/*/json/' => Http::response([
+                'country_name' => 'Nigeria',
+                'region' => 'Kano',
+                'region_code' => 'KN',
                 'city' => 'Kano',
             ]),
         ]);
