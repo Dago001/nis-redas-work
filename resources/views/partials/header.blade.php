@@ -18,6 +18,9 @@
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- ════════════════════════════════ SIDEBAR ════════════════════════════════ -->
+@if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
+    @include('super-admin.sidebar-aside')
+@else
 <aside class="redas-sidebar" id="redasSidebar">
 
     <!-- Brand -->
@@ -128,6 +131,7 @@
         @endif
         @endif
 </aside>
+@endif
 
 <!-- ═══════ MAIN ═══════ -->
 <div class="redas-main" id="redasMain">
@@ -138,7 +142,9 @@
         <div class="topbar-breadcrumb">
             <span>NIS-REDAS</span>
             <span class="separator"><i class="fas fa-chevron-right" style="font-size:.6rem;"></i></span>
-            @if(in_array(auth()->user()?->user_category, ['desk_admin', 'directorate_admin']))
+            @if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
+            <a href="{{ route('superadmin.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">Super Admin</a>
+            @elseif(in_array(auth()->user()?->user_category, ['desk_admin', 'directorate_admin']))
             <a href="{{ route('user.desk.home') }}" style="color:var(--gray-500);text-decoration:none;">Desk Admin Dashboard</a>
             @elseif(auth()->user()?->role === 'directorate')
             <a href="{{ route('user.directorates.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">Directorate Dashboard</a>

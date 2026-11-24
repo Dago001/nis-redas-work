@@ -43,7 +43,7 @@
 
                 <div class="auth-form-group" style="margin-bottom:18px;">
                     <label class="form-label-nis">Service Number</label>
-                    <input type="text" name="service_number" value="{{ old('service_number', $user->service_number) }}" class="auth-input" required>
+                    <input type="text" id="edit_service_number" name="service_number" value="{{ old('service_number', $user->service_number) }}" class="auth-input" placeholder="Service No" inputmode="numeric" pattern="[0-9]{4,5}" minlength="4" maxlength="5" title="Service number must be 4 or 5 digits only (0-9)" required>
                 </div>
 
                 <div class="auth-form-group" style="margin-bottom:18px;">
@@ -105,12 +105,19 @@
 
                 <div class="auth-form-group" style="margin-bottom:18px;">
                     <label class="form-label-nis">New Password</label>
-                    <input type="password" name="password" class="auth-input" placeholder="Leave blank to keep current password">
+                    <div class="pw-wrap" style="position:relative;">
+                        <input type="password" name="password" class="auth-input" style="padding-right:40px;" placeholder="Leave blank to keep current password" minlength="6">
+                        <button type="button" class="pw-toggle" aria-label="Toggle password visibility" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;"><i class="fas fa-eye"></i></button>
+                    </div>
+                    <small class="text-muted">Minimum 6 characters: uppercase, lowercase, number, and special character.</small>
                 </div>
 
                 <div class="auth-form-group" style="margin-bottom:24px;">
                     <label class="form-label-nis">Confirm New Password</label>
-                    <input type="password" name="password_confirmation" class="auth-input">
+                    <div class="pw-wrap" style="position:relative;">
+                        <input type="password" name="password_confirmation" class="auth-input" style="padding-right:40px;" minlength="6">
+                        <button type="button" class="pw-toggle" aria-label="Toggle confirm password visibility" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;"><i class="fas fa-eye"></i></button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-nis btn-primary-nis full-width">

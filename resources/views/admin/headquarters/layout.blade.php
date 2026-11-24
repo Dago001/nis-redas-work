@@ -16,6 +16,9 @@
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+@if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
+    @include('super-admin.sidebar-aside')
+@else
 <aside class="redas-sidebar" id="redasSidebar">
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
         <img src="{{ asset('assets/images/nis.png') }}" alt="NIS" class="sidebar-brand-logo">
@@ -83,6 +86,7 @@
         @endif
     </nav>
 </aside>
+@endif
 
 <div class="redas-main" id="redasMain">
     <header class="redas-topbar">
@@ -90,7 +94,11 @@
         <div class="topbar-breadcrumb">
             <span>NIS-REDAS</span>
             <span class="separator"><i class="fas fa-chevron-right" style="font-size:.6rem;"></i></span>
-            <a href="{{ route('admin.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">HQ Admin</a>
+            @if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
+                <a href="{{ route('superadmin.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">Super Admin</a>
+            @else
+                <a href="{{ route('admin.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">HQ Admin</a>
+            @endif
         </div>
         <div class="topbar-right">
             <div style="position:relative;">
@@ -98,7 +106,7 @@
                     <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'HQ', 0, 2)) }}</div>
                     <div class="topbar-user-info">
                         <div class="topbar-user-name">{{ auth()->user()->name ?? 'HQ Admin' }}</div>
-                        <div class="topbar-user-role">Headquarters Administration</div>
+                        <div class="topbar-user-role">{{ (auth()->user()?->user_category === 'super_admin' || auth()->user()?->role === 'super_admin') ? 'Super Administrator' : 'Headquarters Administration' }}</div>
                     </div>
                     <i class="fas fa-chevron-down" style="font-size:.7rem;color:var(--gray-400);margin-left:4px;"></i>
                 </button>

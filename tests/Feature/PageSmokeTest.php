@@ -110,6 +110,27 @@ class PageSmokeTest extends TestCase
                 $response->getStatusCode(),
                 "Super Admin sidebar route [{$routeName}] returned {$response->getStatusCode()} instead of 200."
             );
+            $response->assertSee('Super Admin Console');
         }
+
+        // Verify Super Admin can create a new user with 5-digit Service No and strong password
+        $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'name' => 'CIS New Officer',
+            'email' => 'new.officer@nis.gov.ng',
+            'service_number' => '44556',
+            'role' => 'officer',
+            'user_category' => 'state_user',
+            'primary_location_type' => 'state',
+            'primary_location_code' => 'LA',
+            'is_enabled' => '1',
+            'password' => 'StrongPass@1',
+            'password_confirmation' => 'StrongPass@1',
+        ])->assertRedirect(route('admin.users'));
+
+        $this->assertDatabaseHas('users', [
+            'service_number' => '44556',
+            'email' => 'new.officer@nis.gov.ng',
+            'must_change_password' => true,
+        ]);
     }
 }

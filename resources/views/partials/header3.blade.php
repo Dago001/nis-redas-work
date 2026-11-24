@@ -17,6 +17,9 @@
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- ════════════════════ SIDEBAR ════════════════════ -->
+@if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
+    @include('super-admin.sidebar-aside')
+@else
 <aside class="redas-sidebar" id="redasSidebar">
     <a href="{{ route('admin.dashboard') }}" class="sidebar-brand">
         <img src="{{ asset('assets/images/nis.png') }}" alt="NIS" class="sidebar-brand-logo">
@@ -128,6 +131,7 @@
         </div>
     </div>
 </aside>
+@endif
 
 <!-- ════════════════════ MAIN ════════════════════ -->
 <div class="redas-main" id="redasMain">

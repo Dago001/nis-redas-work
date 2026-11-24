@@ -20,6 +20,10 @@ class PrsDashboardController extends Controller
 {
     private function layoutFor(User $user): string
     {
+        if ($user->user_category === 'super_admin' || $user->role === 'super_admin') {
+            return 'super-admin.layout';
+        }
+
         return ReportAccess::isNationalViewer($user)
             ? 'admin.headquarters.layout'
             : 'desk-admin.layout';
