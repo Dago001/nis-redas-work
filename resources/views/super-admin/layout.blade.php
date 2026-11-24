@@ -40,7 +40,7 @@
             <span class="link-text">HQ Admin Portal</span>
         </a>
 
-        <div class="sidebar-section-label">Reporting &amp; Option C</div>
+        <div class="sidebar-section-label">Reporting &amp; Consolidation</div>
         <a href="{{ route('prs.dashboard') }}" class="sidebar-link {{ request()->routeIs('prs.dashboard') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-chart-pie"></i></span>
             <span class="link-text">PRS Central Dashboard</span>

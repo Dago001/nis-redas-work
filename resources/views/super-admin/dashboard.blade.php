@@ -92,7 +92,7 @@
     <div class="page-header" style="margin-bottom:20px;">
         <div>
             <h1 class="page-title">Super Admin Command Center</h1>
-            <p class="page-subtitle">National governance, identity &amp; access management, security auditing, and Option C reporting oversight.</p>
+            <p class="page-subtitle">National governance, identity &amp; access management, security auditing, and consolidated reporting oversight.</p>
         </div>
     </div>
 
@@ -136,8 +136,8 @@
         </a>
     </div>
 
-    {{-- Row 2: National Reporting & Option C KPIs --}}
-    <div class="sa-section-title"><i class="fas fa-chart-bar text-nis"></i> National Reporting &amp; Option C Oversight</div>
+    {{-- Row 2: National Reporting & Consolidation KPIs --}}
+    <div class="sa-section-title"><i class="fas fa-chart-bar text-nis"></i> National Reporting &amp; Consolidation Oversight</div>
     <div class="sa-kpi-grid">
         <a href="{{ route('superadmin.returns') }}" class="sa-kpi-card blue">
             <div class="sa-kpi-top">

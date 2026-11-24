@@ -6,7 +6,7 @@
 <main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
-        <h1 class="page-title">PRS Central Reporting Dashboard (Option C)</h1>
+        <h1 class="page-title">PRS Central Reporting Dashboard</h1>
         <p class="page-subtitle">Period: {{ $period }}. Original formation/section reports and Zonal/Directorate consolidated reports are tracked separately.</p>
     </div>
     <a href="{{ route('prs.indicators', ['period' => $period]) }}" class="btn-nis btn-outline-nis">Structured Indicators</a>
