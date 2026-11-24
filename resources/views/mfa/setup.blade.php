@@ -31,20 +31,27 @@
             align-items: stretch;
         }
 
+        @media (min-width: 901px) {
+            html, body, .mfa-split {
+                height: 100vh;
+                overflow: hidden;
+            }
+        }
+
         /* Left translucent glass side widget */
         .mfa-side {
-            width: 410px;
+            width: 390px;
             flex-shrink: 0;
             background: linear-gradient(165deg, rgba(5, 36, 20, 0.84) 0%, rgba(9, 28, 44, 0.88) 100%);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             border-right: 1px solid rgba(255, 255, 255, 0.12);
             color: #ffffff;
-            padding: 36px 32px;
+            padding: 28px 28px;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            gap: 26px;
+            gap: 20px;
         }
 
         .mfa-side-brand {
@@ -135,52 +142,52 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px 24px;
-            overflow-y: auto;
+            padding: 12px 24px;
+            overflow: hidden;
         }
 
         .mfa-card {
             width: 100%;
-            max-width: 450px;
+            max-width: 440px;
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.45);
-            border-radius: 20px;
+            border-radius: 18px;
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-            padding: 24px;
+            padding: 18px 22px;
         }
 
         .mfa-title {
             margin: 0;
             text-align: center;
-            font-size: 1.38rem;
+            font-size: 1.3rem;
             line-height: 1.2;
             font-weight: 600;
             color: #334155;
         }
 
         .mfa-subtitle {
-            margin: 6px 0 16px;
+            margin: 4px 0 10px;
             text-align: center;
             color: #475569;
-            font-size: .86rem;
-            line-height: 1.4;
+            font-size: .83rem;
+            line-height: 1.35;
         }
 
         .qr-panel {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 14px;
+            gap: 6px;
+            margin-bottom: 10px;
         }
 
         .qr-box {
             background: #ffffff;
             border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 8px;
             box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
             display: inline-flex;
             align-items: center;
@@ -188,15 +195,15 @@
         }
 
         .qr-box svg {
-            width: 158px !important;
-            height: 158px !important;
+            width: 132px !important;
+            height: 132px !important;
             display: block;
         }
 
         .secret-wrap { width: 100%; text-align: center; }
 
         .secret-label {
-            font-size: .7rem;
+            font-size: .68rem;
             font-weight: 700;
             color: #64748b;
             text-transform: uppercase;
@@ -205,35 +212,35 @@
 
         .secret-code {
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-            font-size: .82rem;
+            font-size: .8rem;
             font-weight: 600;
             color: #0f172a;
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 7px 10px;
+            border-radius: 8px;
+            padding: 6px 10px;
             word-break: break-all;
-            margin-top: 4px;
+            margin-top: 3px;
             user-select: all;
         }
 
         .secret-hint {
-            font-size: .73rem;
+            font-size: .71rem;
             color: #64748b;
-            margin: 5px 0 0;
+            margin: 3px 0 0;
         }
 
-        .auth-form-group { margin-bottom: 12px; }
+        .auth-form-group { margin-bottom: 10px; }
 
         .btn-cancel-mfa {
             width: 100%;
-            margin-top: 8px;
-            padding: 10px 16px;
-            border-radius: 12px;
+            margin-top: 6px;
+            padding: 8px 14px;
+            border-radius: 10px;
             background: transparent;
             color: #475569;
             border: 1px solid #cbd5e1;
-            font-size: .88rem;
+            font-size: .85rem;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
