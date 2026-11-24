@@ -180,20 +180,6 @@ function initAuthPage() {
         });
     });
 
-    /* Password toggle */
-    document.querySelectorAll('.pw-toggle').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const wrap = btn.closest('.pw-wrap, .auth-input-wrap') || btn.parentElement;
-            const input = wrap ? wrap.querySelector('input[type="password"], input[type="text"]') : null;
-            if (!input) return;
-            const isText = input.type === 'text';
-            input.type = isText ? 'password' : 'text';
-            btn.setAttribute('aria-pressed', String(!isText));
-            btn.querySelector('i')?.classList.toggle('fa-eye', isText);
-            btn.querySelector('i')?.classList.toggle('fa-eye-slash', !isText);
-        });
-    });
-
     /* Login button loading state */
     const loginForm = document.getElementById('loginForm');
     const loginBtn  = document.getElementById('loginBtn');
@@ -639,6 +625,21 @@ function showToast(message, type = 'info') {
     document.body.appendChild(toast);
     setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity .3s'; setTimeout(() => toast.remove(), 300); }, 4000);
 }
+
+/* Global password visibility toggle for all pages (login, reset, profile, admin) */
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.pw-toggle');
+    if (!btn) return;
+    e.preventDefault();
+    const wrap = btn.closest('.pw-wrap, .auth-input-wrap') || btn.parentElement;
+    const input = wrap ? wrap.querySelector('input[type="password"], input[type="text"]') : null;
+    if (!input) return;
+    const isText = input.type === 'text';
+    input.type = isText ? 'password' : 'text';
+    btn.setAttribute('aria-pressed', String(!isText));
+    btn.querySelector('i')?.classList.toggle('fa-eye', isText);
+    btn.querySelector('i')?.classList.toggle('fa-eye-slash', !isText);
+});
 
 /* Export for inline scripts */
 window.REDAS = { showToast, animateCounter };
