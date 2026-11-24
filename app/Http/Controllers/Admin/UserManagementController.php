@@ -125,6 +125,19 @@ class UserManagementController extends Controller
 
         $this->sendVerificationEmail($user);
 
+        \App\Services\AuditLogger::logCrud(
+            user: $request->user(),
+            action: 'user.created',
+            entityType: 'user',
+            entityId: $user->id,
+            details: [
+                'service_number' => $user->service_number,
+                'user_category' => $user->user_category,
+                'primary_location_type' => $user->primary_location_type,
+                'primary_location_code' => $user->primary_location_code,
+            ]
+        );
+
         return redirect()->route('admin.users')
             ->with('status', 'User created successfully.');
     }
@@ -210,6 +223,20 @@ class UserManagementController extends Controller
             'must_change_password' => !empty($validated['password']) ? true : $user->must_change_password,
         ]);
 
+        $changedFields = array_keys($user->getChanges());
+        $changedFields = array_values(array_diff($changedFields, ['password', 'remember_token', 'updated_at']));
+
+        \App\Services\AuditLogger::logCrud(
+            user: $request->user(),
+            action: 'user.updated',
+            entityType: 'user',
+            entityId: $user->id,
+            details: [
+                'changed_fields' => $changedFields,
+                'password_reset_by_admin' => ! empty($validated['password']),
+            ]
+        );
+
         return redirect()->route('admin.users.edit', $user)
             ->with('status', 'User updated successfully.');
     }
@@ -217,6 +244,14 @@ class UserManagementController extends Controller
     public function toggleStatus(User $user): RedirectResponse
     {
         $user->update(['is_enabled' => ! $user->is_enabled]);
+
+        \App\Services\AuditLogger::logCrud(
+            user: request()->user(),
+            action: 'user.status_toggled',
+            entityType: 'user',
+            entityId: $user->id,
+            details: ['is_enabled' => (bool) $user->is_enabled]
+        );
 
         return redirect()->route('admin.users')
             ->with('status', sprintf('User %s has been %s.', $user->name, $user->is_enabled ? 'enabled' : 'disabled'));
@@ -311,7 +346,7 @@ class UserManagementController extends Controller
 
     private function sendVerificationEmail(User $user): void
     {
-        $ttlSeconds = (int) env('AUTH_TOKEN_TTL_SECONDS', 3600);
+        $ttlSeconds = (int) config('auth.token_ttl', 3600);
         $rawToken = Str::random(64);
         $tokenHash = hash('sha256', $rawToken);
 
@@ -323,7 +358,7 @@ class UserManagementController extends Controller
             'used_at' => null,
         ]);
 
-        $frontendUrl = (string) env('APP_URL', 'https://nis-redas.laravel.cloud');
+        $frontendUrl = (string) config('app.url', 'http://localhost');
         $magicLink = rtrim($frontendUrl, '/').'/verify-email/'.$rawToken;
 
         try {

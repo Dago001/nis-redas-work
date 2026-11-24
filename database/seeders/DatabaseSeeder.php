@@ -20,12 +20,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $defaultPassword = app()->environment(['local', 'testing'])
+            ? 'password123'
+            : \Illuminate\Support\Str::password(20);
+
         $users = [
             [
                 'name' => 'Admin Test',
                 'service_number' => 'NIS/ADM/000',
                 'email' => 'admintest@nis.gov.ng',
-                'password' => Hash::make('password123'),
+                'password' => Hash::make($defaultPassword),
                 'role' => 'admin',
                 'user_category' => 'admin',
                 'primary_location_type' => 'headquarters',

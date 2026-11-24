@@ -110,22 +110,33 @@ class ConsolidationController extends Controller
             ->sortBy('code', SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
 
+        $trendStart = now()->subMonths(11)->startOfMonth();
+        $createdYm = \App\Support\DbExpr::yearMonth('created_at');
+        $updatedYm = \App\Support\DbExpr::yearMonth('updated_at');
+
+        $submissionsByMonth = Application::query()
+            ->selectRaw("{$createdYm} as ym, count(*) as aggregate")
+            ->where('created_at', '>=', $trendStart)
+            ->groupByRaw($createdYm)
+            ->pluck('aggregate', 'ym');
+
+        $approvalsByMonth = Application::query()
+            ->selectRaw("{$updatedYm} as ym, count(*) as aggregate")
+            ->where('status', 'approved')
+            ->where('updated_at', '>=', $trendStart)
+            ->groupByRaw($updatedYm)
+            ->pluck('aggregate', 'ym');
+
         $trendLabels = [];
         $submissions = [];
         $approvals = [];
 
         for ($i = 11; $i >= 0; $i--) {
             $month = now()->subMonths($i);
+            $ymKey = $month->format('Y-m');
             $trendLabels[] = $month->format('M Y');
-            $submissions[] = Application::query()
-                ->whereYear('created_at', $month->year)
-                ->whereMonth('created_at', $month->month)
-                ->count();
-            $approvals[] = Application::query()
-                ->where('status', 'approved')
-                ->whereYear('updated_at', $month->year)
-                ->whereMonth('updated_at', $month->month)
-                ->count();
+            $submissions[] = (int) ($submissionsByMonth[$ymKey] ?? 0);
+            $approvals[] = (int) ($approvalsByMonth[$ymKey] ?? 0);
         }
 
         $recentApproved = Application::query()

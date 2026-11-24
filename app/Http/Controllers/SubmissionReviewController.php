@@ -144,22 +144,23 @@ class SubmissionReviewController extends Controller
         $this->authorizeView($application, $user);
 
         if ($request->query('format') === 'pdf') {
+            \App\Services\AuditLogger::log($user, 'submission.downloaded', 'success', 'application', $application->id, ['format' => 'pdf']);
+
             return ReportPdfService::downloadSubmission($application);
         }
 
-        $filename = 'submission-' . $application->id . '.csv';
+        \App\Services\AuditLogger::log($user, 'submission.downloaded', 'success', 'application', $application->id, ['format' => 'csv']);
 
-        return response()->streamDownload(function () use ($application) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['Section', 'Field', 'Value']);
+        $filename = 'submission-'.$application->id.'.csv';
+
+        return \App\Support\CsvWriter::stream($filename, function ($out) use ($application): void {
+            \App\Support\CsvWriter::writeRow($out, ['Section', 'Field', 'Value']);
 
             $data = is_array($application->return_data) ? $application->return_data : [];
             foreach ($data as $section => $values) {
                 $this->flattenForCsv($out, (string) $section, '', $values);
             }
-
-            fclose($out);
-        }, $filename, ['Content-Type' => 'text/csv']);
+        });
     }
 
     /**
@@ -288,45 +289,46 @@ class SubmissionReviewController extends Controller
      */
     private function streamReportCsv($submissions): StreamedResponse
     {
-        return response()->streamDownload(function () use ($submissions) {
-            $out = fopen('php://output', 'w');
-            fputcsv($out, ['ID', 'Officer', 'Scope', 'Category', 'Report Period', 'Status', 'Submitted At']);
+        \App\Services\AuditLogger::log(
+            user: Auth::user(),
+            action: 'report.exported',
+            status: 'success',
+            entityType: 'report',
+            details: ['format' => 'csv', 'row_count' => count($submissions)]
+        );
+
+        return \App\Support\CsvWriter::stream('submissions-report-'.now()->format('Ymd-His').'.csv', function ($out) use ($submissions): void {
+            \App\Support\CsvWriter::writeRow($out, ['ID', 'Officer', 'Scope', 'Category', 'Report Period', 'Status', 'Submitted At']);
 
             foreach ($submissions as $submission) {
-                fputcsv($out, [
+                \App\Support\CsvWriter::writeRow($out, [
                     $submission->id,
                     optional($submission->user)->name ?? 'N/A',
                     $submission->scope_code,
                     $submission->category,
-                    $submission->return_data['report_period'] ?? '',
+                    $submission->report_period ?? ($submission->return_data['report_period'] ?? ''),
                     $submission->status,
                     optional($submission->created_at)->toDateTimeString(),
                 ]);
             }
-
-            fclose($out);
-        }, 'submissions-report-' . now()->format('Ymd-His') . '.csv', ['Content-Type' => 'text/csv']);
+        });
     }
 
     /**
-     * Write a nested return_data structure as flat CSV rows.
+     * Write a nested return_data structure as flat CSV rows with formula-injection protection.
      */
     private function flattenForCsv(mixed $out, string $section, string $prefix, mixed $value): void
     {
         if (is_array($value)) {
             foreach ($value as $key => $item) {
-                $field = $prefix === '' ? (string) $key : $prefix . '.' . $key;
+                $field = $prefix === '' ? (string) $key : $prefix.'.'.$key;
                 $this->flattenForCsv($out, $section, $field, $item);
             }
 
             return;
         }
 
-        if (is_bool($value)) {
-            $value = $value ? 'Yes' : 'No';
-        }
-
-        fputcsv($out, [$section, $prefix, $value ?? '']);
+        \App\Support\CsvWriter::writeRow($out, [$section, $prefix, $value]);
     }
 
     private function accessRole(?User $user): string

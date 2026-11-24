@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use LogicException;
 
 class AuditLog extends Model
 {
@@ -12,16 +13,27 @@ class AuditLog extends Model
 
     public $timestamps = false;
 
+    /**
+     * Only the redas:audit:prune command may flip this flag during controlled retention pruning.
+     */
+    public static bool $allowPrune = false;
+
     protected $fillable = [
         'user_id',
         'action',
         'entity_type',
         'entity_id',
+        'scope_code',
         'details',
         'ip_address',
         'location',
         'user_agent',
+        'request_id',
+        'http_method',
+        'route_name',
         'status',
+        'prev_hash',
+        'entry_hash',
         'created_at',
     ];
 
@@ -30,30 +42,34 @@ class AuditLog extends Model
         'created_at' => 'datetime',
     ];
 
+    protected static function booted(): void
+    {
+        static::updating(function (): void {
+            throw new LogicException('Audit logs are append-only and cannot be modified.');
+        });
+
+        static::deleting(function (): void {
+            if (! self::$allowPrune) {
+                throw new LogicException('Audit logs cannot be deleted outside controlled retention pruning.');
+            }
+        });
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Scope by action.
-     */
     public function scopeOfAction($query, string $action)
     {
         return $query->where('action', $action);
     }
 
-    /**
-     * Scope by status.
-     */
     public function scopeOfStatus($query, string $status)
     {
         return $query->where('status', $status);
     }
 
-    /**
-     * Scope by entity type.
-     */
     public function scopeOfEntity($query, string $entityType)
     {
         return $query->where('entity_type', $entityType);
