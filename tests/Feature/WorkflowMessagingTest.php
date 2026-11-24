@@ -145,30 +145,51 @@ class WorkflowMessagingTest extends TestCase
     {
         $this->disableAbac();
         $this->seedWorkflowTemplates();
-        Notification::fake();
+        \Illuminate\Support\Facades\Config::set('services.resend.key', 're_test_key');
+        \Illuminate\Support\Facades\Mail::fake();
 
         $user = $this->stateUser();
-        SubmissionWorkflow::create($user, ['report_period' => '2025-05']);
+        $application = SubmissionWorkflow::create($user, ['report_period' => '2025-05']);
 
-        Notification::assertSentTo($user, WorkflowNotification::class);
+        $this->assertDatabaseHas('notification_deliveries', [
+            'user_id' => $user->id,
+            'template_key' => 'submission_submitted',
+            'status' => 'accepted',
+            'idempotency_key' => "submission:{$application->id}:created",
+        ]);
     }
 
     public function test_submitter_receives_workflow_notification_email_on_approval_and_rejection(): void
     {
         $this->disableAbac();
         $this->seedWorkflowTemplates();
+        \Illuminate\Support\Facades\Config::set('services.resend.key', 're_test_key');
+        \Illuminate\Support\Facades\Mail::fake();
 
         $user = $this->stateUser('LA');
         $deskAdmin = $this->deskAdmin('LA', 'ZONE-A');
+        $zonalCommander = User::factory()->create([
+            'role' => 'zonal',
+            'user_category' => 'zonal_commander',
+            'primary_location_type' => 'zonal',
+            'primary_location_code' => 'ZONE-A',
+            'access_level' => 4,
+        ]);
         $application = SubmissionWorkflow::create($user, ['report_period' => '2025-05']);
 
-        Notification::fake();
-
         SubmissionWorkflow::approve($application, $deskAdmin);
-        Notification::assertSentTo($user, WorkflowNotification::class);
+        $this->assertDatabaseHas('notification_deliveries', [
+            'user_id' => $user->id,
+            'template_key' => 'submission_advanced',
+            'status' => 'accepted',
+        ]);
 
-        SubmissionWorkflow::reject($application, $deskAdmin, 'Incomplete data.');
-        Notification::assertSentTo($user, WorkflowNotification::class);
+        SubmissionWorkflow::reject($application, $zonalCommander, 'Incomplete data.');
+        $this->assertDatabaseHas('notification_deliveries', [
+            'user_id' => $user->id,
+            'template_key' => 'submission_rejected',
+            'status' => 'accepted',
+        ]);
     }
 
     /**
@@ -179,20 +200,20 @@ class WorkflowMessagingTest extends TestCase
     {
         $this->disableAbac();
         $this->seedWorkflowTemplates();
+        \Illuminate\Support\Facades\Config::set('services.resend.key', 're_test_key');
+        \Illuminate\Support\Facades\Mail::fake();
 
         $stateUser = $this->stateUser('KN');
         $directorateUser = $this->directorateUser('ICT');
         $cgisUser = $this->cgisUnitUser('actu');
 
-        Notification::fake();
-
         SubmissionWorkflow::create($stateUser, ['report_period' => '2025-05']);
         SubmissionWorkflow::create($directorateUser, ['report_period' => '2025-05']);
         SubmissionWorkflow::create($cgisUser, ['report_period' => '2025-05']);
 
-        Notification::assertSentTo($stateUser, WorkflowNotification::class);
-        Notification::assertSentTo($directorateUser, WorkflowNotification::class);
-        Notification::assertSentTo($cgisUser, WorkflowNotification::class);
+        $this->assertDatabaseHas('notification_deliveries', ['user_id' => $stateUser->id, 'status' => 'accepted']);
+        $this->assertDatabaseHas('notification_deliveries', ['user_id' => $directorateUser->id, 'status' => 'accepted']);
+        $this->assertDatabaseHas('notification_deliveries', ['user_id' => $cgisUser->id, 'status' => 'accepted']);
     }
 
     public function test_workflow_notification_is_skipped_without_exception_when_template_missing(): void

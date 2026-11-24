@@ -60,6 +60,17 @@ class SecureFileStorage
         }
 
         $detectedMime = strtolower((string) ($file->getMimeType() ?: ''));
+        $realPath = $file->getRealPath();
+        if (is_string($realPath) && is_file($realPath) && function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo !== false) {
+                $contentMime = finfo_file($finfo, $realPath);
+                finfo_close($finfo);
+                if (is_string($contentMime) && $contentMime !== '') {
+                    $detectedMime = strtolower($contentMime);
+                }
+            }
+        }
         if ($detectedMime === '' || ! in_array($detectedMime, $map[$ext], true)) {
             throw ValidationException::withMessages(['documents' => ["File content MIME type [{$detectedMime}] does not match .{$ext}."]]);
         }

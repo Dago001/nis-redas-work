@@ -26,10 +26,10 @@ class SendSubmissionAdvancedNotification implements ShouldQueue
             variables: [
                 'name' => $user->name,
                 'reference' => $ref,
-                'stage' => $event->newStage,
+                'stage' => $event->stage,
                 'action_url' => route('user.returns.show', $application),
             ],
-            idempotencyKey: "submission:{$application->id}:advanced:{$event->newStage}:{$pathCount}"
+            idempotencyKey: "submission:{$application->id}:advanced:{$event->stage}:{$pathCount}"
         );
     }
 }
