@@ -183,10 +183,12 @@ function initAuthPage() {
     /* Password toggle */
     document.querySelectorAll('.pw-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-            const input = btn.previousElementSibling;
+            const wrap = btn.closest('.pw-wrap, .auth-input-wrap') || btn.parentElement;
+            const input = wrap ? wrap.querySelector('input[type="password"], input[type="text"]') : null;
             if (!input) return;
             const isText = input.type === 'text';
             input.type = isText ? 'password' : 'text';
+            btn.setAttribute('aria-pressed', String(!isText));
             btn.querySelector('i')?.classList.toggle('fa-eye', isText);
             btn.querySelector('i')?.classList.toggle('fa-eye-slash', !isText);
         });

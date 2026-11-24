@@ -209,7 +209,11 @@
                         class="auth-input @error('username') is-invalid @enderror"
                         id="username"
                         name="username"
-                        placeholder="Enter your service number (e.g. NIS/001/1234)"
+                        inputmode="numeric"
+                        pattern="[0-9]{4,5}"
+                        minlength="4"
+                        maxlength="5"
+                        placeholder="Enter 4 or 5 digit service number (e.g. 12345)"
                         value="{{ old('username') }}"
                         autocomplete="username"
                         required>

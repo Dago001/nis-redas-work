@@ -64,7 +64,7 @@ class MessagingResilienceTest extends TestCase
     public function test_login_otp_returns_friendly_error_and_burns_challenge_when_email_delivery_fails(): void
     {
         $user = User::factory()->create([
-            'service_number' => 'NIS/AA/9999',
+            'service_number' => '9999',
             'email' => 'otpuser@example.com',
             'password' => Hash::make('SecretPass123!'),
             'email_verified_at' => now(),

@@ -84,7 +84,7 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'service_number' => ['required', 'string', 'regex:/^NIS\/[A-Z]{3}\/\d{4}$/', 'unique:users'],
+            'service_number' => ['required', 'string', 'regex:/^[0-9]{4,5}$/', 'unique:users'],
             'role' => 'required|in:admin,zonal,state,officer,directorate,unit_officer,unit_admin',
             'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
             'primary_location_type' => 'required|in:state,directorate,zonal,unit,headquarters',
@@ -183,7 +183,7 @@ class UserManagementController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'service_number' => ['required', 'string', 'regex:/^NIS\/[A-Z]{3}\/\d{4}$/', 'unique:users,service_number,'.$user->id],
+            'service_number' => ['required', 'string', 'regex:/^[0-9]{4,5}$/', 'unique:users,service_number,'.$user->id],
             'role' => 'required|in:admin,zonal,state,officer,directorate,unit_officer,unit_admin',
             'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
             'primary_location_type' => 'required|in:state,directorate,zonal,unit,headquarters',

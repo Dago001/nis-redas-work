@@ -19,7 +19,7 @@ class AuthLoginTest extends TestCase
     {
         return User::create(array_merge([
             'name' => 'Login Test User',
-            'service_number' => 'NIS/OF/7777',
+            'service_number' => '7777',
             'email' => 'login@example.com',
             'email_verified_at' => now(),
             'password' => Hash::make($this->password),
@@ -69,7 +69,7 @@ class AuthLoginTest extends TestCase
     {
         $user = $this->createUser([
             'name' => 'Super Admin Test',
-            'service_number' => 'NIS/AD/1234',
+            'service_number' => '1234',
             'email' => 'superadmin@example.com',
             'role' => 'admin',
             'user_category' => 'super_admin',
@@ -92,7 +92,7 @@ class AuthLoginTest extends TestCase
     {
         $user = $this->createUser([
             'name' => 'Bad Password Test',
-            'service_number' => 'NIS/OF/8888',
+            'service_number' => '8888',
             'email' => 'wrongrole@example.com',
         ]);
 
@@ -110,7 +110,7 @@ class AuthLoginTest extends TestCase
     {
         $user = $this->createUser([
             'name' => 'State Dashboard User',
-            'service_number' => 'NIS/OF/9999',
+            'service_number' => '9999',
             'email' => 'state-dashboard@example.com',
         ]);
 
@@ -125,7 +125,7 @@ class AuthLoginTest extends TestCase
     {
         $user = $this->createUser([
             'name' => 'Admin Dashboard User',
-            'service_number' => 'NIS/AD/9999',
+            'service_number' => '9999',
             'email' => 'admin-dashboard@example.com',
             'role' => 'admin',
             'user_category' => 'admin',
@@ -147,7 +147,7 @@ class AuthLoginTest extends TestCase
     public function test_login_rejects_email_and_requires_service_number(): void
     {
         $user = $this->createUser([
-            'service_number' => 'NIS/SN/4321',
+            'service_number' => '4321',
             'email' => 'sn-only@example.com',
         ]);
 
@@ -164,7 +164,7 @@ class AuthLoginTest extends TestCase
     public function test_password_policy_requires_min_6_chars_upper_lower_number_and_special_char(): void
     {
         $user = $this->createUser([
-            'service_number' => 'NIS/PW/1111',
+            'service_number' => '1111',
             'email' => 'pw-policy@example.com',
         ]);
 

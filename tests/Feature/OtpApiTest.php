@@ -18,7 +18,7 @@ class OtpApiTest extends TestCase
     private function createUser(string $role = 'officer'): User
     {
         return User::factory()->create([
-            'service_number' => 'NIS/AA/1234',
+            'service_number' => '1234',
             'role' => $role,
             'email' => 'user@example.com',
             'password' => Hash::make('SecretPass123!'),

@@ -79,6 +79,21 @@
             margin-bottom: 16px;
         }
 
+        .pw-wrap { position: relative; }
+        .pw-wrap .pw-toggle {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--gray-400);
+            padding: 4px;
+        }
+        .pw-wrap .pw-toggle:hover { color: var(--gray-600); }
+        .pw-wrap input { padding-right: 40px; }
+
         .password-hint {
             font-size: .78rem;
             color: #475569;
@@ -135,7 +150,7 @@
                 <label class="form-label-nis" for="password">
                     <i class="fas fa-lock me-1 text-nis"></i> New Password
                 </label>
-                <div class="auth-input-wrap">
+                <div class="auth-input-wrap pw-wrap">
                     <input type="password"
                         class="auth-input @error('password') is-invalid @enderror"
                         id="password"
@@ -145,6 +160,9 @@
                         minlength="6"
                         required>
                     <span class="auth-input-icon"><i class="fas fa-lock"></i></span>
+                    <button type="button" class="pw-toggle" aria-label="Toggle password visibility">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
                 <div class="password-hint">
                     Minimum 6 characters: must include uppercase, lowercase, number, and special character.
@@ -158,7 +176,7 @@
                 <label class="form-label-nis" for="password_confirmation">
                     <i class="fas fa-lock me-1 text-nis"></i> Confirm New Password
                 </label>
-                <div class="auth-input-wrap">
+                <div class="auth-input-wrap pw-wrap">
                     <input type="password"
                         class="auth-input"
                         id="password_confirmation"
@@ -168,6 +186,9 @@
                         minlength="6"
                         required>
                     <span class="auth-input-icon"><i class="fas fa-lock"></i></span>
+                    <button type="button" class="pw-toggle" aria-label="Toggle confirm password visibility">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
             </div>
 

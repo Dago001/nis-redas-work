@@ -39,11 +39,11 @@ class SeedDemoCommand extends Command
         );
 
         $accounts = [
-            ['name' => 'Demo Lagos Officer', 'service_number' => 'NIS/DMO/0001', 'email' => 'demo.officer@nis.local', 'role' => 'officer', 'user_category' => 'state_user', 'primary_location_type' => 'state', 'primary_location_code' => 'LA', 'access_level' => 0],
-            ['name' => 'Demo Lagos Desk Admin', 'service_number' => 'NIS/DMO/0002', 'email' => 'demo.desk@nis.local', 'role' => 'state', 'user_category' => 'desk_admin', 'primary_location_type' => 'state', 'primary_location_code' => 'LA', 'assigned_zonal_command_code' => 'ZONE-A', 'access_level' => 1],
-            ['name' => 'Demo Zone A Commander', 'service_number' => 'NIS/DMO/0003', 'email' => 'demo.zonal@nis.local', 'role' => 'zonal', 'user_category' => 'zonal_commander', 'primary_location_type' => 'zonal', 'primary_location_code' => 'ZONE-A', 'assigned_zonal_command_code' => 'ZONE-A', 'access_level' => 4],
-            ['name' => 'Demo HQ Admin', 'service_number' => 'NIS/DMO/0004', 'email' => 'demo.hq@nis.local', 'role' => 'admin', 'user_category' => 'hq_admin', 'primary_location_type' => 'headquarters', 'primary_location_code' => 'HQ', 'access_level' => 5],
-            ['name' => 'Demo PRS Admin', 'service_number' => 'NIS/DMO/0005', 'email' => 'demo.prs@nis.local', 'role' => 'admin', 'user_category' => 'directorate_admin', 'primary_location_type' => 'directorate', 'primary_location_code' => 'PRS', 'assigned_directorate_code' => 'PRS', 'access_level' => 3],
+            ['name' => 'Demo Lagos Officer', 'service_number' => '10001', 'email' => 'demo.officer@nis.local', 'role' => 'officer', 'user_category' => 'state_user', 'primary_location_type' => 'state', 'primary_location_code' => 'LA', 'access_level' => 0],
+            ['name' => 'Demo Lagos Desk Admin', 'service_number' => '10002', 'email' => 'demo.desk@nis.local', 'role' => 'state', 'user_category' => 'desk_admin', 'primary_location_type' => 'state', 'primary_location_code' => 'LA', 'assigned_zonal_command_code' => 'ZONE-A', 'access_level' => 1],
+            ['name' => 'Demo Zone A Commander', 'service_number' => '10003', 'email' => 'demo.zonal@nis.local', 'role' => 'zonal', 'user_category' => 'zonal_commander', 'primary_location_type' => 'zonal', 'primary_location_code' => 'ZONE-A', 'assigned_zonal_command_code' => 'ZONE-A', 'access_level' => 4],
+            ['name' => 'Demo HQ Admin', 'service_number' => '10004', 'email' => 'demo.hq@nis.local', 'role' => 'admin', 'user_category' => 'hq_admin', 'primary_location_type' => 'headquarters', 'primary_location_code' => 'HQ', 'access_level' => 5],
+            ['name' => 'Demo PRS Admin', 'service_number' => '10005', 'email' => 'demo.prs@nis.local', 'role' => 'admin', 'user_category' => 'directorate_admin', 'primary_location_type' => 'directorate', 'primary_location_code' => 'PRS', 'assigned_directorate_code' => 'PRS', 'access_level' => 3],
         ];
 
         $this->warn('LOCAL DEMO ACCOUNTS (random passwords generated for this session only):');

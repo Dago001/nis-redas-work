@@ -13,7 +13,7 @@ class AuthRegistrationTest extends TestCase
     {
         $response = $this->from('/register')->post('/register', [
             'name' => 'Jane Doe',
-            'service_number' => 'NIS/ADM/1234',
+            'service_number' => '1234',
             'role' => 'officer',
             'email' => 'jane@example.com',
             'password' => 'Password123!',

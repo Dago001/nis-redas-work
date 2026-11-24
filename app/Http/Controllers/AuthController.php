@@ -45,7 +45,7 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'service_number' => ['required', 'string', 'regex:/^NIS\/[A-Z]{3}\/[0-9]{4}$/', 'unique:users'],
+            'service_number' => ['required', 'string', 'regex:/^[0-9]{4,5}$/', 'unique:users'],
             'role' => 'required|in:admin,zonal,state,officer,directorate',
             'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_commander,hq_admin,admin,super_admin',
             'primary_location_type' => 'required|in:state,directorate,zonal,headquarters',
@@ -55,7 +55,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'terms' => 'accepted',
         ], [
-            'service_number.regex' => 'Service number must be in the format NIS/XX/1234.',
+            'service_number.regex' => 'Service number must be 4 or 5 digits only (e.g. 1234 or 12345).',
         ]);
 
         $normalized = $this->normalizeAccessProfile(
@@ -144,15 +144,15 @@ class AuthController extends Controller
 
         $loginInput = trim((string) ($request->input('username') ?? $request->input('login') ?? ''));
 
-        if (str_contains($loginInput, '@') || filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
+        if (preg_match('/^[0-9]{4,5}$/', $loginInput) !== 1) {
             throw ValidationException::withMessages([
-                'username' => ['Please sign in using your Service Number (Username) and password.'],
-                'login' => ['Please sign in using your Service Number (Username) and password.'],
+                'username' => ['Service number must be 4 or 5 digits only (e.g. 1234 or 12345).'],
+                'login' => ['Service number must be 4 or 5 digits only (e.g. 1234 or 12345).'],
             ]);
         }
 
         $field = 'service_number';
-        $normalizedLogin = Str::upper($loginInput);
+        $normalizedLogin = $loginInput;
         $throttleKey = $this->throttleKey($normalizedLogin, $request);
 
         if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {

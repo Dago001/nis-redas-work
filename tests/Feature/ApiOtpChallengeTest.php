@@ -35,7 +35,7 @@ class ApiOtpChallengeTest extends TestCase
     private function makeUser(array $overrides = []): User
     {
         return User::factory()->create(array_merge([
-            'service_number' => 'NIS/OF/4321',
+            'service_number' => '4321',
             'email' => 'officer.otp@nis.gov.ng',
             'password' => Hash::make('StrongPass123!'),
             'role' => 'officer',
@@ -187,7 +187,7 @@ class ApiOtpChallengeTest extends TestCase
 
     public function test_disabled_account_rejected_at_login_and_between_challenge_and_verify(): void
     {
-        $disabled = $this->makeUser(['is_enabled' => false, 'email' => 'disabled@nis.gov.ng', 'service_number' => 'NIS/OF/4322']);
+        $disabled = $this->makeUser(['is_enabled' => false, 'email' => 'disabled@nis.gov.ng', 'service_number' => '4322']);
 
         $this->postJson('/api/login', [
             'login' => $disabled->email,
@@ -195,7 +195,7 @@ class ApiOtpChallengeTest extends TestCase
         ])->assertStatus(403)->assertJsonPath('message', 'ACCOUNT_DISABLED');
 
         // Enabled at login, disabled before OTP verify
-        $user = $this->makeUser(['email' => 'later.disabled@nis.gov.ng', 'service_number' => 'NIS/OF/4323']);
+        $user = $this->makeUser(['email' => 'later.disabled@nis.gov.ng', 'service_number' => '4323']);
         [$rawToken] = $this->createKnownChallenge($user, '555666');
         $user->update(['is_enabled' => false]);
 
@@ -207,13 +207,13 @@ class ApiOtpChallengeTest extends TestCase
 
     public function test_unverified_email_and_must_change_password_are_enforced(): void
     {
-        $unverified = $this->makeUser(['email_verified_at' => null, 'email' => 'unverified@nis.gov.ng', 'service_number' => 'NIS/OF/4324']);
+        $unverified = $this->makeUser(['email_verified_at' => null, 'email' => 'unverified@nis.gov.ng', 'service_number' => '4324']);
         $this->postJson('/api/login', [
             'login' => $unverified->email,
             'password' => 'StrongPass123!',
         ])->assertStatus(403)->assertJsonPath('message', 'EMAIL_NOT_VERIFIED');
 
-        $mustChange = $this->makeUser(['must_change_password' => true, 'email' => 'mustchange@nis.gov.ng', 'service_number' => 'NIS/OF/4325']);
+        $mustChange = $this->makeUser(['must_change_password' => true, 'email' => 'mustchange@nis.gov.ng', 'service_number' => '4325']);
         [$rawToken] = $this->createKnownChallenge($mustChange, '777888');
         $this->postJson('/api/otp/verify', [
             'challenge_token' => $rawToken,

@@ -21,7 +21,7 @@ class AccountSecurityTest extends TestCase
     {
         return User::create(array_merge([
             'name' => 'Security Test User',
-            'service_number' => 'NIS/SC/0001',
+            'service_number' => '0001',
             'email' => 'security-test@example.com',
             'email_verified_at' => now(),
             'password' => Hash::make($this->password),
@@ -88,7 +88,7 @@ class AccountSecurityTest extends TestCase
 
         $unverified = $this->createUser(['email_verified_at' => null]);
         $verified = $this->createUser([
-            'service_number' => 'NIS/SC/0002',
+            'service_number' => '0002',
             'email' => 'verified@example.com',
         ]);
 
