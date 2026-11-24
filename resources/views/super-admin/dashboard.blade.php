@@ -13,7 +13,6 @@
     .sa-kpi-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-top: 3px solid #006633;
         border-radius: 14px;
         padding: 16px 18px;
         box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
@@ -28,12 +27,6 @@
         transform: translateY(-2px);
         box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     }
-    .sa-kpi-card.blue { border-top-color: #2563eb; }
-    .sa-kpi-card.green { border-top-color: #16a34a; }
-    .sa-kpi-card.amber { border-top-color: #d97706; }
-    .sa-kpi-card.red { border-top-color: #dc2626; }
-    .sa-kpi-card.purple { border-top-color: #7c3aed; }
-    .sa-kpi-card.teal { border-top-color: #0d9488; }
 
     .sa-kpi-top {
         display: flex;
@@ -60,8 +53,8 @@
     }
     .sa-kpi-value {
         font-size: 1.75rem;
-        font-weight: 800;
-        color: #0f172a;
+        font-weight: 500;
+        color: #1e293b;
         line-height: 1.1;
     }
     .sa-kpi-sub {
@@ -100,23 +93,6 @@
         <div>
             <h1 class="page-title">Super Admin Command Center</h1>
             <p class="page-subtitle">National governance, identity &amp; access management, security auditing, and Option C reporting oversight.</p>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <a href="{{ route('admin.users.create') }}" class="btn-nis btn-primary-nis">
-                <i class="fas fa-user-plus"></i> Create User
-            </a>
-            <a href="{{ route('admin.users') }}" class="btn-nis btn-outline-nis">
-                <i class="fas fa-users-cog"></i> Manage Users
-            </a>
-            <a href="{{ route('prs.dashboard') }}" class="btn-nis btn-outline-nis">
-                <i class="fas fa-chart-pie"></i> PRS Dashboard
-            </a>
-            <a href="{{ route('admin.audit-log.index') }}" class="btn-nis btn-outline-nis">
-                <i class="fas fa-shield-halved"></i> Audit Logs
-            </a>
-            <a href="{{ route('admin.settings.index') }}" class="btn-nis btn-ghost">
-                <i class="fas fa-cogs"></i> Settings
-            </a>
         </div>
     </div>
 

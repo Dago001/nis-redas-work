@@ -815,7 +815,7 @@
 
 .spinner {
     border: 3px solid #e5e7eb;
-    border-top: 3px solid var(--fa-primary);
+    border-top: 1px solid #e2e8f0;
     border-radius: 50%;
     width: 24px;
     height: 24px;

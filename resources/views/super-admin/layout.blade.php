@@ -101,9 +101,6 @@
             <a href="{{ route('superadmin.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">Super Admin</a>
         </div>
         <div class="topbar-right">
-            <a href="{{ route('admin.users.create') }}" class="btn-nis btn-primary-nis btn-sm hide-on-mobile" style="text-decoration:none;">
-                <i class="fas fa-user-plus"></i> Create User
-            </a>
             <div style="position:relative;">
                 <button class="topbar-user" id="userMenuBtn" style="border:none;background:transparent;cursor:pointer;">
                     <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'SA', 0, 2)) }}</div>

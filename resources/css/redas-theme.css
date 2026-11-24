@@ -540,14 +540,6 @@ body {
     box-shadow: var(--shadow-md);
 }
 
-.stat-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    background: var(--stat-color, var(--nis-600));
-}
-
 .stat-card.green  { --stat-color: var(--nis-600); }
 .stat-card.gold   { --stat-color: var(--gold-500); }
 .stat-card.danger { --stat-color: var(--color-danger); }
