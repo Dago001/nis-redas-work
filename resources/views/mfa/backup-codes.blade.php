@@ -12,88 +12,166 @@
     @laravelPWA
 
     <style>
-        .backup-code {
-            font-family: monospace;
-            font-size: 1rem;
-            letter-spacing: 0.05em;
-            background: var(--gray-50);
-            border: 1px dashed var(--gray-300);
-            border-radius: var(--radius-md);
-            padding: 10px 14px;
+        *, *::before, *::after { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .mfa-page {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+            background:
+                linear-gradient(135deg, rgba(6, 36, 20, 0.58) 0%, rgba(10, 25, 47, 0.66) 100%),
+                url("{{ asset('assets/images/nis-hq-bg.jpg') }}") center center / cover no-repeat fixed;
+        }
+
+        .mfa-card {
+            width: 100%;
+            max-width: 460px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            border-radius: 20px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+            padding: 28px 24px;
+        }
+
+        .mfa-brand {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .mfa-brand img {
+            width: 36px;
+            height: 36px;
+            object-fit: contain;
+        }
+
+        .mfa-brand-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--nis-700);
+            letter-spacing: .02em;
+        }
+
+        .mfa-title {
+            margin: 0;
             text-align: center;
+            font-size: 1.45rem;
+            line-height: 1.2;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .mfa-subtitle {
+            margin: 8px 0 18px;
+            text-align: center;
+            color: #475569;
+            font-size: .88rem;
+            line-height: 1.45;
+        }
+
+        .backup-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .backup-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: .92rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: #0f172a;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            padding: 9px 10px;
+            text-align: center;
+            user-select: all;
+        }
+
+        .btn-cancel-mfa {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: transparent;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            font-size: .9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-cancel-mfa:hover {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+
+        @media (max-width: 576px) {
+            .mfa-page { padding: 16px 12px; }
+            .mfa-card { border-radius: 16px; padding: 22px 16px; }
+            .mfa-title { font-size: 1.3rem; }
         }
     </style>
 </head>
-<body class="auth-page">
+<body>
 
 @include('partials.preloader')
 
-<div class="auth-split">
-
-    <!-- ─── Left Panel: Branding ─── -->
-    <aside class="auth-left">
-        <div class="auth-brand animate-fade-up">
-            <img src="{{ asset('assets/images/nis.png') }}" alt="NIS" class="auth-brand-logo">
-            <div class="auth-brand-name">NIS&nbsp;REDAS</div>
-            <div class="auth-brand-sub">Reporting Dashboard &amp; Archiving System</div>
-            <div style="width:40px;height:3px;background:var(--gold-500);border-radius:2px;margin-top:12px;"></div>
+<div class="mfa-page">
+    <main class="mfa-card">
+        <div class="mfa-brand">
+            <img src="{{ asset('assets/images/nis.png') }}" alt="NIS Logo">
+            <span class="mfa-brand-name">NIS REDAS</span>
         </div>
 
-        <div class="auth-features animate-fade-up delay-2">
-            @foreach([
-                ['fas fa-save',      'Save These Codes',      'Store them in a password manager or print them. You will not see them again.'],
-                ['fas fa-lock',      'Single Use Only',     'Each code can be used once if you lose access to your authenticator app.'],
-                ['fas fa-shield-alt','Do Not Share',        'Backup codes grant account access — keep them confidential.'],
-            ] as [$icon, $title, $desc])
-            <div class="auth-feature-item">
-                <div class="auth-feature-icon"><i class="{{ $icon }}"></i></div>
-                <div class="auth-feature-text">
-                    <div class="auth-feature-title">{{ $title }}</div>
-                    <div class="auth-feature-desc">{{ $desc }}</div>
-                </div>
-            </div>
+        <h1 class="mfa-title">Authenticator Enabled</h1>
+        <p class="mfa-subtitle">Save these single-use backup codes in a safe place before continuing.</p>
+
+        <div style="background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:var(--radius-md);padding:10px 14px;font-size:.84rem;margin-bottom:16px;display:flex;gap:8px;align-items:flex-start;">
+            <i class="fas fa-check-circle" style="margin-top:2px;flex-shrink:0;"></i>
+            <span>Your authenticator is active. These codes recover access if your phone is unavailable.</span>
+        </div>
+
+        <div class="backup-grid">
+            @foreach($codes as $code)
+            <div class="backup-code">{{ $code }}</div>
             @endforeach
         </div>
-    </aside>
 
-    <!-- ─── Right Panel: Backup Codes ─── -->
-    <main class="auth-right">
-        <div class="auth-right-inner animate-fade-up">
+        <form method="POST" action="{{ route('mfa.complete') }}">
+            @csrf
+            <button type="submit" class="btn-auth">
+                <i class="fas fa-arrow-right"></i>
+                <span class="btn-text">Continue</span>
+            </button>
+        </form>
 
-            <div style="margin-bottom:24px;">
-                <h1 class="auth-welcome-title">MFA Enabled Successfully</h1>
-                <p class="auth-welcome-sub">Multi-factor authentication is now active on your account. Save your backup codes before continuing.</p>
-            </div>
-
-            <div style="background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:var(--radius-md);padding:12px 16px;font-size:.875rem;margin-bottom:24px;display:flex;gap:10px;align-items:flex-start;">
-                <i class="fas fa-check-circle" style="margin-top:2px;flex-shrink:0;"></i>
-                <span>Your authenticator was verified. These codes are the only way to recover access if your device is lost.</span>
-            </div>
-
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px;">
-                @foreach($codes as $index => $code)
-                <div class="backup-code">{{ $code }}</div>
-                @endforeach
-            </div>
-
-            <form method="POST" action="{{ route('mfa.complete') }}" novalidate>
-                @csrf
-
-                <button type="submit" class="btn-auth" style="margin-bottom:12px;">
-                    <i class="fas fa-arrow-right"></i>
-                    <span class="btn-text">Continue to Dashboard</span>
-                </button>
-            </form>
-
-            <form method="POST" action="{{ route('mfa.cancel') }}" style="margin:0;">
-                @csrf
-                <button type="submit" class="btn-auth" style="background:transparent;color:var(--gray-500);border:1px solid var(--gray-300);">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span class="btn-text">Return to Login</span>
-                </button>
-            </form>
-
-        </div>
+        <form method="POST" action="{{ route('mfa.cancel') }}" style="margin:0;">
+            @csrf
+            <button type="submit" class="btn-cancel-mfa">
+                <i class="fas fa-sign-in-alt"></i> Return to Sign In
+            </button>
+        </form>
     </main>
 </div>
 
