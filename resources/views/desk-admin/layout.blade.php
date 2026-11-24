@@ -49,6 +49,18 @@
             <span class="link-icon"><i class="fas fa-bell"></i></span>
             <span class="link-text">Notifications</span>
         </a>
+        @if(in_array(auth()->user()?->user_category, ['zonal_commander', 'directorate_admin'], true))
+        <a href="{{ route('consolidated.index') }}" class="sidebar-link {{ request()->routeIs('consolidated.*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-layer-group"></i></span>
+            <span class="link-text">Consolidated Reports</span>
+        </a>
+        @endif
+        @can('viewPrsDashboard')
+        <a href="{{ route('prs.dashboard') }}" class="sidebar-link {{ request()->routeIs('prs.*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-chart-line"></i></span>
+            <span class="link-text">PRS Reporting</span>
+        </a>
+        @endcan
     </nav>
 </aside>
 

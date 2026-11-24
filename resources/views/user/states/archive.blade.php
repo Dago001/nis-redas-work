@@ -180,6 +180,49 @@
             </div>
         </div>
 
+        <!-- Uploaded Archive Documents (Private Storage) -->
+        <div class="redas-card animate-fade-up delay-2" style="margin-bottom:24px;">
+            <div class="card-head">
+                <div class="card-head-title">
+                    <div class="card-head-icon" style="background:var(--nis-50);color:var(--nis-600);"><i class="fas fa-folder-open"></i></div>
+                    Uploaded Archive Documents
+                </div>
+            </div>
+            <div class="card-body">
+                @if(isset($archiveDocuments) && count($archiveDocuments) > 0)
+                <div class="table-responsive">
+                    <table class="nis-table">
+                        <thead>
+                            <tr><th>Title</th><th>Type</th><th>Period</th><th>File</th><th>Size</th><th>Uploaded</th><th>Action</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach($archiveDocuments as $doc)
+                            <tr>
+                                <td><strong>{{ $doc->title }}</strong></td>
+                                <td>{{ ucwords(str_replace('_', ' ', $doc->doc_type)) }}</td>
+                                <td>{{ $doc->report_period ?? '—' }}</td>
+                                <td>{{ $doc->original_name }}</td>
+                                <td>{{ number_format($doc->size_bytes / 1024, 1) }} KB</td>
+                                <td>{{ $doc->created_at?->format('d M Y') }}</td>
+                                <td>
+                                    <a href="{{ route('user.archive.download', $doc) }}" class="btn-nis btn-outline-nis btn-sm">
+                                        <i class="fas fa-download"></i> Download
+                                    </a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @if(method_exists($archiveDocuments, 'links'))
+                    <div style="margin-top:12px;">{{ $archiveDocuments->links() }}</div>
+                @endif
+                @else
+                    <p style="color:var(--gray-500);font-size:.86rem;margin:0;">No archive documents uploaded yet.</p>
+                @endif
+            </div>
+        </div>
+
     </main>
 
 <script>

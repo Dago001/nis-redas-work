@@ -161,23 +161,22 @@
                         </div>
                     </div>
                     <div class="card-body no-pad">
-                        @foreach([
-                            ['April 2025 Monthly Return',  'PDF',   '27 Apr 2025', 'fas fa-file-pdf',   '#dc2626'],
-                            ['Q1 2025 Quarterly Return',   'PDF',   '05 Apr 2025', 'fas fa-file-pdf',   '#dc2626'],
-                            ['Full Data Export — 2025',    'Excel', '01 Apr 2025', 'fas fa-file-excel', '#16a34a'],
-                            ['Submission Summary YTD',     'PDF',   '31 Mar 2025', 'fas fa-file-pdf',   '#dc2626'],
-                        ] as [$name, $fmt, $date, $icon, $color])
+                        @forelse($recentReports ?? [] as $rep)
                         <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--gray-100);">
-                            <i class="{{ $icon }}" style="color:{{ $color }};font-size:1.2rem;flex-shrink:0;"></i>
+                            <i class="fas fa-file-{{ $rep->format === 'pdf' ? 'pdf' : ($rep->format === 'excel' ? 'excel' : 'csv') }}" style="color:var(--nis-600);font-size:1.2rem;flex-shrink:0;"></i>
                             <div style="flex:1;min-width:0;">
-                                <div style="font-size:.82rem;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ $name }}</div>
-                                <div style="font-size:.72rem;color:var(--gray-400);">{{ $fmt }} &bull; {{ $date }}</div>
+                                <div style="font-size:.82rem;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ ucwords(str_replace('_', ' ', $rep->report_type)) }}</div>
+                                <div style="font-size:.72rem;color:var(--gray-400);">{{ strtoupper($rep->format) }} &bull; {{ ucfirst($rep->status) }} &bull; {{ $rep->created_at?->format('d M Y H:i') }}</div>
                             </div>
-                            <button class="btn-nis btn-ghost btn-sm" title="Download" onclick="REDAS.showToast('Downloading…','success')">
+                            @if($rep->status === 'completed')
+                            <a href="{{ route('user.reports.download', $rep) }}" class="btn-nis btn-ghost btn-sm" title="Download">
                                 <i class="fas fa-download"></i>
-                            </button>
+                            </a>
+                            @endif
                         </div>
-                        @endforeach
+                        @empty
+                        <div style="padding:16px;color:var(--gray-500);font-size:.84rem;">No generated reports yet. Use the Report Builder to generate a PDF, Excel, or CSV report.</div>
+                        @endforelse
                     </div>
                 </div>
             </div>

@@ -184,17 +184,19 @@ class SubmissionReviewController extends Controller
         ));
 
         $path = $files[$index] ?? null;
-        abort_unless(is_string($path) && $path !== '', 404);
+        $safePath = \App\Services\Files\SecureFileStorage::safePath(is_string($path) ? $path : null);
+        abort_if($safePath === null, 404);
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk();
-        abort_unless($disk->exists($path), 404);
+        \App\Services\AuditLogger::log(
+            user: $user,
+            action: $request->boolean('download') ? 'document.downloaded' : 'document.viewed',
+            status: 'success',
+            entityType: 'application',
+            entityId: $application->id,
+            details: ['collection' => $collection, 'index' => $index]
+        );
 
-        if ($request->boolean('download')) {
-            return $disk->download($path, basename($path));
-        }
-
-        return $disk->response($path, basename($path));
+        return \App\Services\Files\SecureFileStorage::streamResponse($safePath, basename($safePath), $request->boolean('download'));
     }
 
     /**

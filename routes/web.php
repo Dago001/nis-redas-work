@@ -3,12 +3,17 @@
 use App\Http\Controllers\Admin\AdminAuditLogController;
 use App\Http\Controllers\Admin\AdminSettingController;
 use App\Http\Controllers\Admin\HqAdminController;
+use App\Http\Controllers\Admin\HqConsolidatedController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\ApiNotificationController;
+use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthTokenController;
 use App\Http\Controllers\MfaController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReportGenerationController;
+use App\Http\Controllers\Reporting\ConsolidatedReportController;
+use App\Http\Controllers\Reporting\PrsDashboardController;
 use App\Http\Controllers\SubmissionReviewController;
 use App\Http\Controllers\Web\DashboardController;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -102,7 +107,8 @@ Route::middleware([Authenticate::class, 'access:category=state_user,location=sta
         $paths = [];
         foreach ((array) $request->file('attachments', []) as $file) {
             if ($file && $file->isValid()) {
-                $paths[] = $file->store('supporting-documents/state');
+                $meta = \App\Services\Files\SecureFileStorage::store($file, 'supporting-documents/state');
+                $paths[] = $meta['path'];
             }
         }
         $returnData['attachments'] = $paths;
@@ -136,57 +142,35 @@ Route::middleware([Authenticate::class, 'abac.geo'])->group(function () {
     Route::post('/user/notifications/mark-all-read', [ApiNotificationController::class, 'markAllRead']);
     Route::post('/user/notifications/{id}/read', [ApiNotificationController::class, 'markRead']);
 
-    Route::get('/user/archive', function () {
-        $user = Auth::user();
-        $archiveView = view()->exists('user.archive.index') ? 'user.archive.index' : 'user.states.archive';
+    Route::get('/user/archive', [ArchiveController::class, 'index'])->name('user.archive');
+    Route::get('/user/archive/upload', [ArchiveController::class, 'create'])->name('user.archive.upload');
+    Route::post('/user/archive/upload', [ArchiveController::class, 'store'])->middleware('throttle:60,1')->name('user.archive.store');
+    Route::get('/user/archive/documents/{document:uuid}', [ArchiveController::class, 'download'])->name('user.archive.download');
+    Route::delete('/user/archive/documents/{document:uuid}', [ArchiveController::class, 'destroy'])->middleware('throttle:database')->name('user.archive.destroy');
 
-        $completedQuery = \App\Services\ReportAccess::applyVisibility(
-            \App\Models\Application::query()
-                ->with('user')
-                ->where('status', 'approved'),
-            $user
-        )
-            ->latest('updated_at')
-            ->limit(50);
+    Route::get('/user/reports', [ReportGenerationController::class, 'index'])->name('user.reports');
+    Route::post('/user/reports/generate', [ReportGenerationController::class, 'generate'])->middleware('throttle:60,1')->name('user.reports.generate');
+    Route::get('/user/reports/downloads/{generatedReport:uuid}', [ReportGenerationController::class, 'download'])->name('user.reports.download');
+});
 
-        return view($archiveView, ['completedReturns' => $completedQuery->get()]);
-    })->name('user.archive');
+// Option C Consolidated Reporting (Zonal Commanders and Directorate Admins)
+Route::middleware([Authenticate::class, 'access:category=zonal_commander|directorate_admin,location=zonal|directorate,role=admin|zonal|directorate|minLevel=1', 'abac.geo'])->group(function () {
+    Route::get('/consolidated', [ConsolidatedReportController::class, 'index'])->name('consolidated.index');
+    Route::get('/consolidated/create', [ConsolidatedReportController::class, 'create'])->name('consolidated.create');
+    Route::post('/consolidated', [ConsolidatedReportController::class, 'store'])->middleware('throttle:database')->name('consolidated.store');
+    Route::get('/consolidated/originals/{application}', [ConsolidatedReportController::class, 'original'])->name('consolidated.original');
+    Route::get('/consolidated/{report}', [ConsolidatedReportController::class, 'show'])->name('consolidated.show');
+    Route::get('/consolidated/{report}/edit', [ConsolidatedReportController::class, 'edit'])->name('consolidated.edit');
+    Route::put('/consolidated/{report}', [ConsolidatedReportController::class, 'update'])->middleware('throttle:database')->name('consolidated.update');
+    Route::post('/consolidated/{report}/submit', [ConsolidatedReportController::class, 'submit'])->middleware('throttle:database')->name('consolidated.submit');
+});
 
-    Route::get('/user/archive/upload', function () {
-        $archiveView = view()->exists('user.archive.upload') ? 'user.archive.upload' : 'user.states.archive';
-
-        return view($archiveView);
-    })->name('user.archive.upload');
-
-    Route::post('/user/archive/upload', function (\Illuminate\Http\Request $request) {
-        $request->validate([
-            'title' => ['required', 'string', 'max:255'],
-            'doc_type' => ['required', 'string', 'max:50'],
-            'documents' => ['nullable', 'array'],
-            'documents.*' => ['file', 'mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png', 'max:20480'],
-            'data_consent' => ['required', 'accepted'],
-        ]);
-
-        return redirect('/user/archive')
-            ->with('status', 'Document(s) uploaded to archive successfully.');
-    })->middleware('throttle:60,1')->name('user.archive.store');
-
-    Route::get('/user/reports', function () {
-        return view('user.states.reports');
-    })->name('user.reports');
-
-    Route::post('/user/reports/generate', function (\Illuminate\Http\Request $request) {
-        $request->validate([
-            'report_type' => ['required', 'in:submission_summary,monthly_return,quarterly_return,annual_return,compliance_report,full_export'],
-            'date_from' => ['required', 'date'],
-            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
-            'sections' => ['nullable', 'array'],
-            'format' => ['required', 'in:pdf,excel,csv'],
-        ]);
-
-        return redirect()->route('user.reports')
-            ->with('status', 'Your report has been generated and is ready for download.');
-    })->middleware('throttle:60,1')->name('user.reports.generate');
+// PRS Central Reporting Dashboard (PRS Directorate Admin + National HQ Viewers)
+Route::middleware([Authenticate::class, 'abac.geo', 'can:viewPrsDashboard'])->group(function () {
+    Route::get('/prs/dashboard', [PrsDashboardController::class, 'index'])->name('prs.dashboard');
+    Route::get('/prs/originals/{application}', [PrsDashboardController::class, 'showOriginal'])->name('prs.originals.show');
+    Route::get('/prs/consolidated/{report}', [PrsDashboardController::class, 'showConsolidated'])->name('prs.consolidated.show');
+    Route::get('/prs/indicators', [PrsDashboardController::class, 'indicators'])->name('prs.indicators');
 });
 
 Route::middleware([Authenticate::class])->group(function () {
@@ -325,6 +309,11 @@ Route::middleware([Authenticate::class, 'access:category=hq_admin,location=headq
     Route::get('/admin/submissions', [SubmissionReviewController::class, 'index'])->name('admin.submissions');
     Route::patch('/admin/submissions/{application}/approve', [SubmissionReviewController::class, 'approve'])->middleware('throttle:database')->name('admin.submissions.approve');
     Route::patch('/admin/submissions/{application}/reject', [SubmissionReviewController::class, 'reject'])->middleware('throttle:database')->name('admin.submissions.reject');
+
+    Route::get('/admin/consolidated-reports', [HqConsolidatedController::class, 'index'])->name('admin.consolidated.index');
+    Route::get('/admin/consolidated-reports/{report}', [HqConsolidatedController::class, 'show'])->name('admin.consolidated.show');
+    Route::patch('/admin/consolidated-reports/{report}/approve', [HqConsolidatedController::class, 'approve'])->middleware('throttle:database')->name('admin.consolidated.approve');
+    Route::patch('/admin/consolidated-reports/{report}/return', [HqConsolidatedController::class, 'returnReport'])->middleware('throttle:database')->name('admin.consolidated.return');
 
     Route::get('/admin/settings', [AdminSettingController::class, 'index'])->name('admin.settings.index');
     Route::put('/admin/settings', [AdminSettingController::class, 'update'])->name('admin.settings.update');

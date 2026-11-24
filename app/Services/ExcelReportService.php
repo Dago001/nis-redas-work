@@ -87,21 +87,91 @@ class ExcelReportService
     {
         [$title, $label] = self::periodFor($reportType, $year, $part);
 
-        $rows = [
-            ['style' => 1, 'cells' => ["{$title} — {$label} {$year}"]],
-            ['style' => 1, 'cells' => self::COLUMNS],
-        ];
-
+        $rows = [];
         foreach ($applications as $application) {
-            $rows[] = ['style' => 0, 'cells' => $this->rowFor($application)];
+            $rows[] = $this->rowFor($application);
         }
 
-        return $this->writeXlsx($rows);
+        return $this->writeSheet("{$title} — {$label} {$year}", self::COLUMNS, $rows, 'Consolidated Returns');
+    }
+
+    /**
+     * Stream an arbitrary worksheet (title banner, header row, typed data rows)
+     * into a temporary .xlsx file with formula-injection protection and numeric typing.
+     *
+     * @param  array<int, string>  $headers
+     * @param  iterable<int, array<int, mixed>>  $dataRows
+     */
+    public function writeSheet(string $title, array $headers, iterable $dataRows, string $sheetName = 'Report'): string
+    {
+        $safeSheetName = $this->sanitizeSheetName($sheetName);
+        $sheetTmp = tempnam(sys_get_temp_dir(), 'redas-sheet-');
+        $fh = fopen($sheetTmp, 'wb');
+
+        fwrite($fh, '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>');
+
+        $rowNumber = 1;
+        $this->writeXmlRow($fh, $rowNumber++, [$title], style: 1);
+        $this->writeXmlRow($fh, $rowNumber++, $headers, style: 1);
+
+        foreach ($dataRows as $cells) {
+            $this->writeXmlRow($fh, $rowNumber++, $cells, style: 0);
+        }
+
+        fwrite($fh, '</sheetData></worksheet>');
+        fclose($fh);
+
+        $path = tempnam(sys_get_temp_dir(), 'redas-report-');
+
+        $zip = new ZipArchive();
+        $zip->open($path, ZipArchive::OVERWRITE);
+        $zip->addFromString('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+            .'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+            .'<Default Extension="xml" ContentType="application/xml"/>'
+            .'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+            .'<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
+            .'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+            .'</Types>');
+        $zip->addFromString('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+            .'</Relationships>');
+        $zip->addFromString('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+            .'<sheets><sheet name="'.htmlspecialchars($safeSheetName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8').'" sheetId="1" r:id="rId1"/></sheets>'
+            .'</workbook>');
+        $zip->addFromString('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+            .'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
+            .'<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+            .'</Relationships>');
+        $zip->addFromString('xl/styles.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+            .'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+            .'<fonts count="2">'
+            .'<font><sz val="11"/><name val="Calibri"/></font>'
+            .'<font><b/><sz val="11"/><name val="Calibri"/></font>'
+            .'</fonts>'
+            .'<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'
+            .'<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+            .'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+            .'<cellXfs count="2">'
+            .'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+            .'<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+            .'</cellXfs>'
+            .'</styleSheet>');
+        $zip->addFile($sheetTmp, 'xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        @unlink($sheetTmp);
+
+        return $path;
     }
 
     /**
      * @param  Application  $application
-     * @return array<int, string>
+     * @return array<int, mixed>
      */
     private function rowFor(Application $application): array
     {
@@ -109,11 +179,11 @@ class ExcelReportService
         $user = $application->user;
 
         return [
-            'RET-' . str_pad((string) $application->id, 5, '0', STR_PAD_LEFT),
+            'RET-'.str_pad((string) $application->id, 5, '0', STR_PAD_LEFT),
             (string) ($data['command_name'] ?? $application->scope_code ?? '—'),
             (string) ($user?->assigned_cgis_unit_code ?? '—'),
             ucfirst((string) ($application->category ?? '')),
-            (string) ($data['report_period'] ?? '—'),
+            (string) ($application->report_period ?? $data['report_period'] ?? '—'),
             (string) ($data['reporting_officer'] ?? $user?->name ?? '—'),
             (string) ($user?->service_number ?? '—'),
             ucfirst((string) ($application->status ?? '')),
@@ -125,73 +195,48 @@ class ExcelReportService
     }
 
     /**
-     * Minimal XLSX writer (ZipArchive, inline strings, bold header style).
-     *
-     * @param  array<int, array{style: int, cells: array<int, string>}>  $rows
+     * @param  resource  $fh
+     * @param  array<int, mixed>  $cells
      */
-    private function writeXlsx(array $rows): string
+    private function writeXmlRow($fh, int $rowNumber, array $cells, int $style): void
     {
-        $sheetRows = '';
+        fwrite($fh, '<row r="'.$rowNumber.'">');
 
-        foreach ($rows as $rowIndex => $row) {
-            $rowNumber = $rowIndex + 1;
-            $cells = '';
+        foreach (array_values($cells) as $columnIndex => $value) {
+            $ref = $this->columnLetter($columnIndex).$rowNumber;
 
-            foreach ($row['cells'] as $columnIndex => $value) {
-                $ref = $this->columnLetter($columnIndex) . $rowNumber;
-                $escaped = htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-                $cells .= '<c r="' . $ref . '" t="inlineStr" s="' . $row['style'] . '"><is><t>' . $escaped . '</t></is></c>';
+            if ($value === null || $value === '') {
+                fwrite($fh, '<c r="'.$ref.'" t="inlineStr" s="'.$style.'"><is><t></t></is></c>');
+                continue;
             }
 
-            $sheetRows .= '<row r="' . $rowNumber . '">' . $cells . '</row>';
+            if (is_int($value) || (is_float($value) && is_finite($value))) {
+                fwrite($fh, '<c r="'.$ref.'" t="n" s="'.$style.'"><v>'.$value.'</v></c>');
+                continue;
+            }
+
+            if (is_bool($value)) {
+                $value = $value ? 'Yes' : 'No';
+            }
+
+            $str = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', (string) $value) ?? '';
+            if ($str !== '' && in_array($str[0], ['=', '+', '-', '@'], true)) {
+                $str = "'".$str;
+            }
+
+            $escaped = htmlspecialchars($str, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            fwrite($fh, '<c r="'.$ref.'" t="inlineStr" s="'.$style.'"><is><t>'.$escaped.'</t></is></c>');
         }
 
-        $path = tempnam(sys_get_temp_dir(), 'redas-report-');
+        fwrite($fh, '</row>');
+    }
 
-        $zip = new ZipArchive();
-        $zip->open($path, ZipArchive::OVERWRITE);
-        $zip->addFromString('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
-            . '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
-            . '<Default Extension="xml" ContentType="application/xml"/>'
-            . '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
-            . '<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'
-            . '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
-            . '</Types>');
-        $zip->addFromString('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
-            . '</Relationships>');
-        $zip->addFromString('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-            . '<sheets><sheet name="Consolidated Returns" sheetId="1" r:id="rId1"/></sheets>'
-            . '</workbook>');
-        $zip->addFromString('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            . '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>'
-            . '<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
-            . '</Relationships>');
-        $zip->addFromString('xl/styles.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-            . '<fonts count="2">'
-            . '<font><sz val="11"/><name val="Calibri"/></font>'
-            . '<font><b/><sz val="11"/><name val="Calibri"/></font>'
-            . '</fonts>'
-            . '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'
-            . '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
-            . '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
-            . '<cellXfs count="2">'
-            . '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
-            . '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
-            . '</cellXfs>'
-            . '</styleSheet>');
-        $zip->addFromString('xl/worksheets/sheet1.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
-            . '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
-            . '<sheetData>' . $sheetRows . '</sheetData>'
-            . '</worksheet>');
-        $zip->close();
+    private function sanitizeSheetName(string $name): string
+    {
+        $clean = preg_replace('/[\[\]\:\*\?\/\\\\]/', ' ', trim($name)) ?? 'Report';
+        $clean = trim(substr($clean, 0, 31));
 
-        return $path;
+        return $clean !== '' ? $clean : 'Report';
     }
 
     private function columnLetter(int $index): string
@@ -199,7 +244,7 @@ class ExcelReportService
         $letter = '';
 
         do {
-            $letter = chr(65 + ($index % 26)) . $letter;
+            $letter = chr(65 + ($index % 26)).$letter;
             $index = intdiv($index, 26) - 1;
         } while ($index >= 0);
 

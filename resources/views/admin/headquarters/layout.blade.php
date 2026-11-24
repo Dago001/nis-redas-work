@@ -53,7 +53,17 @@
             <span class="link-icon"><i class="fas fa-layer-group"></i></span>
             <span class="link-text">Consolidation</span>
         </a>
+        @can('viewPrsDashboard')
+        <a href="{{ route('prs.dashboard') }}" class="sidebar-link {{ request()->routeIs('prs.*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-chart-line"></i></span>
+            <span class="link-text">PRS Reporting</span>
+        </a>
+        @endcan
         @if(auth()->user()?->user_category === 'hq_admin')
+        <a href="{{ route('admin.consolidated.index') }}" class="sidebar-link {{ request()->routeIs('admin.consolidated.*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-file-signature"></i></span>
+            <span class="link-text">Consolidated Approvals</span>
+        </a>
         <a href="{{ route('admin.submissions') }}" class="sidebar-link {{ request()->routeIs('admin.submissions') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-clipboard-check"></i></span>
             <span class="link-text">Review Queue</span>

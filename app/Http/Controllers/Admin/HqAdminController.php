@@ -330,22 +330,21 @@ class HqAdminController extends Controller
 
             $path = $excel->generate($reportType, $year, $part, $applications);
 
-            AuditLog::create([
-                'user_id' => $request->user()->id,
-                'action' => 'hq_report_generated',
-                'entity_type' => 'report',
-                'entity_id' => null,
-                'details' => [
+            \App\Services\AuditLogger::log(
+                user: $request->user(),
+                action: 'hq_report_generated',
+                status: 'success',
+                entityType: 'report',
+                entityId: null,
+                details: [
                     'report_type' => $reportType,
                     'year' => $year,
                     'part' => $part,
                     'period' => "{$from->toDateString()} to {$to->toDateString()}",
                     'returns_included' => $applications->count(),
                 ],
-                'ip_address' => $request->ip(),
-                'status' => 'success',
-                'created_at' => now(),
-            ]);
+                ip: $request->ip()
+            );
 
             $filename = str(sprintf('redas-%s-report-%d', $reportType, $year))
                 ->when($part, fn ($name) => $name->append('-part-' . $part))

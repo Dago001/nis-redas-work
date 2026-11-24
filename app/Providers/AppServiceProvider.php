@@ -21,7 +21,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Services\Files\MalwareScanner::class, function () {
+            if (config('files.scanner') === 'clamav' && filled(config('files.clamav_socket'))) {
+                return new \App\Services\Files\ClamAvSocketScanner((string) config('files.clamav_socket'));
+            }
+
+            return new \App\Services\Files\NullMalwareScanner();
+        });
     }
 
     /**
