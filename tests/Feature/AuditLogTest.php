@@ -50,7 +50,7 @@ class AuditLogTest extends TestCase
         $mfaService = app(\App\Services\MfaService::class);
 
         $this->withServerVariables(['REMOTE_ADDR' => '1.2.3.4'])->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'officer',
         ]);
@@ -81,7 +81,7 @@ class AuditLogTest extends TestCase
         ]);
 
         $this->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'wrong-password',
             'role' => 'officer',
         ]);
@@ -115,7 +115,7 @@ class AuditLogTest extends TestCase
         ]);
 
         $this->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'officer',
         ]);

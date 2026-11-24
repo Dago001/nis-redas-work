@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class UserManagementController extends Controller
@@ -91,7 +92,7 @@ class UserManagementController extends Controller
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),
             'geo_state' => 'nullable|string|max:10',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
         ]);
 
@@ -190,7 +191,7 @@ class UserManagementController extends Controller
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),
             'geo_state' => 'nullable|string|max:10',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => ['nullable', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
         ]);
 

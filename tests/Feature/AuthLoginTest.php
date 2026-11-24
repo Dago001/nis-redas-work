@@ -78,7 +78,7 @@ class AuthLoginTest extends TestCase
         ]);
 
         $response = $this->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => $this->password,
             'role' => 'super_admin',
         ]);
@@ -134,7 +134,7 @@ class AuthLoginTest extends TestCase
         ]);
 
         $this->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => $this->password,
             'role' => 'admin',
         ])->assertRedirect('/mfa/setup');
@@ -142,5 +142,46 @@ class AuthLoginTest extends TestCase
 
         $response = $this->actingAs($user)->get('/admin/dashboard');
         $response->assertOk();
+    }
+
+    public function test_login_rejects_email_and_requires_service_number(): void
+    {
+        $user = $this->createUser([
+            'service_number' => 'NIS/SN/4321',
+            'email' => 'sn-only@example.com',
+        ]);
+
+        $response = $this->from('/login')->post('/login', [
+            'username' => $user->email,
+            'password' => $this->password,
+        ]);
+
+        $response->assertRedirect('/login');
+        $response->assertSessionHasErrors('username');
+        $this->assertGuest();
+    }
+
+    public function test_password_policy_requires_min_6_chars_upper_lower_number_and_special_char(): void
+    {
+        $user = $this->createUser([
+            'service_number' => 'NIS/PW/1111',
+            'email' => 'pw-policy@example.com',
+        ]);
+
+        // Weak passwords (too short, no uppercase, no number, no special char) must fail
+        foreach (['Ab1!c', 'abcdef1!', 'ABCDEF1!', 'Abcdef!', 'Abcdef1'] as $weak) {
+            $this->actingAs($user)->patch(route('user.profile.update'), [
+                'current_password' => $this->password,
+                'password' => $weak,
+                'password_confirmation' => $weak,
+            ])->assertSessionHasErrors('password');
+        }
+
+        // 6+ chars with Upper, Lower, Number, Special char must succeed
+        $this->actingAs($user)->patch(route('user.profile.update'), [
+            'current_password' => $this->password,
+            'password' => 'Ab1!cd',
+            'password_confirmation' => 'Ab1!cd',
+        ])->assertSessionHasNoErrors()->assertRedirect(route('user.profile'));
     }
 }

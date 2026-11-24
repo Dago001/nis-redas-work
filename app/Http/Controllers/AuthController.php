@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -51,7 +52,7 @@ class AuthController extends Controller
             'primary_location_code' => 'nullable|string|max:50',
             'geo_state' => 'nullable|string|max:10',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => ['required', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'terms' => 'accepted',
         ], [
             'service_number.regex' => 'Service number must be in the format NIS/XX/1234.',
@@ -131,7 +132,7 @@ class AuthController extends Controller
 
     /**
      * Login user.
-     * Supports login by email OR service_number
+     * Sign-in requires Username (Service Number) and Password.
      */
     public function login(Request $request)
     {
@@ -142,8 +143,16 @@ class AuthController extends Controller
         ]);
 
         $loginInput = trim((string) ($request->input('username') ?? $request->input('login') ?? ''));
-        $field = filter_var($loginInput, FILTER_VALIDATE_EMAIL) ? 'email' : 'service_number';
-        $normalizedLogin = $field === 'email' ? Str::lower($loginInput) : Str::upper($loginInput);
+
+        if (str_contains($loginInput, '@') || filter_var($loginInput, FILTER_VALIDATE_EMAIL)) {
+            throw ValidationException::withMessages([
+                'username' => ['Please sign in using your Service Number (Username) and password.'],
+                'login' => ['Please sign in using your Service Number (Username) and password.'],
+            ]);
+        }
+
+        $field = 'service_number';
+        $normalizedLogin = Str::upper($loginInput);
         $throttleKey = $this->throttleKey($normalizedLogin, $request);
 
         if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {
@@ -154,14 +163,9 @@ class AuthController extends Controller
             ]);
         }
 
-        $query = User::query();
-        if ($field === 'email') {
-            $query->whereRaw('LOWER(email) = ?', [Str::lower($loginInput)], 'and');
-        } else {
-            $query->where('service_number', $normalizedLogin);
-        }
-
-        $user = $query->first();
+        $user = User::query()
+            ->where('service_number', $normalizedLogin)
+            ->first();
 
         if (! $user || ! Hash::check($request->input('password'), $user->password)) {
             RateLimiter::hit($throttleKey, self::LOCKOUT_SECONDS);

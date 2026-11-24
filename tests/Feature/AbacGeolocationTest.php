@@ -64,7 +64,7 @@ class AbacGeolocationTest extends TestCase
         $this->fakeIpApi('1.2.3.4', 'Nigeria', 'Lagos', 'LA');
 
         $response = $this->withServerVariables(['REMOTE_ADDR' => '1.2.3.4'])->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'officer',
         ]);
@@ -89,7 +89,7 @@ class AbacGeolocationTest extends TestCase
         $this->fakeIpApi('1.2.3.5', 'Nigeria', 'Kano', 'KN');
 
         $response = $this->withServerVariables(['REMOTE_ADDR' => '1.2.3.5'])->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'officer',
         ]);
@@ -113,7 +113,7 @@ class AbacGeolocationTest extends TestCase
         $this->fakeIpApi('8.8.8.8', 'United States', 'California', 'CA');
 
         $response = $this->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'officer',
         ]);
@@ -139,7 +139,7 @@ class AbacGeolocationTest extends TestCase
         $this->fakeIpApi('8.8.8.8', 'United States', 'California', 'CA');
 
         $response = $this->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'admin',
         ]);
@@ -166,7 +166,7 @@ class AbacGeolocationTest extends TestCase
         $this->fakeIpApi('8.8.8.8', 'United States', 'California', 'CA');
 
         $response = $this->withServerVariables(['REMOTE_ADDR' => '8.8.8.8'])->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'officer',
         ]);
@@ -191,7 +191,7 @@ class AbacGeolocationTest extends TestCase
         $this->fakeIpApi('1.2.3.4', 'Nigeria', 'Lagos', 'LA');
 
         $this->withServerVariables(['REMOTE_ADDR' => '1.2.3.4'])->post('/login', [
-            'login' => $user->email,
+            'login' => $user->service_number,
             'password' => 'password',
             'role' => 'officer',
         ]);

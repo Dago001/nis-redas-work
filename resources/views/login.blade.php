@@ -202,14 +202,14 @@
 
             <div class="auth-form-group">
                 <label class="form-label-nis" for="username">
-                    <i class="fas fa-user me-1 text-nis"></i> Username
+                    <i class="fas fa-id-badge me-1 text-nis"></i> Username (Service Number)
                 </label>
                 <div class="auth-input-wrap">
                     <input type="text"
                         class="auth-input @error('username') is-invalid @enderror"
                         id="username"
                         name="username"
-                        placeholder="Enter email or service number"
+                        placeholder="Enter your service number (e.g. NIS/001/1234)"
                         value="{{ old('username') }}"
                         autocomplete="username"
                         required>
