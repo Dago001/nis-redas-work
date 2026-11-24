@@ -31,16 +31,20 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
-            background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+            background:
+                linear-gradient(135deg, rgba(6, 36, 20, 0.58) 0%, rgba(10, 25, 47, 0.66) 100%),
+                url("{{ asset('assets/images/nis-hq-bg.jpg') }}") center center / cover no-repeat fixed;
         }
 
         .login-card {
             width: 100%;
             max-width: 460px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.45);
             border-radius: 20px;
-            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
             padding: 30px 24px;
         }
 

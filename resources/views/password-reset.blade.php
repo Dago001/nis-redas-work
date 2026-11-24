@@ -8,11 +8,11 @@
     @laravelPWA
     <link rel="stylesheet" href="/assets/app.css">
 </head>
-<body style="margin:0; padding:0;">
+<body style="margin:0; padding:24px; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:Inter, system-ui, -apple-system, sans-serif; background: linear-gradient(135deg, rgba(6, 36, 20, 0.58) 0%, rgba(10, 25, 47, 0.66) 100%), url('{{ asset('assets/images/nis-hq-bg.jpg') }}') center center / cover no-repeat fixed;">
 
 @include('partials.preloader')
 
-<div style="max-width:520px; margin: 40px auto; padding: 20px;">
+<div style="width:100%; max-width:520px; background:rgba(255,255,255,0.94); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.45); border-radius:20px; box-shadow:0 24px 60px rgba(0,0,0,0.35); padding:32px;">
     <h2>Reset password</h2>
 
     @if ($errors->any())

@@ -8,11 +8,43 @@
     --gradient-end: #1a5c2e;
 }
 
-/* Shared auth page background */
+/* Shared auth & MFA (Google Authenticator) page background */
+body.login-page,
+body.register-page,
+body.auth-page {
+    background:
+        linear-gradient(135deg, rgba(6, 36, 20, 0.58) 0%, rgba(10, 25, 47, 0.66) 100%),
+        url('/assets/images/nis-hq-bg.jpg') center center / cover no-repeat fixed;
+    min-height: 100vh;
+}
+
+body.auth-page .auth-split {
+    background: transparent !important;
+}
+
+body.auth-page .auth-left {
+    background: linear-gradient(160deg, rgba(6, 36, 20, 0.74) 0%, rgba(10, 25, 47, 0.78) 100%) !important;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+body.auth-page .auth-right {
+    background: transparent !important;
+}
+
+body.auth-page .auth-right .auth-form-card,
+body.auth-page .auth-right > div {
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    padding: 32px 28px;
+}
+
 body.login-page,
 body.register-page {
-    background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;

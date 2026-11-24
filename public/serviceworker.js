@@ -3,10 +3,11 @@
  * - Network-Only for authenticated HTML pages and API endpoints (never caches confidential data)
  * - Lightweight inline offline screen when device loses connectivity completely
  */
-const STATIC_CACHE = 'nis-redas-static-v2';
+const STATIC_CACHE = 'nis-redas-static-v3';
 const PRECACHE_ASSETS = [
     '/nis-logo.png',
     '/manifest.json',
+    '/assets/images/nis-hq-bg.jpg',
 ];
 
 self.addEventListener('install', (event) => {
