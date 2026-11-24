@@ -2,10 +2,11 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuthChallenge;
 use App\Models\EmailTemplate;
-use App\Models\OtpCode;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class MessagingResilienceTest extends TestCase
@@ -60,26 +61,27 @@ class MessagingResilienceTest extends TestCase
         ]);
     }
 
-    public function test_otp_request_returns_friendly_error_instead_of_500_when_email_delivery_fails(): void
+    public function test_login_otp_returns_friendly_error_and_burns_challenge_when_email_delivery_fails(): void
     {
         $user = User::factory()->create([
             'service_number' => 'NIS/AA/9999',
             'email' => 'otpuser@example.com',
+            'password' => Hash::make('SecretPass123!'),
+            'email_verified_at' => now(),
+            'is_enabled' => true,
         ]);
 
         // Intentionally do not seed 'otp_login' template so the mailer throws.
-        $response = $this->postJson('/api/otp/request', [
+        $response = $this->postJson('/api/login', [
             'login' => $user->email,
-            'purpose' => 'login',
+            'password' => 'SecretPass123!',
         ]);
 
         $response->assertStatus(502);
         $response->assertJsonPath('message', 'We could not send your verification code right now. Please try again shortly.');
 
-        // The OTP row is still created even though delivery failed.
-        $this->assertDatabaseHas('otp_codes', [
-            'user_id' => $user->id,
-            'purpose' => 'login',
-        ]);
+        $challenge = AuthChallenge::query()->where('user_id', $user->id)->first();
+        $this->assertNotNull($challenge);
+        $this->assertNotNull($challenge->consumed_at);
     }
 }

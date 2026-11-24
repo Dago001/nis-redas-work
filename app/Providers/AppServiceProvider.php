@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\JwtService;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -24,6 +25,10 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        if ($this->app->environment('production') && ! $this->app->runningInConsole()) {
+            JwtService::assertConfigured();
+        }
 
         // Rate limiters for API and database-bound requests.
         // Use a persistent cache driver in production (database, redis, memcached).

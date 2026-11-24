@@ -79,6 +79,21 @@ HTML,
         );
 
         EmailTemplate::updateOrCreate(
+            ['key' => 'otp_login'],
+            [
+                'type' => 'otp',
+                'subject' => 'Your NIS-REDAS verification code',
+                'body' => <<<HTML
+<p>Hello {{ name }},</p>
+<p>Use the following one-time verification code to complete your NIS-REDAS sign-in:</p>
+<p style="font-size:20px;font-weight:bold;letter-spacing:4px;">{{ otp }}</p>
+<p>This code expires in {{ expires_in_minutes }} minutes. Do not share it with anyone.</p>
+HTML,
+                'is_active' => true,
+            ]
+        );
+
+        EmailTemplate::updateOrCreate(
             ['key' => 'submission_rejected'],
             [
                 'type' => 'workflow',

@@ -12,9 +12,12 @@ class RefreshToken extends Model
     protected $fillable = [
         'user_id',
         'jti',
+        'family_id',
         'token_hash',
         'expires_at',
         'revoked_at',
+        'replaced_by_jti',
+        'reuse_detected_at',
         'created_ip',
         'user_agent',
     ];
@@ -22,6 +25,7 @@ class RefreshToken extends Model
     protected $casts = [
         'expires_at' => 'datetime',
         'revoked_at' => 'datetime',
+        'reuse_detected_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

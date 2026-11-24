@@ -31,5 +31,8 @@
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
+        <!-- Test-only dummy keys so unit/feature suites never depend on a local .env -->
+        <env name="APP_KEY" value="base64:dGVzdC1vbmx5LWFwcC1rZXktbm90LWEtc2VjcmV0LTE="/>
+        <env name="JWT_SECRET" value="base64:dGVzdC1vbmx5LWp3dC1rZXktbm90LWEtc2VjcmV0LTAxMjM0NTY3ODk="/>
     </php>
 </phpunit>
