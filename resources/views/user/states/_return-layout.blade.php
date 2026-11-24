@@ -87,6 +87,7 @@
 
     <form id="stateReturnForm" method="POST" enctype="multipart/form-data" action="{{ isset($editing) ? route('user.returns.update', $editing) : route('user.returns.store') }}">
         @csrf
+        <input type="hidden" name="_idempotency_key" value="{{ old('_idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
         @isset($editing)
             @method('PUT')
         @endisset

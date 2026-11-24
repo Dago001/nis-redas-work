@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\ApplicationComment;
 use App\Models\User;
 use App\Models\UserNotification;
+use App\Services\Reporting\ReportVersioning;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -28,34 +29,94 @@ class SubmissionWorkflow
     public const STAGE_APPROVED = 'approved';
 
     /**
-     * Create a new submission and place it in the correct initial review queue.
+     * Create a new original submission transactionally with version snapshotting,
+     * indicator extraction, and idempotency protection.
      */
-    public static function create(User $user, array $returnData): Application
+    public static function create(User $user, array $returnData, ?string $idempotencyKey = null): Application
     {
+        $key = $idempotencyKey ?: (is_string($returnData['_idempotency_key'] ?? null) ? trim($returnData['_idempotency_key']) : null);
+        unset($returnData['_idempotency_key']);
+
+        if ($key !== null && $key !== '') {
+            $existing = Application::query()
+                ->where('user_id', $user->id)
+                ->where('idempotency_key', $key)
+                ->first();
+
+            if ($existing) {
+                return $existing;
+            }
+        } else {
+            $key = null;
+        }
+
         $category = self::categoryForUser($user);
         $scopeCode = self::scopeCodeForUser($user);
+        $reportPeriod = self::extractReportPeriod($returnData);
+        $sectionCode = $category === self::CATEGORY_DIRECTORATE
+            ? ($user->assigned_section_code ?: null)
+            : null;
 
-        $application = Application::create([
-            'user_id' => $user->id,
-            'status' => 'pending',
-            'workflow_stage' => self::initialStageForUser($user),
-            'workflow_path' => [
-                [
-                    'stage' => self::STAGE_SUBMITTED,
-                    'by' => $user->id,
-                    'at' => now()->toDateTimeString(),
+        return DB::transaction(function () use ($user, $returnData, $category, $scopeCode, $reportPeriod, $sectionCode, $key): Application {
+            $application = Application::create([
+                'user_id' => $user->id,
+                'status' => 'pending',
+                'workflow_stage' => self::initialStageForUser($user),
+                'workflow_path' => [
+                    [
+                        'stage' => self::STAGE_SUBMITTED,
+                        'by' => $user->id,
+                        'at' => now()->toDateTimeString(),
+                    ],
                 ],
-            ],
-            'category' => $category,
-            'scope_code' => $scopeCode,
-            'return_data' => $returnData,
-        ]);
+                'category' => $category,
+                'report_type' => 'original',
+                'report_period' => $reportPeriod,
+                'scope_code' => $scopeCode,
+                'section_code' => $sectionCode,
+                'return_data' => $returnData,
+                'current_version' => 0,
+                'idempotency_key' => $key,
+            ]);
 
-        self::recordComment($application, $user, self::STAGE_SUBMITTED, ApplicationComment::ACTION_SUBMITTED);
-        self::notifyPendingReviewers($application);
-        SubmissionCreated::dispatch($application);
+            ReportVersioning::snapshot($application, $user, 'submitted');
+            self::recordComment($application, $user, self::STAGE_SUBMITTED, ApplicationComment::ACTION_SUBMITTED);
 
-        return $application;
+            AuditLogger::log(
+                user: $user,
+                action: 'submission.created',
+                status: 'success',
+                entityType: 'application',
+                entityId: $application->id,
+                details: [
+                    'category' => $category,
+                    'scope_code' => $scopeCode,
+                    'section_code' => $sectionCode,
+                    'report_period' => $reportPeriod,
+                    'version_no' => $application->current_version,
+                ]
+            );
+
+            DB::afterCommit(function () use ($application): void {
+                self::notifyPendingReviewers($application);
+                SubmissionCreated::dispatch($application);
+            });
+
+            return $application;
+        });
+    }
+
+    /**
+     * Extract YYYY-MM report_period from return_data when present.
+     */
+    public static function extractReportPeriod(array $returnData): ?string
+    {
+        $raw = $returnData['report_period'] ?? $returnData['period'] ?? null;
+        if (is_string($raw) && preg_match('/^\d{4}-\d{2}$/', trim($raw))) {
+            return trim($raw);
+        }
+
+        return null;
     }
 
     /**

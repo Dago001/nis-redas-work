@@ -88,10 +88,11 @@ Route::middleware([Authenticate::class, 'access:category=state_user,location=sta
             'data_consent' => ['required', 'accepted'],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:20480'],
+            '_idempotency_key' => ['nullable', 'uuid'],
         ]);
 
         $user = Auth::user();
-        $returnData = $request->except(['_token', 'data_consent', 'attachments', 'workflow_path', 'status']);
+        $returnData = $request->except(['_token', 'data_consent', 'attachments', 'workflow_path', 'status', '_idempotency_key']);
         $returnData['report_period'] = $request->input('period');
         // Command/officer identity is server-derived, never trusted from the
         // (readonly, but client-editable) POST body.
@@ -106,7 +107,17 @@ Route::middleware([Authenticate::class, 'access:category=state_user,location=sta
         }
         $returnData['attachments'] = $paths;
 
-        \App\Services\SubmissionWorkflow::create(Auth::User(), $returnData);
+        try {
+            \App\Services\SubmissionWorkflow::create(Auth::User(), $returnData, $request->input('_idempotency_key'));
+        } catch (\Throwable $e) {
+            foreach ($paths as $storedPath) {
+                try {
+                    \Illuminate\Support\Facades\Storage::disk()->delete($storedPath);
+                } catch (\Throwable) {
+                }
+            }
+            throw $e;
+        }
 
         return redirect('/user/submissions')
             ->with('status', 'Return submitted successfully and routed to your supervisor for review.');

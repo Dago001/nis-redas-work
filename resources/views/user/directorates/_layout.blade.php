@@ -116,6 +116,7 @@
     @endphp
     <form method="POST" enctype="multipart/form-data" action="{{ $formAction }}">
         @csrf
+        <input type="hidden" name="_idempotency_key" value="{{ old('_idempotency_key', (string) \Illuminate\Support\Str::uuid()) }}">
         @isset($editing)
             @method('PUT')
         @endisset

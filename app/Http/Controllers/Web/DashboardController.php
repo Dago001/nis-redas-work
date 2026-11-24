@@ -272,6 +272,7 @@ class DashboardController extends Controller
             'supporting_documents.*' => ['file', 'mimes:pdf,xls,xlsx,png,jpg,jpeg', 'max:20480'],
             'attachments' => ['nullable', 'array'],
             'attachments.*' => ['file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:20480'],
+            '_idempotency_key' => ['nullable', 'uuid'],
         ];
     }
 
@@ -314,17 +315,26 @@ class DashboardController extends Controller
             }
         }
 
+        $uploadedSupporting = $this->storeUploadedFiles($request, 'supporting_documents', $slug);
+        $uploadedAttachments = $this->storeUploadedFiles($request, 'attachments', $slug);
+
         try {
             SubmissionWorkflow::create($user, array_merge(
-                $request->except(['_token', 'data_consent', 'supporting_documents', 'attachments']),
+                $request->except(['_token', 'data_consent', 'supporting_documents', 'attachments', '_idempotency_key']),
                 [
                     'directorate_slug' => $slug,
                     'report_period' => $validated['report_period'],
-                    'supporting_documents' => $this->storeUploadedFiles($request, 'supporting_documents', $slug),
-                    'attachments' => $this->storeUploadedFiles($request, 'attachments', $slug),
+                    'supporting_documents' => $uploadedSupporting,
+                    'attachments' => $uploadedAttachments,
                 ]
-            ));
+            ), $request->input('_idempotency_key'));
         } catch (\Throwable $e) {
+            foreach (array_merge($uploadedSupporting, $uploadedAttachments) as $path) {
+                try {
+                    Storage::disk()->delete($path);
+                } catch (\Throwable) {
+                }
+            }
             report($e);
 
             return back()
@@ -445,17 +455,26 @@ class DashboardController extends Controller
             }
         }
 
+        $uploadedSupporting = $this->storeUploadedFiles($request, 'supporting_documents', $slug);
+        $uploadedAttachments = $this->storeUploadedFiles($request, 'attachments', $slug);
+
         try {
             SubmissionWorkflow::create($user, array_merge(
-                $request->except(['_token', 'data_consent', 'supporting_documents', 'attachments']),
+                $request->except(['_token', 'data_consent', 'supporting_documents', 'attachments', '_idempotency_key']),
                 [
                     'cgis_unit_slug' => $slug,
                     'report_period' => $validated['report_period'],
-                    'supporting_documents' => $this->storeUploadedFiles($request, 'supporting_documents', $slug),
-                    'attachments' => $this->storeUploadedFiles($request, 'attachments', $slug),
+                    'supporting_documents' => $uploadedSupporting,
+                    'attachments' => $uploadedAttachments,
                 ]
-            ));
+            ), $request->input('_idempotency_key'));
         } catch (\Throwable $e) {
+            foreach (array_merge($uploadedSupporting, $uploadedAttachments) as $path) {
+                try {
+                    Storage::disk()->delete($path);
+                } catch (\Throwable) {
+                }
+            }
             report($e);
 
             return back()
@@ -754,11 +773,15 @@ class DashboardController extends Controller
      */
     public function updateSubmission(Request $request, Application $application): RedirectResponse
     {
-        abort_unless($application->user_id === $request->user()->id, 403);
-        abort_if(strtolower((string) $application->status) === 'approved', 403, 'Approved submissions cannot be edited.');
-
         $user = Auth::user();
-        $isStateUser = $user?->user_category === 'state_user';
+        abort_unless($user !== null && $user->can('update', $application), 403, 'Approved submissions cannot be edited.');
+
+        $isStateUser = $user->user_category === 'state_user';
+        $existingData = is_array($application->return_data) ? $application->return_data : [];
+        $existingAttachments = array_values(array_filter((array) ($existingData['attachments'] ?? []), 'is_string'));
+        $existingSupporting = array_values(array_filter((array) ($existingData['supporting_documents'] ?? []), 'is_string'));
+
+        $newlyUploaded = [];
 
         if ($isStateUser) {
             $request->validate([
@@ -771,15 +794,16 @@ class DashboardController extends Controller
                 'attachments.*' => ['file', 'mimes:pdf,doc,docx,jpg,jpeg,png', 'max:20480'],
             ]);
 
+            $newAttachments = $this->storeUploadedFiles($request, 'attachments', 'state');
+            $newlyUploaded = $newAttachments;
+
             $returnData = array_merge(
-                $request->except(['_token', '_method', 'data_consent', 'attachments', 'workflow_path', 'status']),
+                $request->except(['_token', '_method', 'data_consent', 'attachments', 'workflow_path', 'status', '_idempotency_key']),
                 [
                     'report_period' => $request->input('period'),
-                    // Command/officer identity is server-derived, never trusted from the
-                    // (readonly, but client-editable) POST body.
                     'command_name' => self::commandNameForUser($user) ?? $request->input('command_name'),
-                    'reporting_officer' => $user?->name ?? $request->input('reporting_officer'),
-                    'attachments' => $this->storeUploadedFiles($request, 'attachments', 'state'),
+                    'reporting_officer' => $user->name ?? $request->input('reporting_officer'),
+                    'attachments' => array_values(array_unique(array_merge($existingAttachments, $newAttachments))),
                 ]
             );
         } else {
@@ -789,53 +813,86 @@ class DashboardController extends Controller
             abort_if($slug === null || $this->formMetadata($slug) === null, 403);
 
             $slugKey = isset(self::CGIS_UNITS[$slug]) ? 'cgis_unit_slug' : 'directorate_slug';
+            $newSupporting = $this->storeUploadedFiles($request, 'supporting_documents', $slug);
+            $newAttachments = $this->storeUploadedFiles($request, 'attachments', $slug);
+            $newlyUploaded = array_merge($newSupporting, $newAttachments);
 
             $returnData = array_merge(
-                $request->except(['_token', '_method', 'data_consent', 'supporting_documents', 'attachments']),
+                $request->except(['_token', '_method', 'data_consent', 'supporting_documents', 'attachments', '_idempotency_key']),
                 [
                     $slugKey => $slug,
                     'report_period' => $validated['report_period'],
-                    'supporting_documents' => $this->storeUploadedFiles($request, 'supporting_documents', $slug),
-                    'attachments' => $this->storeUploadedFiles($request, 'attachments', $slug),
+                    'supporting_documents' => array_values(array_unique(array_merge($existingSupporting, $newSupporting))),
+                    'attachments' => array_values(array_unique(array_merge($existingAttachments, $newAttachments))),
                 ]
             );
         }
 
-        // Mirror the initial-stage logic of SubmissionWorkflow::create() so the
-        // updated return re-enters the workflow where a fresh submission would.
         $initialStage = SubmissionWorkflow::initialStageForUser($user);
-
-        $path = $application->workflow_path ?? [];
-        $path[] = [
-            'stage' => SubmissionWorkflow::STAGE_SUBMITTED,
-            'by' => $user->id,
-            'at' => now()->toDateTimeString(),
-            'action' => 'resubmitted',
-        ];
+        $reportPeriod = SubmissionWorkflow::extractReportPeriod($returnData) ?? $application->report_period;
 
         try {
-            $application->update([
-                'return_data' => $returnData,
-                'status' => 'pending',
-                'workflow_stage' => $initialStage,
-                'workflow_path' => $path,
-            ]);
+            \Illuminate\Support\Facades\DB::transaction(function () use ($application, $user, $returnData, $initialStage, $reportPeriod): void {
+                /** @var Application $locked */
+                $locked = Application::query()->whereKey($application->id)->lockForUpdate()->firstOrFail();
+                abort_if(strtolower((string) $locked->status) === 'approved', 403, 'Approved submissions cannot be edited.');
+
+                $path = $locked->workflow_path ?? [];
+                $path[] = [
+                    'stage' => SubmissionWorkflow::STAGE_SUBMITTED,
+                    'by' => $user->id,
+                    'at' => now()->toDateTimeString(),
+                    'action' => 'resubmitted',
+                ];
+
+                $locked->update([
+                    'return_data' => $returnData,
+                    'report_period' => $reportPeriod,
+                    'status' => 'pending',
+                    'workflow_stage' => $initialStage,
+                    'workflow_path' => $path,
+                ]);
+
+                \App\Services\Reporting\ReportVersioning::snapshot($locked, $user, 'resubmitted');
+
+                SubmissionWorkflow::recordComment(
+                    $locked,
+                    $user,
+                    SubmissionWorkflow::STAGE_SUBMITTED,
+                    ApplicationComment::ACTION_RESUBMITTED
+                );
+
+                \App\Services\AuditLogger::log(
+                    user: $user,
+                    action: 'submission.resubmitted',
+                    status: 'success',
+                    entityType: 'application',
+                    entityId: $locked->id,
+                    details: [
+                        'version_no' => $locked->current_version,
+                        'report_period' => $reportPeriod,
+                    ]
+                );
+
+                \App\Services\Reporting\ConsolidationService::flagStaleSources($locked);
+
+                \Illuminate\Support\Facades\DB::afterCommit(function () use ($locked): void {
+                    SubmissionWorkflow::notifyPendingReviewers($locked);
+                });
+            });
         } catch (\Throwable $e) {
+            foreach ($newlyUploaded as $path) {
+                try {
+                    Storage::disk()->delete($path);
+                } catch (\Throwable) {
+                }
+            }
             report($e);
 
             return back()
                 ->withInput()
                 ->with('error', 'The return could not be updated because of a system error. Your entries are preserved below — please try again, or use Save Draft and contact support if the problem persists.');
         }
-
-        SubmissionWorkflow::recordComment(
-            $application,
-            $user,
-            SubmissionWorkflow::STAGE_SUBMITTED,
-            ApplicationComment::ACTION_RESUBMITTED
-        );
-
-        SubmissionWorkflow::notifyPendingReviewers($application);
 
         $redirect = $isStateUser
             ? redirect()->route('user.submissions')
@@ -845,37 +902,28 @@ class DashboardController extends Controller
     }
 
     /**
-     * Delete a submission owned by the user, together with its uploaded files.
-     * Only allowed while the return has not been finally approved.
+     * Soft-delete a submission owned by the user while preserving uploaded files for retention.
+     * Only allowed while the return has not been finally approved or referenced in a consolidated report.
      */
     public function destroySubmission(Application $application): RedirectResponse
     {
         $user = Auth::user();
 
-        abort_unless($user !== null && SubmissionWorkflow::deletableBy($application, $user), 403);
+        abort_unless($user !== null && $user->can('delete', $application), 403);
 
-        $data = is_array($application->return_data) ? $application->return_data : [];
+        $application->delete();
 
-        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk();
-
-        foreach (['supporting_documents', 'attachments'] as $key) {
-            foreach ((array) ($data[$key] ?? []) as $path) {
-                if (! is_string($path) || $path === '') {
-                    continue;
-                }
-
-                try {
-                    if ($disk->exists($path)) {
-                        $disk->delete($path);
-                    }
-                } catch (\Throwable $e) {
-                    report($e);
-                }
-            }
-        }
-
-        $application->delete($user);
+        \App\Services\AuditLogger::log(
+            user: $user,
+            action: 'submission.deleted',
+            status: 'success',
+            entityType: 'application',
+            entityId: $application->id,
+            details: [
+                'scope_code' => $application->scope_code,
+                'report_period' => $application->report_period,
+            ]
+        );
 
         $redirect = match ($user->user_category) {
             'cgis_unit_user' => redirect()->route('user.cgis-units.dashboard'),

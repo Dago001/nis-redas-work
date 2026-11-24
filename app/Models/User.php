@@ -13,6 +13,16 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user): void {
+            if (\Illuminate\Support\Facades\Schema::hasTable('applications')
+                && Application::withTrashed()->where('user_id', $user->id)->exists()) {
+                throw new \LogicException('Cannot delete a user who has submitted official reports. Disable the account instead.');
+            }
+        });
+    }
+
     /**
      * The attributes that are mass assignable.
      *
@@ -27,6 +37,7 @@ class User extends Authenticatable
         'primary_location_code',
         'assigned_state_code',
         'assigned_directorate_code',
+        'assigned_section_code',
         'assigned_cgis_unit_code',
         'assigned_desk_admin_code',
         'assigned_zonal_command_code',
