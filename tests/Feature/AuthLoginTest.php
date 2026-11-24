@@ -184,4 +184,42 @@ class AuthLoginTest extends TestCase
             'password_confirmation' => 'Ab1!cd',
         ])->assertSessionHasNoErrors()->assertRedirect(route('user.profile'));
     }
+
+    public function test_five_failed_passwords_lock_out_user_for_15_minutes(): void
+    {
+        $user = $this->createUser([
+            'service_number' => '54321',
+            'email' => 'lockout-user@example.com',
+        ]);
+
+        // 5 consecutive wrong passwords
+        for ($i = 0; $i < 5; $i++) {
+            $this->from('/login')->post('/login', [
+                'username' => '54321',
+                'password' => 'WrongPass1!',
+            ])->assertRedirect('/login')->assertSessionHasErrors('username');
+        }
+
+        // 6th attempt even with the CORRECT password is locked out for 15 minutes
+        $locked = $this->from('/login')->post('/login', [
+            'username' => '54321',
+            'password' => $this->password,
+        ]);
+        $locked->assertRedirect('/login');
+        $locked->assertSessionHasErrors('username');
+        $this->assertStringContainsString('15 minute(s)', (string) session('errors')->first('username'));
+        $this->assertGuest();
+
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'auth.lockout',
+            'status' => 'blocked',
+        ]);
+
+        // After 15 minutes pass, login succeeds again
+        $this->travel(16)->minutes();
+        $this->post('/login', [
+            'username' => '54321',
+            'password' => $this->password,
+        ])->assertRedirect('/mfa/setup');
+    }
 }

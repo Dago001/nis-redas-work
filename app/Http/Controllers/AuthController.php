@@ -22,7 +22,7 @@ class AuthController extends Controller
 {
     private const MAX_LOGIN_ATTEMPTS = 5;
 
-    private const LOCKOUT_SECONDS = 60;
+    private const LOCKOUT_SECONDS = 900; // 15 minutes
 
     /**
      * Register a new user.
@@ -157,9 +157,28 @@ class AuthController extends Controller
 
         if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_LOGIN_ATTEMPTS)) {
             $seconds = RateLimiter::availableIn($throttleKey);
+            $minutes = (int) ceil($seconds / 60);
+
+            AuditLogger::log(
+                null,
+                'auth.lockout',
+                'blocked',
+                null,
+                null,
+                [
+                    'service_number' => $normalizedLogin,
+                    'retry_after_seconds' => $seconds,
+                ],
+                $request->ip() ?? '0.0.0.0',
+                null,
+                $request->userAgent()
+            );
+
+            $message = "Too many failed login attempts. Your account is locked for {$minutes} minute(s) ({$seconds} seconds).";
 
             throw ValidationException::withMessages([
-                'login' => ["Too many login attempts. Try again in {$seconds} seconds."],
+                'username' => [$message],
+                'login' => [$message],
             ]);
         }
 
