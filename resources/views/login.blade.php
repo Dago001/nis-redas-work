@@ -248,12 +248,7 @@
                 @enderror
             </div>
 
-            <div class="helper-row">
-                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:.84rem;color:var(--gray-600);">
-                    <input type="checkbox" name="remember" value="1" {{ old('remember') ? 'checked' : '' }} style="accent-color:var(--nis-600);width:15px;height:15px;">
-                    Keep me signed in
-                </label>
-
+            <div class="helper-row" style="justify-content:flex-end;">
                 <a href="{{ route('password.forgot.form') }}" class="forgot-btn" style="text-decoration:none;">
                     Forgot Password?
                 </a>
