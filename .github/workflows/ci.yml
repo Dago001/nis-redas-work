@@ -1,0 +1,122 @@
+name: NIS REDAS CI
+
+on:
+  push:
+    branches: ['main', 'feature/**']
+  pull_request:
+
+jobs:
+  php:
+    name: PHP 8.4 Lint, Security & SQLite Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_sqlite, sqlite3, zip, gd, intl, fileinfo, bcmath, pdo_mysql
+          coverage: none
+
+      - name: Validate composer.json
+        run: composer validate --strict
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
+
+      - name: Composer security audit
+        continue-on-error: true
+        run: composer audit
+
+      - name: PHP syntax lint
+        run: find app routes config database tests bootstrap -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          echo "JWT_SECRET=base64:$(openssl rand -base64 48)" >> .env
+
+      - name: Runtime security config check
+        run: php artisan redas:security:check
+
+      - name: Run Laravel test suite (SQLite)
+        run: php artisan test
+
+  mysql:
+    name: MySQL 8.4 Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: redas_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, pdo_mysql, zip, gd, intl, fileinfo, bcmath
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --no-interaction
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          echo "JWT_SECRET=base64:$(openssl rand -base64 48)" >> .env
+
+      - name: Run migrations and seeders on MySQL 8.4
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: redas_test
+          DB_USERNAME: root
+          DB_PASSWORD: ''
+        run: php artisan migrate:fresh --seed --force
+
+      - name: Run integration tests on MySQL 8.4
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: redas_test
+          DB_USERNAME: root
+          DB_PASSWORD: ''
+        run: php artisan test --filter="ApiOtpChallengeTest|RefreshTokenRotationTest|GeolocationSecurityTest|ReviewerScopeAuthorizationTest|OptionCZonalWorkflowTest|OptionCDirectorateWorkflowTest|ConsolidatedStalenessTest|ReportVersioningTest|ArchiveUploadTest|ReportGenerationTest|NotificationReliabilityTest|ReliabilityTest|AuditLogIntegrityTest|PageSmokeTest"
+
+  frontend:
+    name: Frontend Vite Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install NPM dependencies
+        run: npm ci
+
+      - name: Build production assets
+        run: npm run build
+
+      - name: NPM security audit
+        continue-on-error: true
+        run: npm audit --audit-level=high
