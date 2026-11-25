@@ -8,7 +8,7 @@
                 <!-- Dynamic name of State by fetching from the authenticated user's state -->
                 <h1 class="page-title"> {{ auth()->user()->state ?? 'State' }} Officer Dashboard</h1>
                 <p class="page-subtitle">
-                    Welcome back, <strong>{{ auth()->user()->name ?? 'Officer' }}</strong> —
+                    Welcome back, <strong>{{ auth()->user()->name ?? 'Officer' }}</strong> -
                     {{ now()->format('l, d F Y') }}
                 </p>
             </div>
@@ -23,7 +23,7 @@
                 <i class="fas fa-calendar-exclamation"></i>
             </div>
             <div style="flex:1;">
-                <strong style="color:#92400e;font-size:.9rem;">Monthly Return Due — {{ now()->endOfMonth()->format('d F Y') }}</strong>
+                <strong style="color:#92400e;font-size:.9rem;">Monthly Return Due - {{ now()->endOfMonth()->format('d F Y') }}</strong>
                 <p style="color:#b45309;font-size:.8rem;margin:0;">Submit your {{ now()->format('F Y') }} operational return before the deadline to avoid penalties.</p>
             </div>
             <a href="{{ route('user.returns.create') }}" style="background:#f59e0b;color:white;padding:8px 16px;border-radius:var(--radius-sm);font-size:.82rem;font-weight:700;text-decoration:none;flex-shrink:0;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">
@@ -112,7 +112,7 @@
                                 [$badgeClass, $statusLabel] = $statusConfig[$status] ?? ['badge-draft', ucfirst((string) ($submission->status ?? 'Draft'))];
                                 $data = is_array($submission->return_data) ? $submission->return_data : [];
                                 $periodRaw = $data['report_period'] ?? $data['period'] ?? null;
-                                $period = $periodRaw ?: ($submission->created_at?->format('M Y') ?? '—');
+                                $period = $periodRaw ?: ($submission->created_at?->format('M Y') ?? '-');
                                 if ($periodRaw) {
                                     try {
                                         $period = \Carbon\Carbon::createFromFormat('Y-m', $periodRaw)->format('M Y');
@@ -120,8 +120,8 @@
                                         $period = $periodRaw;
                                     }
                                 }
-                                $type = $typeLabels[$data['return_type'] ?? ''] ?? ucfirst((string) ($data['return_type'] ?? '—'));
-                                $stage = $submission->workflow_stage ? ucwords(str_replace('_', ' ', $submission->workflow_stage)) : '—';
+                                $type = $typeLabels[$data['return_type'] ?? ''] ?? ucfirst((string) ($data['return_type'] ?? '-'));
+                                $stage = $submission->workflow_stage ? ucwords(str_replace('_', ' ', $submission->workflow_stage)) : '-';
                             @endphp
                             <tr>
                                 <td><strong>{{ $period }}</strong></td>
@@ -132,7 +132,7 @@
                                 <td>
                                     <span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:.7rem;font-weight:600;background:var(--gray-100);color:var(--gray-600);">{{ $stage }}</span>
                                 </td>
-                                <td style="font-size:.78rem;color:var(--gray-500);">{{ $submission->created_at?->format('d M Y') ?? '—' }}</td>
+                                <td style="font-size:.78rem;color:var(--gray-500);">{{ $submission->created_at?->format('d M Y') ?? '-' }}</td>
                                 <td>
                                     <a href="{{ route('user.returns.show', $submission) }}" class="btn-nis btn-ghost btn-sm" title="View Details">
                                         <i class="fas fa-eye"></i>
@@ -283,7 +283,7 @@
         monthly: 'Monthly Return', quarterly: 'Quarterly Return',
         biannual: 'Bi-Annual Return', annual: 'Annual Return', special: 'Special Report'
     };
-    var periodLabel = '—';
+    var periodLabel = '-';
     if (data.period) {
         var d = new Date(data.period + '-01');
         periodLabel = isNaN(d) ? data.period : d.toLocaleDateString(undefined, { month: 'short', year: 'numeric' });

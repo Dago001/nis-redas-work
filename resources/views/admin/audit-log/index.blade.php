@@ -123,7 +123,7 @@
                                     <div style="font-weight:600;font-size:.82rem;">{{ $log->user->name }}</div>
                                     <div style="font-size:.7rem;color:var(--gray-400);">{{ $log->user->email }}</div>
                                 @else
-                                    <span style="font-size:.78rem;color:var(--gray-400);">—</span>
+                                    <span style="font-size:.78rem;color:var(--gray-400);">-</span>
                                 @endif
                             </td>
                             <td>
@@ -141,13 +141,13 @@
                                 <span class="status-badge {{ $badgeClass }}">{{ ucfirst($log->status) }}</span>
                             </td>
                             <td style="font-size:.75rem;color:var(--gray-600);">
-                                {{ $log->entity_type ? $log->entity_type . ':' . $log->entity_id : '—' }}
+                                {{ $log->entity_type ? $log->entity_type . ':' . $log->entity_id : '-' }}
                             </td>
                             <td style="font-family:monospace;font-size:.75rem;color:var(--gray-600);">
-                                {{ $log->ip_address ?? '—' }}
+                                {{ $log->ip_address ?? '-' }}
                             </td>
                             <td style="font-size:.75rem;color:var(--gray-600);">
-                                {{ $log->location ?? '—' }}
+                                {{ $log->location ?? '-' }}
                             </td>
                             <td>
                                 @if($log->details)
@@ -156,7 +156,7 @@
                                         <pre style="margin:6px 0 0;background:var(--gray-50);padding:8px;border-radius:var(--radius-sm);max-width:260px;overflow:auto;">{{ json_encode($log->details, JSON_PRETTY_PRINT) }}</pre>
                                     </details>
                                 @else
-                                    <span style="font-size:.72rem;color:var(--gray-400);">—</span>
+                                    <span style="font-size:.72rem;color:var(--gray-400);">-</span>
                                 @endif
                             </td>
                         </tr>

@@ -194,7 +194,7 @@ $incidentCategories = [
             <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-exclamation-triangle"></i></div>
-                    3. Incident Report — {{ $catLabel }}
+                    3. Incident Report - {{ $catLabel }}
                 </div>
                 <button type="button" class="btn-nis btn-ghost btn-sm ict-add-row" data-target="ict-incident-body-{{ $catKey }}">
                     <i class="fas fa-plus"></i> Add Row
@@ -239,7 +239,7 @@ $incidentCategories = [
             <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-handshake"></i></div>
-                    3. Incident Report — h. Technical Services Providers
+                    3. Incident Report - h. Technical Services Providers
                 </div>
                 <button type="button" class="btn-nis btn-ghost btn-sm ict-add-row" data-target="ict-tsp-body">
                     <i class="fas fa-plus"></i> Add Row
@@ -383,7 +383,7 @@ $incidentCategories = [
             <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-laptop-code"></i></div>
-                    6. Software and Data Management — a. Software
+                    6. Software and Data Management - a. Software
                 </div>
                 <button type="button" class="btn-nis btn-ghost btn-sm ict-add-row" data-target="ict-software-body">
                     <i class="fas fa-plus"></i> Add Row
@@ -421,7 +421,7 @@ $incidentCategories = [
             <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-database"></i></div>
-                    6. Software and Data Management — b. Data
+                    6. Software and Data Management - b. Data
                 </div>
                 <button type="button" class="btn-nis btn-ghost btn-sm ict-add-row" data-target="ict-data-body">
                     <i class="fas fa-plus"></i> Add Row
@@ -459,7 +459,7 @@ $incidentCategories = [
             <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-shield-halved"></i></div>
-                    6. Software and Data Management — c. Cybersecurity
+                    6. Software and Data Management - c. Cybersecurity
                 </div>
                 <button type="button" class="btn-nis btn-ghost btn-sm ict-add-row" data-target="ict-cyber-body">
                     <i class="fas fa-plus"></i> Add Row
@@ -601,7 +601,7 @@ $incidentCategories = [
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;">
                         <i class="fas fa-list-check"></i>
                     </div>
-                    9. Summary — Project and System Activities
+                    9. Summary - Project and System Activities
                 </div>
             </div>
             <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
@@ -618,7 +618,7 @@ $incidentCategories = [
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;">
                         <i class="fas fa-list-check"></i>
                     </div>
-                    9. Summary — Maintenance and Security
+                    9. Summary - Maintenance and Security
                 </div>
             </div>
             <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">

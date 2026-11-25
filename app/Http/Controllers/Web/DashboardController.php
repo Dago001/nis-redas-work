@@ -339,7 +339,7 @@ class DashboardController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'The return could not be submitted because of a system error. Your entries are preserved below — please try again, or use Save Draft and contact support if the problem persists.');
+                ->with('error', 'The return could not be submitted because of a system error. Your entries are preserved below - please try again, or use Save Draft and contact support if the problem persists.');
         }
 
         return redirect()
@@ -479,7 +479,7 @@ class DashboardController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'The return could not be submitted because of a system error. Your entries are preserved below — please try again, or use Save Draft and contact support if the problem persists.');
+                ->with('error', 'The return could not be submitted because of a system error. Your entries are preserved below - please try again, or use Save Draft and contact support if the problem persists.');
         }
 
         return redirect()
@@ -738,7 +738,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Passport centre and foreign mission name lists, unconditionally — the
+     * Passport centre and foreign mission name lists, unconditionally - the
      * combined state form embeds the passport section alongside all others.
      */
     private function passportDirectoryData(): array
@@ -894,7 +894,7 @@ class DashboardController extends Controller
 
             return back()
                 ->withInput()
-                ->with('error', 'The return could not be updated because of a system error. Your entries are preserved below — please try again, or use Save Draft and contact support if the problem persists.');
+                ->with('error', 'The return could not be updated because of a system error. Your entries are preserved below - please try again, or use Save Draft and contact support if the problem persists.');
         }
 
         $redirect = $isStateUser

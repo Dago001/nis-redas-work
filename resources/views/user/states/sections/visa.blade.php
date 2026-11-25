@@ -73,8 +73,8 @@ $counterCols = [
 ];
 
 $visaGroups = [
-    'evisa' => ['label' => 'Short Visit Visa — e-Visa', 'codes' => ['F3B','F4A','F5A','F6A','F7E','F7F','F7G','F7H','F7I','F7K','F9A','F9B']],
-    'svv'   => ['label' => 'Regular Visa — SVV', 'codes' => ['F2A','F3A','F4B','F4C','F6B','F7A','F7B','F7C','F7D','F7J','F7L','F7M']],
+    'evisa' => ['label' => 'Short Visit Visa - e-Visa', 'codes' => ['F3B','F4A','F5A','F6A','F7E','F7F','F7G','F7H','F7I','F7K','F9A','F9B']],
+    'svv'   => ['label' => 'Regular Visa - SVV', 'codes' => ['F2A','F3A','F4B','F4C','F6B','F7A','F7B','F7C','F7D','F7J','F7L','F7M']],
     'trv'   => ['label' => 'TRV', 'codes' => ['R1A','R4A','R5A','R7A','R8A','R9A']],
     'prv'   => ['label' => 'PRV', 'codes' => ['N1A','N2A','N3','N4A','N5A','N5B']],
     'etwp'  => ['label' => 'e-TWP', 'codes' => ['R10','R11']],
@@ -280,13 +280,13 @@ $visaStatCols = [
         </div>
     </div>
 
-    <!-- TAB 4: Residence Permit — Temporary Residence Permit (TRP) -->
+    <!-- TAB 4: Residence Permit - Temporary Residence Permit (TRP) -->
     <div class="tab-panel" id="tab-visa-trp">
         <div class="redas-card" style="margin-bottom:14px;">
             <div class="card-head">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-id-card"></i></div>
-                    4. Residence Permit — Temporary Residence Permit
+                    4. Residence Permit - Temporary Residence Permit
                 </div>
             </div>
             <div class="card-body">
@@ -330,13 +330,13 @@ $visaStatCols = [
         </div>
     </div>
 
-    <!-- TAB 5: Residence Permit — Permanent Residence Permit (PRP) -->
+    <!-- TAB 5: Residence Permit - Permanent Residence Permit (PRP) -->
     <div class="tab-panel" id="tab-visa-prp">
         <div class="redas-card" style="margin-bottom:14px;">
             <div class="card-head">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-id-card-alt"></i></div>
-                    5. Residence Permit — Permanent Residence Permit
+                    5. Residence Permit - Permanent Residence Permit
                 </div>
             </div>
             <div class="card-body">
@@ -513,7 +513,7 @@ $visaStatCols = [
                             </tr>
                             @endforeach
                             <tr class="total-row" style="background:#f1f5f9;">
-                                <td colspan="2"><strong>{{ $group['label'] }} — Subtotal</strong></td>
+                                <td colspan="2"><strong>{{ $group['label'] }} - Subtotal</strong></td>
                                 @foreach($visaStatCols as [$col,$label])
                                 <td><input type="number" id="visa-visas-subtotal-{{ $groupKey }}-{{ $col }}" class="ni" readonly placeholder="0"></td>
                                 @endforeach
@@ -608,7 +608,7 @@ $visaStatCols = [
             <div class="card-head">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-flag"></i></div>
-                    10. ECOWAS &amp; African Affairs — ECOWAS
+                    10. ECOWAS &amp; African Affairs - ECOWAS
                 </div>
             </div>
             <div class="card-body">
@@ -652,7 +652,7 @@ $visaStatCols = [
             <div class="card-head">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-flag"></i></div>
-                    10. ECOWAS &amp; African Affairs — African Affairs
+                    10. ECOWAS &amp; African Affairs - African Affairs
                 </div>
             </div>
             <div class="card-body">
@@ -764,8 +764,8 @@ $visaStatCols = [
         etwp:  ['r10','r11'],
     };
     const VISA_GROUP_LABELS = {
-        evisa: 'Short Visit Visa — e-Visa',
-        svv: 'Regular Visa — SVV',
+        evisa: 'Short Visit Visa - e-Visa',
+        svv: 'Regular Visa - SVV',
         trv: 'TRV',
         prv: 'PRV',
         etwp: 'e-TWP',
@@ -1030,13 +1030,13 @@ $visaStatCols = [
         let emigrantRows = [];
         document.querySelectorAll('#visaEmigrantBody .data-row').forEach((row, idx) => {
             const vals = [
-                row.querySelector('[name$="[center]"]')?.value || '—',
-                row.querySelector('[name$="[nationality]"]')?.value || '—',
+                row.querySelector('[name$="[center]"]')?.value || '-',
+                row.querySelector('[name$="[nationality]"]')?.value || '-',
             ];
             EMIGRANT_NUM.forEach(c => vals.push(row.querySelector(`.visa-emigrant-${c}`)?.value || '0'));
             vals.splice(6, 0, getValById(`visa-emigrant-row-total-${idx}`));
-            vals.push(row.querySelector('[name$="[region]"]')?.value || '—');
-            if (vals.some(v => v !== '—' && v !== '0')) emigrantRows.push(vals.map(v => esc(v)));
+            vals.push(row.querySelector('[name$="[region]"]')?.value || '-');
+            if (vals.some(v => v !== '-' && v !== '0')) emigrantRows.push(vals.map(v => esc(v)));
         });
         html += previewSectionTitle(2, 'e-Migrant');
         html += previewTable(emigrantRows, ['Center', 'Nationality', 'Regular', 'Irregular', 'Male', 'Female', 'Total', 'Employed', 'Self Emp.', 'Student', 'Spouse', 'Dependant', 'Region']);
@@ -1051,9 +1051,9 @@ $visaStatCols = [
         /* 3. Quota Administration */
         let quotaRows = [];
         document.querySelectorAll('#visaQuotaBody .data-row').forEach(row => {
-            const vals = [row.querySelector('[name$="[company]"]')?.value || '—'];
+            const vals = [row.querySelector('[name$="[company]"]')?.value || '-'];
             QUOTA_COLS.forEach(c => vals.push(row.querySelector(`.visa-quota-${c}`)?.value || '0'));
-            if (vals.some(v => v !== '—' && v !== '0')) quotaRows.push(vals.map(v => esc(v)));
+            if (vals.some(v => v !== '-' && v !== '0')) quotaRows.push(vals.map(v => esc(v)));
         });
         html += previewSectionTitle(3, 'Quota Administration');
         html += previewTable(quotaRows, ['Company/Enterprise', 'Quota Positions', 'Utilized Quota', 'Expatriate Deleted']);
@@ -1071,7 +1071,7 @@ $visaStatCols = [
             trpRows.push(vals);
         });
         trpRows.push(['<strong>Total</strong>', ...PERMIT_COLS.map(c => getValById(`visa-trp-col-total-${c}`)), getValById('visa-trp-grand-total')]);
-        html += previewSectionTitle(4, 'Residence Permit — Temporary Residence Permit');
+        html += previewSectionTitle(4, 'Residence Permit - Temporary Residence Permit');
         html += previewTable(trpRows, ['Category', 'Male', 'Female', 'Principal', 'Dependent', 'Regularization', 'Renewals', 'Redesignations', 'Reclassification', 'COE', 'COS', 'Total']);
 
         /* 5. Permanent Residence Permit */
@@ -1086,7 +1086,7 @@ $visaStatCols = [
             prpRows.push(vals);
         });
         prpRows.push(['<strong>Total</strong>', ...PRP_COLS.map(c => getValById(`visa-prp-col-total-${c}`)), getValById('visa-prp-grand-total')]);
-        html += previewSectionTitle(5, 'Residence Permit — Permanent Residence Permit');
+        html += previewSectionTitle(5, 'Residence Permit - Permanent Residence Permit');
         html += previewTable(prpRows, ['Category', 'Male', 'Female', 'Principal', 'Dependent', 'Regularization', 'Renewals', 'Total']);
 
         /* 6. FTZ */
@@ -1132,9 +1132,9 @@ $visaStatCols = [
         /* 9. Visa Counter */
         let counterRows = [];
         document.querySelectorAll('#visaCounterBody .data-row').forEach(row => {
-            const vals = [row.querySelector('[name$="[visa_type]"]')?.value || '—'];
+            const vals = [row.querySelector('[name$="[visa_type]"]')?.value || '-'];
             COUNTER_COLS.forEach(c => vals.push(row.querySelector(`.visa-counter-${c}`)?.value || '0'));
-            if (vals.some(v => v !== '—' && v !== '0')) counterRows.push(vals.map(v => esc(v)));
+            if (vals.some(v => v !== '-' && v !== '0')) counterRows.push(vals.map(v => esc(v)));
         });
         html += previewSectionTitle(9, 'Visa Counter');
         html += previewTable(counterRows, ['Visa Type', 'No. Of Extension', 'Spouse (Male)', 'Spouse (Female)']);
@@ -1144,10 +1144,10 @@ $visaStatCols = [
         function permitDynamicPreview(bodyId, classPrefix, rowTotalPrefix, grandPrefix, title) {
             let rows = [];
             document.querySelectorAll(`#${bodyId} .data-row`).forEach((row, idx) => {
-                const vals = [row.querySelector('[name$="[nationality]"]')?.value || '—'];
+                const vals = [row.querySelector('[name$="[nationality]"]')?.value || '-'];
                 PERMIT_COLS.forEach(c => vals.push(row.querySelector(`.${classPrefix}${c}`)?.value || '0'));
                 vals.push(getValById(`${rowTotalPrefix}${idx}`));
-                if (vals.some(v => v !== '—' && v !== '0')) rows.push(vals.map(v => esc(v)));
+                if (vals.some(v => v !== '-' && v !== '0')) rows.push(vals.map(v => esc(v)));
             });
             let out = `<div style="font-size:.84rem;font-weight:700;margin:10px 0 6px;">${title}</div>`;
             out += previewTable(rows, ['Nationality', 'Male', 'Female', 'Principal', 'Dependent', 'Regularization', 'Renewals', 'Redesignations', 'Reclassification', 'COE', 'COS', 'Total']);

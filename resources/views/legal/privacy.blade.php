@@ -63,8 +63,8 @@
             <div class="legal-section">
                 <h2>4. Access and Security</h2>
                 <p>
-                    Access is role-based and restricted to authorised users. Technical and administrative controls — including
-                    encryption in transit, access logs, rate limiting, and regular review of permissions — are applied to protect
+                    Access is role-based and restricted to authorised users. Technical and administrative controls - including
+                    encryption in transit, access logs, rate limiting, and regular review of permissions - are applied to protect
                     data confidentiality, integrity, and availability.
                 </p>
             </div>

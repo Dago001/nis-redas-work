@@ -7,7 +7,7 @@
             <div>
                 <h1 class="page-title">National Command Dashboard</h1>
                 <p class="page-subtitle">
-                    Nigeria Immigration Service — HQ Overview &bull; {{ now()->format('l, d F Y') }}
+                    Nigeria Immigration Service - HQ Overview &bull; {{ now()->format('l, d F Y') }}
                 </p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -83,7 +83,7 @@
                 <div class="card-head">
                     <div class="card-head-title">
                         <div class="card-head-icon" style="background:var(--nis-50);color:var(--nis-600);"><i class="fas fa-chart-line"></i></div>
-                        National Submission Trend — {{ now()->year }}
+                        National Submission Trend - {{ now()->year }}
                     </div>
                     <div style="display:flex;gap:6px;">
                         <button class="btn-nis btn-ghost btn-sm period-btn active">Monthly</button>
@@ -118,7 +118,7 @@
                 <div class="card-head">
                     <div class="card-head-title">
                         <div class="card-head-icon" style="background:#dbeafe;color:#1d4ed8;"><i class="fas fa-map"></i></div>
-                        Zonal Compliance — May {{ now()->year }}
+                        Zonal Compliance - May {{ now()->year }}
                     </div>
                     <a href="{{ url('/admin/formations') }}" class="btn-nis btn-ghost btn-sm">Full View</a>
                 </div>
@@ -227,12 +227,12 @@
                     </div>
                     <div class="card-body" style="display:flex;flex-direction:column;gap:14px;">
                         @foreach([
-                            ['Web Server',      98,  'green', 'Nginx — Response 142ms'],
-                            ['Database',        100, 'green', 'MySQL — Queries: 1,240/min'],
+                            ['Web Server',      98,  'green', 'Nginx - Response 142ms'],
+                            ['Database',        100, 'green', 'MySQL - Queries: 1,240/min'],
                             ['File Storage',    71,  'gold',  '3.55 TB / 5 TB used'],
                             ['API Gateway',     95,  'green', 'Rate: 0.02% errors'],
                             ['Backup Service',  100, 'green', 'Last run: 06:00 WAT today'],
-                            ['Email Queue',     88,  'green', '12 msgs/min — 0 bounced'],
+                            ['Email Queue',     88,  'green', '12 msgs/min - 0 bounced'],
                         ] as [$service, $pct, $color, $detail])
                         <div>
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -279,7 +279,7 @@
                                     default => 'fas fa-info-circle',
                                 };
                                 $description = $event->user?->name ?? 'System';
-                                $description .= ' — ' . str_replace('_', ' ', $event->action);
+                                $description .= ' - ' . str_replace('_', ' ', $event->action);
                             @endphp
                             <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--gray-100);">
                                 <div style="width:28px;height:28px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;background:{{ $eventType === 'danger' ? '#fee2e2' : ($eventType === 'warning' ? '#fef9c3' : ($eventType === 'success' ? '#dcfce7' : '#dbeafe')) }};color:{{ $eventType === 'danger' ? '#dc2626' : ($eventType === 'warning' ? '#a16207' : ($eventType === 'success' ? '#15803d' : '#1d4ed8')) }};">
@@ -287,7 +287,7 @@
                                 </div>
                                 <div style="flex:1;min-width:0;">
                                     <div style="font-size:.78rem;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ ucfirst($description) }}</div>
-                                    <div style="font-size:.7rem;color:var(--gray-400);">IP: {{ $event->ip_address ?? '—' }} {{ $event->location ? '• ' . $event->location : '' }}</div>
+                                    <div style="font-size:.7rem;color:var(--gray-400);">IP: {{ $event->ip_address ?? '-' }} {{ $event->location ? '• ' . $event->location : '' }}</div>
                                 </div>
                                 <div style="font-size:.7rem;color:var(--gray-400);flex-shrink:0;">{{ $event->created_at->diffForHumans() }}</div>
                             </div>

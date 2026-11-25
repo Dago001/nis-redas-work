@@ -3,7 +3,7 @@ import Chart from 'chart.js/auto';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 /* ============================================================
-   NIS REDAS — Main Application JS v2.0
+   NIS REDAS - Main Application JS v2.0
    ============================================================ */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ════════════════════════════════════════
-   GLOBAL — runs on every page
+   GLOBAL - runs on every page
 ═════════════════════════════════════════ */
 function initGlobal() {
     /* Bootstrap tooltips */

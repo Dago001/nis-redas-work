@@ -17,7 +17,7 @@
     <div class="card-body">
         <ul>
             @foreach($application->versions as $ver)
-                <li><strong>v{{ $ver->version_no }}</strong> ({{ $ver->reason }}) — {{ $ver->created_at?->toDateTimeString() }} — SHA-256: <code>{{ substr($ver->data_hash, 0, 16) }}...</code></li>
+                <li><strong>v{{ $ver->version_no }}</strong> ({{ $ver->reason }}) - {{ $ver->created_at?->toDateTimeString() }} - SHA-256: <code>{{ substr($ver->data_hash, 0, 16) }}...</code></li>
             @endforeach
         </ul>
     </div>
@@ -32,7 +32,7 @@
                     <a href="{{ route('prs.consolidated.show', $src->revision->consolidatedReport) }}">
                         {{ $src->revision->consolidatedReport->reference }} (Rev {{ $src->revision->revision_no }})
                     </a>
-                    — {{ $src->included ? 'Included' : 'Excluded: '.$src->exclusion_reason }}
+                    - {{ $src->included ? 'Included' : 'Excluded: '.$src->exclusion_reason }}
                 </p>
             @endif
         @empty

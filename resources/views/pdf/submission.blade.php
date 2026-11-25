@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>{{ $directorateName ?? 'Directorate' }} Return — {{ $application->return_data['report_period'] ?? '' }}</title>
+    <title>{{ $directorateName ?? 'Directorate' }} Return - {{ $application->return_data['report_period'] ?? '' }}</title>
     <style>
         body { background:#fff; color:#111827; font-family:'DejaVu Sans', sans-serif; font-size:11px; margin:0; }
         .report-header { border-bottom:3px solid #006838; padding-bottom:12px; margin-bottom:16px; }
@@ -40,7 +40,7 @@
 
     $formatValue = function ($value) {
         if ($value === null || $value === '') {
-            return '—';
+            return '-';
         }
         if (is_bool($value)) {
             return $value ? 'Yes' : 'No';
@@ -59,7 +59,7 @@
         }
 
         if ($data === []) {
-            return '<span>—</span>';
+            return '<span>-</span>';
         }
 
         $out = '';
@@ -93,7 +93,7 @@
                 $out .= $renderData($value, $depth + 1);
             }
 
-            return $out === '' ? '<span>—</span>' : $out;
+            return $out === '' ? '<span>-</span>' : $out;
         }
 
         $allArrays = count(array_filter($data, 'is_array')) === count($data);
@@ -147,11 +147,11 @@
             </td>
             <td>
                 <h1>Nigeria Immigration Service</h1>
-                <p>{{ $directorateName ?? ucwords(str_replace(['_', '-'], ' ', (string) ($data['directorate_slug'] ?? $application->scope_code ?? 'State'))) }} — Monthly Return</p>
+                <p>{{ $directorateName ?? ucwords(str_replace(['_', '-'], ' ', (string) ($data['directorate_slug'] ?? $application->scope_code ?? 'State'))) }} - Monthly Return</p>
                 <div class="report-meta">
-                    <span><strong>Report Period:</strong> {{ $data['report_period'] ?? '—' }}</span>
-                    <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? optional($application->user)->name ?? '—' }}</span>
-                    <span><strong>Submitted:</strong> {{ optional($application->created_at)->format('d M Y, H:i') ?? '—' }}</span>
+                    <span><strong>Report Period:</strong> {{ $data['report_period'] ?? '-' }}</span>
+                    <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? optional($application->user)->name ?? '-' }}</span>
+                    <span><strong>Submitted:</strong> {{ optional($application->created_at)->format('d M Y, H:i') ?? '-' }}</span>
                     <span><strong>Status:</strong> <span class="status-badge {{ $statusClass }}">{{ ucfirst($application->status ?? 'pending') }}</span></span>
                 </div>
             </td>
@@ -162,7 +162,7 @@
 {!! $renderData($data) !!}
 
 <div class="report-footer">
-    Generated from NIS-REDAS on {{ now()->format('d M Y, H:i') }} — Submission #{{ $application->id }}
+    Generated from NIS-REDAS on {{ now()->format('d M Y, H:i') }} - Submission #{{ $application->id }}
 </div>
 </body>
 </html>

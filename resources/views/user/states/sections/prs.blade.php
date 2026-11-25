@@ -576,8 +576,8 @@ $meRows = [
         let researchRows = [];
         document.querySelectorAll('#prsResearchBody .data-row').forEach(row => {
             const inputs = row.querySelectorAll('input');
-            const vals = Array.from(inputs).map(i => esc(i.value) || '—');
-            if (vals.some(v => v !== '—')) researchRows.push(vals);
+            const vals = Array.from(inputs).map(i => esc(i.value) || '-');
+            if (vals.some(v => v !== '-')) researchRows.push(vals);
         });
         html += previewSectionTitle(3, 'Research and Statistics');
         html += previewTable(researchRows, ['Research Topic Approved', 'Status of Research', 'Scope of Research']);
@@ -585,8 +585,8 @@ $meRows = [
         let stakeRows = [];
         document.querySelectorAll('#prsStakeholdersBody .data-row').forEach(row => {
             const inputs = row.querySelectorAll('input');
-            const vals = Array.from(inputs).map(i => esc(i.value) || '—');
-            if (vals.some(v => v !== '—')) stakeRows.push(vals);
+            const vals = Array.from(inputs).map(i => esc(i.value) || '-');
+            if (vals.some(v => v !== '-')) stakeRows.push(vals);
         });
         html += previewSectionTitle('', 'Research by Stakeholders');
         html += previewTable(stakeRows, ['Research Topic', 'Researcher', 'Institution', 'Objective', 'Remark']);
@@ -618,8 +618,8 @@ $meRows = [
             const cells = tr.querySelectorAll('td');
             if (cells.length < 4) return;
             const label = cells[1].textContent.trim();
-            const number = cells[2].querySelector('input')?.value || '—';
-            const remark = cells[3].querySelector('input')?.value || '—';
+            const number = cells[2].querySelector('input')?.value || '-';
+            const remark = cells[3].querySelector('input')?.value || '-';
             meRows.push([esc(label), esc(number), esc(remark)]);
         });
         html += previewSectionTitle(6, 'Monitoring and Evaluation: Personnel/Financial Report');

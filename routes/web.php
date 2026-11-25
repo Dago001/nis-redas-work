@@ -67,7 +67,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/password/reset/{token}', [AuthTokenController::class, 'resetPassword'])->middleware('throttle:10,1')->name('password.reset');
 });
 
-// State user (officer) routes — restricted to state_user accounts
+// State user (officer) routes - restricted to state_user accounts
 Route::middleware([Authenticate::class, 'access:category=state_user,location=state,role=user|officer|minLevel=0', 'abac.geo'])->group(function () {
     Route::get('/user/dashboard', [DashboardController::class, 'stateDashboard'])->name('user.dashboard');
 
@@ -177,11 +177,11 @@ Route::middleware([Authenticate::class])->group(function () {
     Route::get('/user/profile', [ProfileController::class, 'edit'])->name('user.profile');
     Route::patch('/user/profile', [ProfileController::class, 'update'])->middleware([\Illuminate\Routing\Middleware\ThrottleRequests::class . ':60,1'])->name('user.profile.update');
 
-    // PDF export of a submitted return — owner or in-scope approver only (checked in controller).
+    // PDF export of a submitted return - owner or in-scope approver only (checked in controller).
     Route::get('/user/submissions/{application}/pdf', [DashboardController::class, 'downloadSubmissionPdf'])->name('user.submissions.pdf');
 });
 
-// Zonal commander routes — access only to zonal pages
+// Zonal commander routes - access only to zonal pages
 Route::middleware([Authenticate::class, 'access:category=zonal_commander,location=zonal,role=admin|zonal|minLevel=1', 'abac.geo'])->group(function () {
     Route::get('/zonal/dashboard', [SubmissionReviewController::class, 'index'])->name('user.zonal.home');
     Route::patch('/zonal/submissions/{application}/approve', [SubmissionReviewController::class, 'approve'])->middleware([\Illuminate\Routing\Middleware\ThrottleRequests::class . ':60,1'])->name('zonal.submissions.approve');
@@ -199,7 +199,7 @@ Route::middleware([Authenticate::class, 'access:category=desk_admin|directorate_
     Route::get('/desk-admin/submissions/{application}/documents/{collection}/{index}', [SubmissionReviewController::class, 'document'])->name('desk.admin.submissions.document');
 });
 
-// CGIS unit user routes — access only to CGIS unit pages
+// CGIS unit user routes - access only to CGIS unit pages
 // Note: Each CGIS unit user has a unique slug (e.g., actu, provost, servicom) that is used to access their specific unit form.
 Route::middleware([Authenticate::class, 'access:category=cgis_unit_user,location=unit|headquarters,role=user|officer|unit_officer|minLevel=0', 'abac.geo'])->group(function () {
     Route::get('/user/cgis-units', function () {
@@ -218,7 +218,7 @@ Route::middleware([Authenticate::class, 'access:category=cgis_unit_user,location
     Route::get('/user/cgis-units/{slug}', [DashboardController::class, 'showCgisUnit'])->name('user.cgis-units.show');
     Route::post('/user/cgis-units/{slug}', [DashboardController::class, 'storeCgisUnit'])->middleware('throttle:database')->name('user.cgis-units.store');
 });
-// Directorate user routes — access only to directorate pages
+// Directorate user routes - access only to directorate pages
 // Note: Each Directorate user has a unique slug (e.g., hrm, prs, finance) that is used to access their specific directorate form.
 Route::middleware([Authenticate::class, 'access:category=directorate_user|directorate_admin,location=directorate,role=user|admin|directorate|minLevel=0', 'abac.geo'])->group(function () {
     Route::get('/user/directorates', function () {
@@ -238,7 +238,7 @@ Route::middleware([Authenticate::class, 'access:category=directorate_user|direct
     Route::post('/user/directorates/{slug}', [DashboardController::class, 'storeDirectorate'])->middleware('throttle:database')->name('user.directorates.store');
 });
 
-// Shared directorate form routes — accessible by both state (officer) and directorate users
+// Shared directorate form routes - accessible by both state (officer) and directorate users
 
 Route::middleware([Authenticate::class, 'access:category=state_user|directorate_user|directorate_admin,location=state|directorate,role=user|admin|officer|directorate|minLevel=0', 'abac.geo'])->group(function () {
     Route::get('/user/directorates/{slug}', [DashboardController::class, 'showDirectorate'])->name('user.directorates.show');
@@ -261,7 +261,7 @@ Route::middleware([Authenticate::class, 'access:category=state_user|directorate_
         return redirect()->route('user.directorates.show', $legacyMap[$id] ?? 'hrm');
     })->name('user.directorate');
 });
-// Super-admin (executive) — view-only dashboard and consolidated returns
+// Super-admin (executive) - view-only dashboard and consolidated returns
 Route::middleware([Authenticate::class, 'access:category=super_admin,location=headquarters,role=super_admin|minLevel=6', 'abac.geo'])->group(function () {
     Route::get('/superadmin/dashboard', [\App\Http\Controllers\Admin\SuperAdminController::class, 'dashboard'])->name('superadmin.dashboard');
     Route::get('/superadmin/returns', [\App\Http\Controllers\Admin\SuperAdminController::class, 'returns'])->name('superadmin.returns');
@@ -289,7 +289,7 @@ Route::middleware([Authenticate::class, 'access:category=desk_admin|zonal_comman
     })->name('supervisor.dashboard');
 });
 
-// Admin area — read-only routes shared by HQ admins (approvers), general admins, and super admins
+// Admin area - read-only routes shared by HQ admins (approvers), general admins, and super admins
 Route::middleware([Authenticate::class, 'access:category=hq_admin|admin|super_admin,location=headquarters,role=admin|super_admin|minLevel=5', 'abac.geo'])->group(function () {
     Route::get('/admin/dashboard', [HqAdminController::class, 'index'])->name('admin.dashboard');
 
@@ -304,7 +304,7 @@ Route::middleware([Authenticate::class, 'access:category=hq_admin|admin|super_ad
     Route::get('/admin/consolidation', [\App\Http\Controllers\Admin\ConsolidationController::class, 'index'])->name('admin.consolidation');
 });
 
-// HQ admin & Super Admin — final review actions and platform administration
+// HQ admin & Super Admin - final review actions and platform administration
 Route::middleware([Authenticate::class, 'access:category=hq_admin|super_admin,location=headquarters,role=admin|super_admin|minLevel=5', 'abac.geo'])->group(function () {
     Route::get('/admin/submissions', [SubmissionReviewController::class, 'index'])->name('admin.submissions');
     Route::patch('/admin/submissions/{application}/approve', [SubmissionReviewController::class, 'approve'])->middleware('throttle:database')->name('admin.submissions.approve');

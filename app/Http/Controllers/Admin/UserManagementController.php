@@ -81,14 +81,14 @@ class UserManagementController extends Controller
     ];
 
     public const ZONES = [
-        'ZONE-A' => 'ZONE A — ZONE A HQ IKEJA',
-        'ZONE-B' => 'ZONE B — ZONE B HQ KADUNA',
-        'ZONE-C' => 'ZONE C — ZONE C HQ BAUCHI',
-        'ZONE-D' => 'ZONE D — ZONE D HQ MINNA',
-        'ZONE-E' => 'ZONE E — ZONE E HQ OWERRI',
-        'ZONE-F' => 'ZONE F — ZONE F HQ IBADAN',
-        'ZONE-G' => 'ZONE G — ZONE G HQ BENIN',
-        'ZONE-H' => 'ZONE H — ZONE H HQ MAKURDI',
+        'ZONE-A' => 'ZONE A - ZONE A HQ IKEJA',
+        'ZONE-B' => 'ZONE B - ZONE B HQ KADUNA',
+        'ZONE-C' => 'ZONE C - ZONE C HQ BAUCHI',
+        'ZONE-D' => 'ZONE D - ZONE D HQ MINNA',
+        'ZONE-E' => 'ZONE E - ZONE E HQ OWERRI',
+        'ZONE-F' => 'ZONE F - ZONE F HQ IBADAN',
+        'ZONE-G' => 'ZONE G - ZONE G HQ BENIN',
+        'ZONE-H' => 'ZONE H - ZONE H HQ MAKURDI',
     ];
 
     public const STATE_TO_ZONE = [
@@ -189,10 +189,10 @@ class UserManagementController extends Controller
         $hierarchy = (array) config('nis_hierarchy.zones', []);
 
         foreach ($hierarchy as $zoneCode => $zoneInfo) {
-            $groupLabel = str_replace('-', ' ', $zoneCode) . ' — ' . ($zoneInfo['name'] ?? $zoneCode);
+            $groupLabel = str_replace('-', ' ', $zoneCode) . ' - ' . ($zoneInfo['name'] ?? $zoneCode);
             $options = [];
             foreach (($zoneInfo['commands'] ?? []) as $cmdCode => $cmdName) {
-                $options[$cmdCode] = "{$cmdCode} — {$cmdName}";
+                $options[$cmdCode] = "{$cmdCode} - {$cmdName}";
             }
             if ($options !== []) {
                 $groups[$groupLabel] = $options;

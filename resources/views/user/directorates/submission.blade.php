@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ $directorate['name'] ?? $unit['name'] ?? 'Directorate' }} Return — {{ $application->return_data['report_period'] ?? '' }}</title>
+    <title>{{ $directorate['name'] ?? $unit['name'] ?? 'Directorate' }} Return - {{ $application->return_data['report_period'] ?? '' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body { background:#f3f4f6; color:#111827; font-family:'Inter',system-ui,sans-serif; margin:0; }
@@ -127,11 +127,11 @@ $sections = \App\Services\PreviewRenderer::buildSections($data, [
             <img class="logo" src="{{ asset('nis-logo.png') }}" alt="NIS Logo">
             <div>
                 <h1>Nigeria Immigration Service</h1>
-                <p>{{ $directorate['name'] ?? $unit['name'] ?? 'Directorate' }} — Monthly Return</p>
+                <p>{{ $directorate['name'] ?? $unit['name'] ?? 'Directorate' }} - Monthly Return</p>
                 <div class="report-meta">
-                    <span><strong>Report Period:</strong> {{ $data['report_period'] ?? $data['period'] ?? '—' }}</span>
-                    <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? '—' }}</span>
-                    <span><strong>Submitted:</strong> {{ $application->created_at?->format('d M Y, H:i') ?? '—' }}</span>
+                    <span><strong>Report Period:</strong> {{ $data['report_period'] ?? $data['period'] ?? '-' }}</span>
+                    <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? '-' }}</span>
+                    <span><strong>Submitted:</strong> {{ $application->created_at?->format('d M Y, H:i') ?? '-' }}</span>
                     <span><strong>Status:</strong> <span class="status-badge {{ $statusClass }}">{{ ucfirst($application->status ?? 'pending') }}</span></span>
                 </div>
             </div>

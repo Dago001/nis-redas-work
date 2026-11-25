@@ -226,7 +226,7 @@ class CompletenessService
             ];
         });
 
-        // Totals: Option C invariant — consolidated reports NEVER replace originals
+        // Totals: Option C invariant - consolidated reports NEVER replace originals
         $expectedFormations = $directorateFilter ? 0 : $formations->whereNotNull('parent_id')->count();
         $expectedSectionsTotal = $formationFilter || $zoneFilter
             ? 0

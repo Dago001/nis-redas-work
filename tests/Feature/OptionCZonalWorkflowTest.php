@@ -144,7 +144,7 @@ class OptionCZonalWorkflowTest extends TestCase
         $this->actingAs($prsAdmin)->get(route('prs.originals.show', $apps[0]))->assertOk();
         $this->actingAs($prsAdmin)->get(route('prs.consolidated.show', $consolidated))->assertOk();
 
-        // Removing 1 original drops completion to 80% — consolidated report does NOT replace originals
+        // Removing 1 original drops completion to 80% - consolidated report does NOT replace originals
         $apps[0]->delete();
         $afterDelete = CompletenessService::summary('2026-11', ['zone' => 'ZONE-A']);
         $this->assertSame(4, $afterDelete['totals']['received_originals']);

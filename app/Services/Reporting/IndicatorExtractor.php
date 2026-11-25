@@ -147,6 +147,6 @@ class IndicatorExtractor
             $segments
         );
 
-        return substr(implode(' — ', $parts), 0, 191);
+        return substr(implode(' - ', $parts), 0, 191);
     }
 }

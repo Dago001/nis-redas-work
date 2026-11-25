@@ -32,7 +32,7 @@
             </td>
             <td>
                 <h1>Nigeria Immigration Service</h1>
-                <p>Submissions Report — {{ $dashboardTitle ?? 'Review Dashboard' }}</p>
+                <p>Submissions Report - {{ $dashboardTitle ?? 'Review Dashboard' }}</p>
                 <p>
                     <strong>Period:</strong> {{ ($filters['date_from'] ?? null) ?: '…' }} to {{ ($filters['date_to'] ?? null) ?: '…' }}
                     &nbsp;&nbsp;<strong>Status:</strong> {{ ucfirst($filters['status'] ?? 'All') }}
@@ -67,8 +67,8 @@
             <tr>
                 <td>#{{ $submission->id }}</td>
                 <td>{{ optional($submission->user)->name ?? 'N/A' }}</td>
-                <td style="text-transform:uppercase;">{{ $submission->scope_code ?? '—' }}</td>
-                <td>{{ $submission->return_data['report_period'] ?? '—' }}</td>
+                <td style="text-transform:uppercase;">{{ $submission->scope_code ?? '-' }}</td>
+                <td>{{ $submission->return_data['report_period'] ?? '-' }}</td>
                 <td><span class="status-badge {{ $statusClass }}">{{ ucfirst($submission->status) }}</span></td>
                 <td>{{ optional($submission->created_at)->format('d M Y, H:i') }}</td>
             </tr>

@@ -174,7 +174,7 @@
                 <span class="sa-kpi-label">Avg. Turnaround</span>
                 <span class="sa-kpi-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-stopwatch"></i></span>
             </div>
-            <div class="sa-kpi-value">{{ $stats['avg_turnaround_days'] !== null ? $stats['avg_turnaround_days'] . 'd' : '—' }}</div>
+            <div class="sa-kpi-value">{{ $stats['avg_turnaround_days'] !== null ? $stats['avg_turnaround_days'] . 'd' : '-' }}</div>
             <div class="sa-kpi-sub">{{ number_format($stats['returned']) }} returned for correction</div>
         </div>
     </div>
@@ -207,7 +207,7 @@
                         <tbody>
                             @forelse($recentUsers as $u)
                                 <tr>
-                                    <td style="font-family:monospace;font-weight:700;">{{ $u->service_number ?? '—' }}</td>
+                                    <td style="font-family:monospace;font-weight:700;">{{ $u->service_number ?? '-' }}</td>
                                     <td>
                                         <div style="font-weight:600;color:#0f172a;">{{ $u->name }}</div>
                                         <div style="font-size:.74rem;color:#64748b;">{{ $u->email }}</div>
@@ -398,9 +398,9 @@
                         @forelse($latestApproved as $return)
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $return->user->name ?? '—' }}</td>
+                                <td>{{ $return->user->name ?? '-' }}</td>
                                 <td style="text-transform:capitalize;">{{ $return->category }}</td>
-                                <td>{{ $return->return_data['report_period'] ?? '—' }}</td>
+                                <td>{{ $return->return_data['report_period'] ?? '-' }}</td>
                                 <td>{{ optional($return->updated_at)->format('d M Y') }}</td>
                                 <td style="text-align:right;">
                                     <a href="{{ route('superadmin.returns.show', $return) }}" class="btn-nis btn-ghost" style="padding:6px 12px;font-size:.75rem;">View</a>

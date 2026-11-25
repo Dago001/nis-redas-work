@@ -1436,7 +1436,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         });
         gcRows.push(['<strong>Grand Total</strong>', getValById('hrm-gender-cadre-grand-total'), `M: ${getValById('hrm-gender-cadre-grand-male')}, F: ${getValById('hrm-gender-cadre-grand-female')}`]);
         html += previewSectionTitle(4, 'Gender Distribution by Cadre');
-        html += `<p style="font-size:.82rem;color:var(--gray-600);margin-bottom:8px;">Command: <strong>${getVal('hrm[gender_cadre][command]') || '—'}</strong></p>`;
+        html += `<p style="font-size:.82rem;color:var(--gray-600);margin-bottom:8px;">Command: <strong>${getVal('hrm[gender_cadre][command]') || '-'}</strong></p>`;
         html += previewTable(gcRows, ['Cadre', 'Total', 'Breakdown']);
 
         /* 5. Gender by Zone */
@@ -1448,7 +1448,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         });
         gzRows.push(['<strong>Grand Total</strong>', getValById('hrm-gender-zone-grand-total'), `M: ${getValById('hrm-gender-zone-grand-male')}, F: ${getValById('hrm-gender-zone-grand-female')}`]);
         html += previewSectionTitle(5, 'Gender Distribution by Zone');
-        html += `<p style="font-size:.82rem;color:var(--gray-600);margin-bottom:8px;">Zone: <strong>${getVal('hrm[gender_zone][zone]') || '—'}</strong></p>`;
+        html += `<p style="font-size:.82rem;color:var(--gray-600);margin-bottom:8px;">Zone: <strong>${getVal('hrm[gender_zone][zone]') || '-'}</strong></p>`;
         html += previewTable(gzRows, ['Cadre', 'Total', 'Breakdown']);
 
         /* 6. Gender by Rank */
@@ -1466,8 +1466,8 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         let trainRows = [];
         document.querySelectorAll('#hrmTrainingBody .data-row').forEach(row => {
             const inputs = row.querySelectorAll('input');
-            const vals = Array.from(inputs).map(i => i.value || '—');
-            if (vals.some(v => v !== '—')) trainRows.push(vals);
+            const vals = Array.from(inputs).map(i => i.value || '-');
+            if (vals.some(v => v !== '-')) trainRows.push(vals);
         });
         html += previewSectionTitle(7, 'Training and Staff Development');
         html += previewTable(trainRows, ['Zone', 'Command', 'Description', 'Location', 'Participants', 'Duration']);
@@ -1496,8 +1496,8 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
             let rows = [];
             document.querySelectorAll(bodySelector).forEach(row => {
                 const inputs = row.querySelectorAll('input');
-                const vals = Array.from(inputs).map(i => i.value || '—');
-                if (vals.some(v => v !== '—')) rows.push(vals);
+                const vals = Array.from(inputs).map(i => i.value || '-');
+                if (vals.some(v => v !== '-')) rows.push(vals);
             });
             return rows;
         }
@@ -1557,13 +1557,13 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         let pensionRows = [];
         document.querySelectorAll('#hrmPensionBody .data-row').forEach(row => {
             const inputs = row.querySelectorAll('input');
-            const rank = inputs[0]?.value || '—';
+            const rank = inputs[0]?.value || '-';
             const death = inputs[1]?.value || '0';
             const mand = inputs[2]?.value || '0';
             const vol = inputs[3]?.value || '0';
             const res = inputs[4]?.value || '0';
             const total = row.querySelector('[id^="hrm-pension-row-total-"]')?.value || '0';
-            if (rank !== '—' || [death, mand, vol, res].some(v => v !== '0')) {
+            if (rank !== '-' || [death, mand, vol, res].some(v => v !== '0')) {
                 pensionRows.push([rank, death, mand, vol, res, total]);
             }
         });
@@ -1583,7 +1583,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         document.querySelectorAll('#tab-hrm-discipline .nis-table tbody tr').forEach(tr => {
             const cells = Array.from(tr.querySelectorAll('td'));
             if (cells.length < 19 || tr.classList.contains('total-row')) return;
-            const label = cells[1]?.textContent.trim() || '—';
+            const label = cells[1]?.textContent.trim() || '-';
             const vals = cells.slice(2, 18).map(c => c.querySelector('input')?.value || '0');
             const total = cells[18]?.querySelector('input')?.value || '0';
             discRows.push([label, ...vals, total]);
@@ -1599,7 +1599,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         /* 20. NIMCOS */
         let nimcosRows = [];
         document.querySelectorAll('.hrm-nimcos-input').forEach(el => {
-            nimcosRows.push([el.closest('tr').querySelector('td:nth-child(2)').textContent, el.value || '—']);
+            nimcosRows.push([el.closest('tr').querySelector('td:nth-child(2)').textContent, el.value || '-']);
         });
         html += previewSectionTitle(20, 'NIMCOS');
         html += previewTable(nimcosRows, ['Activity', 'Number/Amount']);

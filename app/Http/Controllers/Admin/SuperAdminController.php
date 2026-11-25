@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Executive (super-admin) portal — strictly read-only visualization of all
+ * Executive (super-admin) portal - strictly read-only visualization of all
  * returns across every formation, status and period.
  */
 class SuperAdminController extends Controller

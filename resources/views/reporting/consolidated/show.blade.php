@@ -4,7 +4,7 @@
 <main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
-        <h1 class="page-title">{{ $report->reference }} — {{ $report->title }}</h1>
+        <h1 class="page-title">{{ $report->reference }} - {{ $report->title }}</h1>
         <p class="page-subtitle">Period: {{ $report->report_period }} | Status: {{ ucfirst($report->status) }} | Revision {{ $report->current_revision_no }}</p>
     </div>
     <div style="display:flex;gap:8px;">
@@ -53,7 +53,7 @@
                     @foreach($latest->aggregated_data as $code => $item)
                     <tr>
                         <td>{{ $item['name'] ?? $code }}</td>
-                        <td>{{ $item['section'] ?? '—' }}</td>
+                        <td>{{ $item['section'] ?? '-' }}</td>
                         <td><strong>{{ number_format((float) ($item['total'] ?? 0), 2) }}</strong></td>
                         <td>{{ $item['sources_count'] ?? 0 }}</td>
                     </tr>
@@ -94,7 +94,7 @@
     <div class="card-body">
         <ul>
             @foreach($report->revisions as $rev)
-                <li><strong>Rev {{ $rev->revision_no }}</strong> — {{ $rev->created_at?->toDateTimeString() }} by {{ $rev->creator?->name ?? 'System' }} ({{ $rev->change_note ?? 'Revision' }})</li>
+                <li><strong>Rev {{ $rev->revision_no }}</strong> - {{ $rev->created_at?->toDateTimeString() }} by {{ $rev->creator?->name ?? 'System' }} ({{ $rev->change_note ?? 'Revision' }})</li>
             @endforeach
         </ul>
     </div>

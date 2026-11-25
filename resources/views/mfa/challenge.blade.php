@@ -133,7 +133,7 @@
         </div>
 
         <div class="mfa-side-foot">
-            <i class="fas fa-lock me-1"></i> RESTRICTED — For Official NIS Use Only<br>
+            <i class="fas fa-lock me-1"></i> RESTRICTED - For Official NIS Use Only<br>
             &copy; {{ date('Y') }} Nigeria Immigration Service
         </div>
     </aside>

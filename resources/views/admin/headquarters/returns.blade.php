@@ -8,7 +8,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">All Returns</h1>
-            <p class="page-subtitle">Every return across directorates, state commands and CGIS units — <strong>view-only</strong>.</p>
+            <p class="page-subtitle">Every return across directorates, state commands and CGIS units - <strong>view-only</strong>.</p>
         </div>
     </div>
 
@@ -96,15 +96,15 @@
                             @endphp
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '—' }}</td>
+                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '-' }}</td>
                                 <td style="text-transform:capitalize;">{{ $return->category }}</td>
                                 <td>
-                                    {{ $data['reporting_officer'] ?? $return->user->name ?? '—' }}
+                                    {{ $data['reporting_officer'] ?? $return->user->name ?? '-' }}
                                     @if($return->user?->service_number)
                                         <div style="font-size:.72rem;color:var(--gray-400);">{{ $return->user->service_number }}</div>
                                     @endif
                                 </td>
-                                <td>{{ $data['report_period'] ?? '—' }}</td>
+                                <td>{{ $data['report_period'] ?? '-' }}</td>
                                 <td style="text-transform:capitalize;">{{ str_replace('_', ' ', $return->workflow_stage) }}</td>
                                 <td><span class="status-badge {{ $badge }}">{{ ucfirst($return->status) }}</span></td>
                                 <td>{{ optional($return->created_at)->format('d M Y') }}</td>

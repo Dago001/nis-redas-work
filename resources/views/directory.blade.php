@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NIS-REDAS Directory — Nigeria Immigration Service offices, passport centres, border posts, airports, seaports, and foreign missions.">
+    <meta name="description" content="NIS-REDAS Directory - Nigeria Immigration Service offices, passport centres, border posts, airports, seaports, and foreign missions.">
     <title>NIS-REDAS | Directory</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/images/nis.png') }}">
     @include('partials.head-meta')
@@ -228,13 +228,13 @@
     <div class="dir-footer-inner">
         <div>
             <strong>Nigeria Immigration Service</strong><br>
-            <span>Service Headquarters, Airport Road, Sauka, Abuja — FCT</span>
+            <span>Service Headquarters, Airport Road, Sauka, Abuja - FCT</span>
         </div>
         <div>
             <a href="https://www.immigration.gov.ng" target="_blank" rel="noopener"><i class="fas fa-globe me-1"></i>immigration.gov.ng</a>
         </div>
         <div style="text-align: right;">
-            &copy; {{ date('Y') }} NIS-REDAS v2.0 — ICT Directorate
+            &copy; {{ date('Y') }} NIS-REDAS v2.0 - ICT Directorate
         </div>
     </div>
 </footer>

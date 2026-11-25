@@ -90,7 +90,7 @@ class PrsDashboardController extends Controller
                     'id' => $app->id,
                     'reference' => 'RET-'.str_pad((string) $app->id, 5, '0', STR_PAD_LEFT),
                     'category' => ucfirst((string) $app->category),
-                    'scope_code' => $app->section_code ? "{$app->scope_code} / {$app->section_code}" : ($app->scope_code ?? '—'),
+                    'scope_code' => $app->section_code ? "{$app->scope_code} / {$app->section_code}" : ($app->scope_code ?? '-'),
                     'period' => $app->report_period,
                     'author' => $app->user?->name ?? 'N/A',
                     'status' => $app->status,

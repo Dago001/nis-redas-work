@@ -126,7 +126,7 @@
             </div>
             <div class="sidebar-user-info">
                 <div class="sidebar-user-name">{{ auth()->user()->name ?? 'Administrator' }}</div>
-                <div class="sidebar-user-role">ICT Administrator — HQ</div>
+                <div class="sidebar-user-role">ICT Administrator - HQ</div>
             </div>
         </div>
     </div>
@@ -173,7 +173,7 @@
                         ['warning','fas fa-exclamation-triangle', '15 formations overdue',     'Abuja, Kano, Lagos and 12 others have not submitted May returns.', '1h ago'],
                         ['info',   'fas fa-user-plus',            'New user registration',      '3 new officer accounts pending admin approval.', '3h ago'],
                         ['success','fas fa-database',             'Backup completed',           'Daily database backup completed successfully (2.3 GB).', '6h ago'],
-                        ['danger', 'fas fa-shield-alt',           'Login anomaly detected',     '7 failed login attempts from IP 102.89.x.x — account locked.', '8h ago'],
+                        ['danger', 'fas fa-shield-alt',           'Login anomaly detected',     '7 failed login attempts from IP 102.89.x.x - account locked.', '8h ago'],
                     ] as [$type, $icon, $title, $desc, $time])
                     <div class="notif-item unread">
                         <div class="notif-icon" style="background:{{ $type === 'danger' ? '#fee2e2' : ($type === 'warning' ? '#fef9c3' : ($type === 'success' ? '#dcfce7' : '#dbeafe')) }};color:{{ $type === 'danger' ? '#dc2626' : ($type === 'warning' ? '#a16207' : ($type === 'success' ? '#15803d' : '#1d4ed8')) }};">
@@ -200,7 +200,7 @@
                     </div>
                     <div class="topbar-user-info" style="text-align:left;">
                         <div class="topbar-user-name">{{ auth()->user()->name ?? 'Administrator' }}</div>
-                        <div class="topbar-user-role">ICT Admin — HQ</div>
+                        <div class="topbar-user-role">ICT Admin - HQ</div>
                     </div>
                     <i class="fas fa-chevron-down" style="font-size:.7rem;color:var(--gray-400);margin-left:4px;"></i>
                 </button>

@@ -92,7 +92,7 @@ class ExcelReportService
             $rows[] = $this->rowFor($application);
         }
 
-        return $this->writeSheet("{$title} — {$label} {$year}", self::COLUMNS, $rows, 'Consolidated Returns');
+        return $this->writeSheet("{$title} - {$label} {$year}", self::COLUMNS, $rows, 'Consolidated Returns');
     }
 
     /**
@@ -180,12 +180,12 @@ class ExcelReportService
 
         return [
             'RET-'.str_pad((string) $application->id, 5, '0', STR_PAD_LEFT),
-            (string) ($data['command_name'] ?? $application->scope_code ?? '—'),
-            (string) ($user?->assigned_cgis_unit_code ?? '—'),
+            (string) ($data['command_name'] ?? $application->scope_code ?? '-'),
+            (string) ($user?->assigned_cgis_unit_code ?? '-'),
             ucfirst((string) ($application->category ?? '')),
-            (string) ($application->report_period ?? $data['report_period'] ?? '—'),
-            (string) ($data['reporting_officer'] ?? $user?->name ?? '—'),
-            (string) ($user?->service_number ?? '—'),
+            (string) ($application->report_period ?? $data['report_period'] ?? '-'),
+            (string) ($data['reporting_officer'] ?? $user?->name ?? '-'),
+            (string) ($user?->service_number ?? '-'),
             ucfirst((string) ($application->status ?? '')),
             ucwords(str_replace('_', ' ', (string) ($application->workflow_stage ?? ''))),
             (string) optional($application->created_at)->toDateTimeString(),

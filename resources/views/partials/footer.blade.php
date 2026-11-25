@@ -1,7 +1,7 @@
 <!-- Footer -->
 <footer
     style="padding:16px 24px;border-top:1px solid var(--gray-100);text-align:center;font-size:.72rem;color:var(--gray-400);">
-    NIS-REDAS v2.0 &mdash; Nigeria Immigration Service &bull; ICT Directorate &copy; {{ date('Y') }}
+    NIS-REDAS v2.0 - Nigeria Immigration Service &bull; ICT Directorate &copy; {{ date('Y') }}
     &nbsp;|&nbsp; <span style="color:var(--color-success);">● System Operational</span>
 </footer>
 </div>
@@ -64,9 +64,9 @@
         document.querySelectorAll('[data-action="view"]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-                setText('modalTitle', btn.dataset.title || '—');
-                setText('modalDate', btn.dataset.date || '—');
-                setText('modalType', btn.dataset.type || '—');
+                setText('modalTitle', btn.dataset.title || '-');
+                setText('modalDate', btn.dataset.date || '-');
+                setText('modalType', btn.dataset.type || '-');
                 setText('modalRemarks', btn.dataset.remarks || 'No remarks provided.');
                 const s = btn.dataset.status || '';
                 const statusEl = document.getElementById('modalStatus');
@@ -309,9 +309,9 @@
 
         /* ── Preview ── */
         document.getElementById('previewBtn')?.addEventListener('click', () => {
-            const cmd = document.querySelector('[name="command_name"]')?.value || '—';
-            const period = document.querySelector('[name="period"]')?.value || '—';
-            const type = document.querySelector('[name="return_type"]')?.value || '—';
+            const cmd = document.querySelector('[name="command_name"]')?.value || '-';
+            const period = document.querySelector('[name="period"]')?.value || '-';
+            const type = document.querySelector('[name="return_type"]')?.value || '-';
             document.getElementById('previewMeta').textContent = `${cmd} | ${period} | ${type}`;
             const body = document.getElementById('previewBody');
             body.innerHTML = generatePreviewHTML();
@@ -328,7 +328,7 @@
             <div style="text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid var(--nis-700);">
                 <img src="{{ asset('assets/images/nis.png') }}" style="height:50px;margin-bottom:8px;"><br>
                 <strong style="font-size:1rem;color:var(--nis-800);">NIGERIA IMMIGRATION SERVICE</strong><br>
-                <span style="font-size:.84rem;color:var(--gray-600);">NIS REDAS — Operational Return</span>
+                <span style="font-size:.84rem;color:var(--gray-600);">NIS REDAS - Operational Return</span>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;padding:12px;background:var(--gray-50);border-radius:var(--radius-md);">
                 <div><div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:var(--gray-400);">Command</div><div style="font-weight:700;color:var(--gray-800);">${cmd}</div></div>
@@ -352,7 +352,7 @@
             const rec = document.querySelector('[name="general[recommendations]"]')?.value;
             if (rec) html += `<div class="preview-section"><h6>Recommendations</h6><p style="font-size:.82rem;">${rec}</p></div>`;
 
-            html += `<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);font-size:.78rem;color:var(--gray-500);">Prepared by: <strong>{{ auth()->user()?->name ?? 'NIS REDAS' }}</strong> &mdash; {{ now()->format('d F Y') }}</div>`;
+            html += `<div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--gray-200);font-size:.78rem;color:var(--gray-500);">Prepared by: <strong>{{ auth()->user()?->name ?? 'NIS REDAS' }}</strong> - {{ now()->format('d F Y') }}</div>`;
             return html;
         }
 
@@ -368,8 +368,8 @@
         /* ── Submit → confirm modal ── */
         document.getElementById('returnForm')?.addEventListener('submit', e => {
             e.preventDefault();
-            const cmd = document.querySelector('[name="command_name"]')?.value || '—';
-            const period = document.querySelector('[name="period"]')?.value || '—';
+            const cmd = document.querySelector('[name="command_name"]')?.value || '-';
+            const period = document.querySelector('[name="period"]')?.value || '-';
             const path = document.getElementById('workflowPath')?.value === 'hq' ? 'HQ Coordinator' : 'Zonal Coordinator';
             document.getElementById('confirmCommand').textContent = cmd;
             document.getElementById('confirmPeriod').textContent = period;
@@ -415,7 +415,7 @@
         }
 
         /* ── Load saved draft on page load (skipped when editing an existing
-           submission — the server-side prefill owns the field values) ── */
+           submission - the server-side prefill owns the field values) ── */
         try {
             const saved = window.REDAS_EDITING ? null : localStorage.getItem(DRAFT_KEY);
             if (saved) {
@@ -551,7 +551,7 @@
         document.querySelectorAll('[data-bs-target="#detailModal"]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const s = btn.dataset.status;
-                document.getElementById('detailTitle').textContent = btn.dataset.period + ' — ' + btn.dataset.type;
+                document.getElementById('detailTitle').textContent = btn.dataset.period + ' - ' + btn.dataset.type;
                 document.getElementById('detailSub').textContent = 'Command: ' + btn.dataset.path;
                 document.getElementById('dType').textContent = btn.dataset.type;
                 document.getElementById('dDate').textContent = btn.dataset.date;
@@ -597,7 +597,7 @@
     document.addEventListener("DOMContentLoaded", function () {
 
         /*
-         * ACTU page only — requires its own staff inputs/totals so this
+         * ACTU page only - requires its own staff inputs/totals so this
          * never touches look-alike ids (e.g. #grandTotal) on other pages.
          */
         if (
@@ -654,7 +654,7 @@
 
     function calculateCasesMatrix() {
 
-        /* ACTU cases matrix page only — no-op when its grid is absent. */
+        /* ACTU cases matrix page only - no-op when its grid is absent. */
         if (!document.querySelector('.case-input') || !document.getElementById('row-total-0')) return;
 
         // Row totals
@@ -729,7 +729,7 @@
     const totalStrengthInput = document.getElementById("staffStrengthGrandTotal");
 
     /*
-     * PROVOST/SECURITY UNIT page only — no-op when its distinctive
+     * PROVOST/SECURITY UNIT page only - no-op when its distinctive
      * elements are absent (e.g. on other directorate pages).
      */
     if (unitsBody && strengthBody && totalStrengthInput && document.getElementById("addProvostUnit")) {

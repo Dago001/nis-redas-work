@@ -19,7 +19,7 @@
                 <i class="fas fa-paperclip"></i>
             </div>
             Attachments
-            <small style="font-weight:400;color:var(--gray-500);">(PDFs, images, Word — max 10MB each)</small>
+            <small style="font-weight:400;color:var(--gray-500);">(PDFs, images, Word - max 10MB each)</small>
         </div>
     </div>
     <div class="card-body">
@@ -120,8 +120,8 @@
  * The shared partial (user.states.sections.border) renders the tab bar without
  * a Preview tab (the combined state form must not have one). Re-add it here for
  * the standalone page. This runs synchronously while the form markup is being
- * parsed — before the layout/footer scripts collect and bind .entry-tab
- * elements — so the Preview tab behaves exactly like the others.
+ * parsed - before the layout/footer scripts collect and bind .entry-tab
+ * elements - so the Preview tab behaves exactly like the others.
  */
 (function () {
     var bar = document.getElementById('entryTabs');

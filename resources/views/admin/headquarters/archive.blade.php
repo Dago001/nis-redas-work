@@ -8,7 +8,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Archived Documents</h1>
-            <p class="page-subtitle">Fully approved returns and their supporting documents from all formations — <strong>view-only</strong>.</p>
+            <p class="page-subtitle">Fully approved returns and their supporting documents from all formations - <strong>view-only</strong>.</p>
         </div>
     </div>
 
@@ -63,14 +63,14 @@
                             @endphp
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '—' }}</td>
+                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '-' }}</td>
                                 <td>
-                                    {{ $data['reporting_officer'] ?? $return->user->name ?? '—' }}
+                                    {{ $data['reporting_officer'] ?? $return->user->name ?? '-' }}
                                     @if($return->user?->service_number)
                                         <div style="font-size:.72rem;color:var(--gray-400);">{{ $return->user->service_number }}</div>
                                     @endif
                                 </td>
-                                <td>{{ $data['report_period'] ?? '—' }}</td>
+                                <td>{{ $data['report_period'] ?? '-' }}</td>
                                 <td style="text-align:center;">
                                     <span class="status-badge badge-draft">{{ $docCount }} file{{ $docCount === 1 ? '' : 's' }}</span>
                                 </td>

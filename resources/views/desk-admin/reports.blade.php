@@ -99,8 +99,8 @@
                                 <tr>
                                     <td style="padding:10px;border-bottom:1px solid #f1f5f9;">#{{ $submission->id }}</td>
                                     <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->user)->name ?? 'N/A' }}</td>
-                                    <td style="padding:10px;border-bottom:1px solid #f1f5f9;text-transform:uppercase;">{{ $submission->scope_code ?? '—' }}</td>
-                                    <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ $submission->return_data['report_period'] ?? '—' }}</td>
+                                    <td style="padding:10px;border-bottom:1px solid #f1f5f9;text-transform:uppercase;">{{ $submission->scope_code ?? '-' }}</td>
+                                    <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ $submission->return_data['report_period'] ?? '-' }}</td>
                                     <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
                                         <span style="display:inline-flex;padding:3px 8px;border-radius:999px;font-size:.72rem;font-weight:700;{{ $badge }}">
                                             {{ ucfirst($submission->status) }}

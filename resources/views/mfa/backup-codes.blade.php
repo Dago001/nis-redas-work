@@ -134,13 +134,13 @@
                 <div class="mfa-feature-icon"><i class="fas fa-shield-alt"></i></div>
                 <div>
                     <div class="mfa-feature-title">Keep Confidential</div>
-                    <div class="mfa-feature-desc">Backup codes grant account access — never share them with anyone.</div>
+                    <div class="mfa-feature-desc">Backup codes grant account access - never share them with anyone.</div>
                 </div>
             </div>
         </div>
 
         <div class="mfa-side-foot">
-            <i class="fas fa-lock me-1"></i> RESTRICTED — For Official NIS Use Only<br>
+            <i class="fas fa-lock me-1"></i> RESTRICTED - For Official NIS Use Only<br>
             &copy; {{ date('Y') }} Nigeria Immigration Service
         </div>
     </aside>

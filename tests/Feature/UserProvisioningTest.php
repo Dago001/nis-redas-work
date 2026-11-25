@@ -173,18 +173,18 @@ class UserProvisioningTest extends TestCase
 
         // All 8 official NIS Zones and sample authoritative commands present
         foreach ([
-            'ZONE A — Zone A HQ Ikeja',
-            'ZONE B — Zone B HQ Kaduna',
-            'ZONE C — Zone C HQ Bauchi',
-            'ZONE D — Zone D HQ Minna',
-            'ZONE E — Zone E HQ Owerri',
-            'ZONE F — Zone F HQ Ibadan',
-            'ZONE G — Zone G HQ Benin',
-            'ZONE H — Zone H HQ Makurdi',
-            'LASC — Lagos State Command',
-            'FCTC — FCT Command',
-            'NITSOL — Nigeria Immigration Training School Orlu',
-            'TRSC — Taraba State Command',
+            'ZONE A - Zone A HQ Ikeja',
+            'ZONE B - Zone B HQ Kaduna',
+            'ZONE C - Zone C HQ Bauchi',
+            'ZONE D - Zone D HQ Minna',
+            'ZONE E - Zone E HQ Owerri',
+            'ZONE F - Zone F HQ Ibadan',
+            'ZONE G - Zone G HQ Benin',
+            'ZONE H - Zone H HQ Makurdi',
+            'LASC - Lagos State Command',
+            'FCTC - FCT Command',
+            'NITSOL - Nigeria Immigration Training School Orlu',
+            'TRSC - Taraba State Command',
         ] as $expectedLabel) {
             $response->assertSee($expectedLabel);
         }

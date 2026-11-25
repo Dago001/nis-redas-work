@@ -1,5 +1,5 @@
             <footer style="padding:16px 24px;border-top:1px solid var(--gray-100);text-align:center;font-size:.72rem;color:var(--gray-400);">
-        NIS-REDAS v2.0 &mdash; Nigeria Immigration Service &bull; ICT Directorate &copy; {{ date('Y') }}
+        NIS-REDAS v2.0 - Nigeria Immigration Service &bull; ICT Directorate &copy; {{ date('Y') }}
         &nbsp;|&nbsp; <span style="color:var(--color-success);">● System Operational</span>
     </footer>
 </div>

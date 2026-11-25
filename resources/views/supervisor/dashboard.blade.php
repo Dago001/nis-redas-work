@@ -7,7 +7,7 @@
             <div>
                 <h1 class="page-title">Supervisor Dashboard</h1>
                 <p class="page-subtitle">
-                    {{ auth()->user()->role === 'zonal' ? 'Zonal Command Overview' : 'State Command Overview' }} —
+                    {{ auth()->user()->role === 'zonal' ? 'Zonal Command Overview' : 'State Command Overview' }} -
                     {{ now()->format('l, d F Y') }}
                 </p>
             </div>
@@ -107,7 +107,7 @@
                 <div class="card-head">
                     <div class="card-head-title">
                         <div class="card-head-icon" style="background:var(--nis-50);color:var(--nis-600);"><i class="fas fa-chart-pie"></i></div>
-                        Formation Compliance — May 2025
+                        Formation Compliance - May 2025
                     </div>
                     <span style="font-size:.72rem;color:var(--gray-400);">{{ now()->format('F Y') }}</span>
                 </div>

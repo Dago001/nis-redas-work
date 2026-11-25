@@ -301,7 +301,7 @@
                     <label class="form-label-nis">Assigned Location</label>
                     <div class="iam-hq-pill">
                         <i class="fas fa-landmark text-nis"></i>
-                        <span><strong>NIS Service Headquarters (HQ)</strong> &mdash; National Scope</span>
+                        <span><strong>NIS Service Headquarters (HQ)</strong> - National Scope</span>
                     </div>
                 </div>
             </div>

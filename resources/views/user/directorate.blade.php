@@ -5,7 +5,7 @@
             <div>
                 <h1 class="page-title">Directorate Dashboard</h1>
                 <p class="page-subtitle">
-                    Welcome, <strong>{{ auth()->user()->name ?? 'Officer' }}</strong> —
+                    Welcome, <strong>{{ auth()->user()->name ?? 'Officer' }}</strong> -
                     {{ now()->format('l, d F Y') }}
                 </p>
             </div>
@@ -17,7 +17,7 @@
                 <i class="fas fa-calendar-exclamation"></i>
             </div>
             <div style="flex:1;">
-                <strong style="color:#92400e;font-size:.9rem;">Monthly Return Due — {{ now()->endOfMonth()->format('d F Y') }}</strong>
+                <strong style="color:#92400e;font-size:.9rem;">Monthly Return Due - {{ now()->endOfMonth()->format('d F Y') }}</strong>
                 <p style="color:#b45309;font-size:.8rem;margin:0;">Submit your {{ now()->format('F Y') }} directorate return before the deadline to avoid penalties.</p>
             </div>
         </div>
@@ -29,7 +29,7 @@
                     <div class="card-head-icon" style="background:var(--purple-50);color:var(--purple-600);">
                         <i class="fas fa-building-columns"></i>
                     </div>
-                    NIS Directorates — Select Your Directorate
+                    NIS Directorates - Select Your Directorate
                 </div>
             </div>
             <div class="card-body">

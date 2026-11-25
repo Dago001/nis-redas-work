@@ -168,9 +168,9 @@
                             @endphp
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '—' }}</td>
-                                <td>{{ $data['reporting_officer'] ?? $return->user->name ?? '—' }}</td>
-                                <td>{{ $data['report_period'] ?? '—' }}</td>
+                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '-' }}</td>
+                                <td>{{ $data['reporting_officer'] ?? $return->user->name ?? '-' }}</td>
+                                <td>{{ $data['report_period'] ?? '-' }}</td>
                                 <td style="text-transform:capitalize;">{{ str_replace('_', ' ', $return->workflow_stage) }}</td>
                                 <td><span class="status-badge {{ $badge }}">{{ ucfirst($return->status) }}</span></td>
                                 <td>{{ optional($return->created_at)->format('d M Y') }}</td>

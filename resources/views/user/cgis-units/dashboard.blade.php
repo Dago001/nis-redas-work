@@ -8,7 +8,7 @@
                 {{ $unit['name'] ?? 'CGIS Unit' }} Unit Dashboard
             </h1>
             <p class="page-subtitle">
-                Welcome back, <strong>{{ auth()->user()?->name ?? 'Officer' }}</strong> —
+                Welcome back, <strong>{{ auth()->user()?->name ?? 'Officer' }}</strong> -
                 {{ now()->format('l, d F Y') }}
             </p>
         </div>
@@ -104,7 +104,7 @@
                             @forelse($submissions as $submission)
                                 @php
                                     $status = strtolower((string) $submission->status);
-                                    $period = $submission->return_data['report_period'] ?? $submission->created_at?->format('F Y') ?? '—';
+                                    $period = $submission->return_data['report_period'] ?? $submission->created_at?->format('F Y') ?? '-';
                                 @endphp
                                 <tr>
                                     <td><strong>{{ $period }}</strong></td>
@@ -117,7 +117,7 @@
                                             {{ ucfirst($submission->status ?? 'Draft') }}
                                         </span>
                                     </td>
-                                    <td style="font-size:.78rem;color:var(--gray-500);">{{ $submission->created_at?->format('d M Y') ?? '—' }}</td>
+                                    <td style="font-size:.78rem;color:var(--gray-500);">{{ $submission->created_at?->format('d M Y') ?? '-' }}</td>
                                     <td>
                                         <div style="display:flex;gap:6px;">
                                             <a href="{{ route('user.cgis-units.submissions.show', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;" title="Preview">

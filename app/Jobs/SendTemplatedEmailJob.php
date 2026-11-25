@@ -91,7 +91,7 @@ class SendTemplatedEmailJob implements ShouldQueue
                 $user->name
             );
 
-            // Record provider acceptance — never falsely report final inbox delivery.
+            // Record provider acceptance - never falsely report final inbox delivery.
             $delivery->update([
                 'status' => 'accepted',
                 'provider' => 'resend',

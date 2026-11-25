@@ -1,4 +1,4 @@
-{{-- Border Management directorate sections — shared partial.
+{{-- Border Management directorate sections - shared partial.
      Rendered both by the standalone directorate page (user.directorates.border,
      which re-adds the Preview tab + attachments upload in its wrapper) and by
      the combined state form inside <div class="state-dir-panel" id="dir-border">.
@@ -2136,7 +2136,7 @@ $lastSection = $category['section'];
         }
 
         /*
-         * Nationality rows — scoped to rows inside .nationality-table so
+         * Nationality rows - scoped to rows inside .nationality-table so
          * keystrokes in other tables no longer throw on unguarded lookups.
          */
         const nationalityRow = e.target.closest(".nationality-table tbody tr");

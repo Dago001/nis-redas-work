@@ -6,7 +6,7 @@
 <main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
-        <h1 class="page-title">{{ $report->reference }} — {{ $report->title }}</h1>
+        <h1 class="page-title">{{ $report->reference }} - {{ $report->title }}</h1>
         <p class="page-subtitle">Level: {{ ucfirst($report->level) }} | Scope: {{ strtoupper($report->scope_code) }} | Period: {{ $report->report_period }} | Status: {{ ucfirst($report->status) }} | Revision {{ $report->current_revision_no }}</p>
     </div>
     <a href="{{ route('prs.dashboard', ['period' => $report->report_period]) }}" class="btn-nis btn-ghost">Back to PRS Dashboard</a>

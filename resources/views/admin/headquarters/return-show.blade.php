@@ -42,7 +42,7 @@ $sections = \App\Services\PreviewRenderer::buildSections($data, [
     <div class="page-header">
         <div>
             <h1 class="page-title">Return RET-{{ str_pad($application->id, 5, '0', STR_PAD_LEFT) }}</h1>
-            <p class="page-subtitle">{{ $data['command_name'] ?? $application->scope_code ?? '—' }} — submitted {{ optional($application->created_at)->format('d M Y, H:i') }}. <strong>View-only</strong> record.</p>
+            <p class="page-subtitle">{{ $data['command_name'] ?? $application->scope_code ?? '-' }} - submitted {{ optional($application->created_at)->format('d M Y, H:i') }}. <strong>View-only</strong> record.</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
             <span class="status-badge {{ $badge }}">{{ ucfirst($application->status) }}</span>
@@ -72,15 +72,15 @@ $sections = \App\Services\PreviewRenderer::buildSections($data, [
                     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
                         <div style="border:1px solid var(--gray-200);border-radius:10px;padding:10px;">
                             <div style="font-size:.74rem;color:var(--gray-500);">Reporting Officer</div>
-                            <div style="font-weight:700;color:var(--gray-900);">{{ $data['reporting_officer'] ?? $application->user->name ?? '—' }}</div>
+                            <div style="font-weight:700;color:var(--gray-900);">{{ $data['reporting_officer'] ?? $application->user->name ?? '-' }}</div>
                         </div>
                         <div style="border:1px solid var(--gray-200);border-radius:10px;padding:10px;">
                             <div style="font-size:.74rem;color:var(--gray-500);">Service Number</div>
-                            <div style="font-weight:700;color:var(--gray-900);">{{ $application->user->service_number ?? '—' }}</div>
+                            <div style="font-weight:700;color:var(--gray-900);">{{ $application->user->service_number ?? '-' }}</div>
                         </div>
                         <div style="border:1px solid var(--gray-200);border-radius:10px;padding:10px;">
                             <div style="font-size:.74rem;color:var(--gray-500);">Report Period</div>
-                            <div style="font-weight:700;color:var(--gray-900);">{{ $data['report_period'] ?? $data['period'] ?? '—' }}</div>
+                            <div style="font-weight:700;color:var(--gray-900);">{{ $data['report_period'] ?? $data['period'] ?? '-' }}</div>
                         </div>
                         <div style="border:1px solid var(--gray-200);border-radius:10px;padding:10px;">
                             <div style="font-size:.74rem;color:var(--gray-500);">Category</div>
@@ -92,7 +92,7 @@ $sections = \App\Services\PreviewRenderer::buildSections($data, [
                         </div>
                         <div style="border:1px solid var(--gray-200);border-radius:10px;padding:10px;">
                             <div style="font-size:.74rem;color:var(--gray-500);">CGIS Unit</div>
-                            <div style="font-weight:700;color:var(--gray-900);">{{ $application->user->assigned_cgis_unit_code ?? '—' }}</div>
+                            <div style="font-weight:700;color:var(--gray-900);">{{ $application->user->assigned_cgis_unit_code ?? '-' }}</div>
                         </div>
                     </div>
                 </div>

@@ -1449,7 +1449,7 @@ $storeItemList = $storeItemsJson['items'] ?? [];
             : `<tr><td colspan="${headers.length}" style="padding:6px 8px;border:1px solid var(--gray-200);color:var(--gray-500);">No entries.</td></tr>`;
         return `<div style="overflow-x:auto;"><table class="hrm-preview-table" style="margin-bottom:12px;"><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table></div>`;
     }
-    function getVal(name) { return ROOT.querySelector(`[name="${name}"]`)?.value || '—'; }
+    function getVal(name) { return ROOT.querySelector(`[name="${name}"]`)?.value || '-'; }
     function getText(id) { return byId(id)?.textContent || '0'; }
 
     /* Non-empty rows of a dynamic tbody as arrays of escaped values

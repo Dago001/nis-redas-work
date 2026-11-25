@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>State Command Return — Preview</title>
+    <title>State Command Return - Preview</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body { background:#f3f4f6; color:#111827; font-family:'Inter',system-ui,sans-serif; margin:0; }
@@ -62,7 +62,7 @@
     ];
 
     $periodRaw = $data['period'] ?? null;
-    $periodLabel = $periodRaw ?: '—';
+    $periodLabel = $periodRaw ?: '-';
     if ($periodRaw) {
         try {
             $periodLabel = \Carbon\Carbon::createFromFormat('Y-m', $periodRaw)->format('F Y');
@@ -70,7 +70,7 @@
             $periodLabel = $periodRaw;
         }
     }
-    $typeLabel = $typeLabels[$data['return_type'] ?? ''] ?? ucfirst((string) ($data['return_type'] ?? '—'));
+    $typeLabel = $typeLabels[$data['return_type'] ?? ''] ?? ucfirst((string) ($data['return_type'] ?? '-'));
 @endphp
 
 @php
@@ -105,12 +105,12 @@ $sections = \App\Services\PreviewRenderer::buildSections($data, [
             <img class="logo" src="{{ asset('nis-logo.png') }}" alt="NIS Logo">
             <div>
                 <h1>Nigeria Immigration Service</h1>
-                <p>STATE COMMAND RETURN — PREVIEW</p>
+                <p>STATE COMMAND RETURN - PREVIEW</p>
                 <div class="report-meta">
-                    <span><strong>Command:</strong> {{ $commandName ?? '—' }}</span>
+                    <span><strong>Command:</strong> {{ $commandName ?? '-' }}</span>
                     <span><strong>Report Period:</strong> {{ $periodLabel }}</span>
                     <span><strong>Return Type:</strong> {{ $typeLabel }}</span>
-                    <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? $user?->name ?? '—' }}</span>
+                    <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? $user?->name ?? '-' }}</span>
                     <span><strong>Generated:</strong> {{ now()->format('d M Y, H:i') }}</span>
                 </div>
             </div>

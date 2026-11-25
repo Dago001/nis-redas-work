@@ -112,7 +112,7 @@
                     @endforeach
                 </div>
                 <div style="margin-top:14px;padding:12px;border:1px solid var(--gray-200);border-radius:10px;background:var(--gray-50);font-size:.8rem;color:var(--gray-600);">
-                    <strong>Each report consolidates into one Excel sheet:</strong> Ref, Formation/Directorate, CGIS Unit, Category, Report Period, Reporting Officer, Service Number, Status, Current Stage, Submitted At, Last Action At and Comment — for every return submitted within the selected period, across all users and formations.
+                    <strong>Each report consolidates into one Excel sheet:</strong> Ref, Formation/Directorate, CGIS Unit, Category, Report Period, Reporting Officer, Service Number, Status, Current Stage, Submitted At, Last Action At and Comment - for every return submitted within the selected period, across all users and formations.
                 </div>
             </div>
         </div>

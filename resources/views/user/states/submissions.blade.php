@@ -92,7 +92,7 @@
                             [$badgeClass, $statusLabel, $statusIcon] = $statusConfig[$status] ?? ['badge-draft', ucfirst($submission->status ?? 'Draft'), 'fas fa-circle'];
                             $data = is_array($submission->return_data) ? $submission->return_data : [];
                             $periodRaw = $data['period'] ?? $data['report_period'] ?? null;
-                            $period = $periodRaw ?: ($submission->created_at?->format('M Y') ?? '—');
+                            $period = $periodRaw ?: ($submission->created_at?->format('M Y') ?? '-');
                             if ($periodRaw) {
                                 try {
                                     $period = \Carbon\Carbon::createFromFormat('Y-m', $periodRaw)->format('M Y');
@@ -100,12 +100,12 @@
                                     $period = $periodRaw;
                                 }
                             }
-                            $type = $typeLabels[$data['return_type'] ?? ''] ?? ucfirst((string) ($data['return_type'] ?? '—'));
-                            $command = $data['command_name'] ?? '—';
-                            $stage = $submission->workflow_stage ? ucwords(str_replace('_', ' ', $submission->workflow_stage)) : '—';
+                            $type = $typeLabels[$data['return_type'] ?? ''] ?? ucfirst((string) ($data['return_type'] ?? '-'));
+                            $command = $data['command_name'] ?? '-';
+                            $stage = $submission->workflow_stage ? ucwords(str_replace('_', ' ', $submission->workflow_stage)) : '-';
                         @endphp
                         <tr class="sub-main-row" data-status="{{ $status }}">
-                            <td><strong>{{ $period ?? '—' }}</strong></td>
+                            <td><strong>{{ $period ?? '-' }}</strong></td>
                             <td style="font-size:.8rem;">{{ $type }}</td>
                             <td style="font-size:.78rem;color:var(--gray-600);">{{ $command }}</td>
                             <td>
@@ -114,7 +114,7 @@
                                 </span>
                             </td>
                             <td style="font-size:.78rem;color:var(--gray-600);">{{ $stage }}</td>
-                            <td style="font-size:.78rem;color:var(--gray-500);">{{ $submission->created_at?->format('d M Y') ?? '—' }}</td>
+                            <td style="font-size:.78rem;color:var(--gray-500);">{{ $submission->created_at?->format('d M Y') ?? '-' }}</td>
                             <td>
                                 <div style="display:flex;gap:4px;">
                                     <a href="{{ route('user.returns.show', $submission) }}" class="btn-nis btn-ghost btn-sm" title="View Details">

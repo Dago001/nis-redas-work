@@ -136,7 +136,7 @@
 
                 {{-- 2b. STAFF DEVELOPMENT (EXTERNAL) - MYSTERY SHOPPING --}}
                 <div class="nis-subsection" style="margin-top:20px;">
-                    <div class="nis-subsection-title"><i class="fas fa-user-secret"></i> 2b. Staff Development (External) &mdash; Activities: Mystery Shopping</div>
+                    <div class="nis-subsection-title"><i class="fas fa-user-secret"></i> 2b. Staff Development (External) - Activities: Mystery Shopping</div>
                     <div class="table-responsive">
                         <table class="nis-table">
                             <thead>
@@ -450,7 +450,7 @@
             </div>
             <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;">
                 <div>
-                    <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Supporting Documents (PDF, XLS, XLSX, PNG, JPG) &mdash; incl. Nominal Roll</label>
+                    <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Supporting Documents (PDF, XLS, XLSX, PNG, JPG) - incl. Nominal Roll</label>
                     <input type="file" class="ni" name="supporting_documents[]" accept=".pdf,.xls,.xlsx,.png,.jpg,.jpeg" multiple>
                 </div>
                 <div>

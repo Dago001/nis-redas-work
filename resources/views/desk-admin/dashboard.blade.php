@@ -29,7 +29,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">{{ $dashboardTitle }}</h1>
-            <p class="page-subtitle">Welcome, <strong>{{ $user->name ?? 'Officer' }}</strong> — {{ $stageName }}</p>
+            <p class="page-subtitle">Welcome, <strong>{{ $user->name ?? 'Officer' }}</strong> - {{ $stageName }}</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
             <a href="{{ route('desk.admin.reports') }}" class="btn-nis btn-outline-nis">
@@ -189,7 +189,7 @@
                             <tr>
                                 <td style="padding:10px;border-bottom:1px solid #f1f5f9;">#{{ $submission->id }}</td>
                                 <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->user)->name ?? 'N/A' }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ $submission->return_data['report_period'] ?? '—' }}</td>
+                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ $submission->return_data['report_period'] ?? '-' }}</td>
                                 <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
                                     <span style="display:inline-flex;padding:3px 8px;border-radius:999px;background:#ecfdf5;color:#166534;font-size:.72rem;font-weight:700;">
                                         {{ ucfirst($submission->status) }}

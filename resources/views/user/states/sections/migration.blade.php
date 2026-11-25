@@ -1,4 +1,4 @@
-{{-- Migration directorate return sections — reusable partial.
+{{-- Migration directorate return sections - reusable partial.
      Included by the standalone wrapper (user.directorates.migration) and by the
      combined state form (user.states._return-layout, inside #dir-migration).
      Provides only the tab bar + data tab panels; the standalone wrapper adds the

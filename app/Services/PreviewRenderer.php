@@ -98,7 +98,7 @@ final class PreviewRenderer
     public static function formatValue(mixed $value): string
     {
         if ($value === null || $value === '') {
-            return '—';
+            return '-';
         }
         if (is_bool($value)) {
             return $value ? 'Yes' : 'No';

@@ -21,7 +21,7 @@
                 <tr>
                     <td><code>{{ $row->indicator?->code }}</code></td>
                     <td>{{ $row->indicator?->name }}</td>
-                    <td>{{ $row->indicator?->section ?? '—' }}</td>
+                    <td>{{ $row->indicator?->section ?? '-' }}</td>
                     <td>{{ ucfirst((string) $row->category) }}</td>
                     <td>{{ ucfirst((string) ($row->indicator?->status ?? 'provisional')) }}</td>
                     <td>{{ $row->report_count }}</td>

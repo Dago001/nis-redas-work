@@ -26,7 +26,7 @@
         <div class="card-body">
             <div class="fg" style="margin-bottom:14px;">
                 <label for="conTitle">Consolidated Report Title</label>
-                <input id="conTitle" type="text" name="title" class="ni" value="{{ old('title', ucfirst($level).' Consolidated Report — '.strtoupper($scope).' ('.$period.')') }}">
+                <input id="conTitle" type="text" name="title" class="ni" value="{{ old('title', ucfirst($level).' Consolidated Report - '.strtoupper($scope).' ('.$period.')') }}">
             </div>
             <div class="fg">
                 <label for="conNarrative">Executive Narrative &amp; Synthesis</label>
@@ -84,7 +84,7 @@
                         <tr>
                             <td>{{ $name }}</td>
                             @foreach($comparison['rows'] as $row)
-                                <td>{{ $row['values'][$code] ?? '—' }}</td>
+                                <td>{{ $row['values'][$code] ?? '-' }}</td>
                             @endforeach
                         </tr>
                         @endforeach

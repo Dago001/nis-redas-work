@@ -6,7 +6,7 @@
 <main class="redas-content">
 <div class="page-header" style="margin-bottom:20px;">
     <div>
-        <h1 class="page-title">{{ $report->reference }} — {{ $report->title }}</h1>
+        <h1 class="page-title">{{ $report->reference }} - {{ $report->title }}</h1>
         <p class="page-subtitle">{{ ucfirst($report->level) }} | {{ strtoupper($report->scope_code) }} | Period {{ $report->report_period }} | Status: {{ ucfirst($report->status) }}</p>
     </div>
     <a href="{{ route('admin.consolidated.index') }}" class="btn-nis btn-ghost">Back to Queue</a>

@@ -75,12 +75,12 @@ $sections = \App\Services\PreviewRenderer::buildSections($data, [
         <div class="card-body" style="border-bottom:3px solid var(--nis-700);">
             <h2 style="font-size:1.15rem;margin:0 0 4px;color:var(--nis-700);">Nigeria Immigration Service</h2>
             <p style="margin:2px 0;font-size:.85rem;color:var(--gray-600);">
-                {{ $directorateNames[$data['directorate_slug'] ?? $data['cgis_unit_slug'] ?? null] ?? ucwords(str_replace(['_', '-'], ' ', (string) ($data['directorate_slug'] ?? $application->scope_code ?? 'State'))) }} — Monthly Return
+                {{ $directorateNames[$data['directorate_slug'] ?? $data['cgis_unit_slug'] ?? null] ?? ucwords(str_replace(['_', '-'], ' ', (string) ($data['directorate_slug'] ?? $application->scope_code ?? 'State'))) }} - Monthly Return
             </p>
             <div style="display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:10px;font-size:.85rem;">
-                <span><strong>Report Period:</strong> {{ $data['report_period'] ?? $data['period'] ?? '—' }}</span>
-                <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? optional($application->user)->name ?? '—' }}</span>
-                <span><strong>Submitted:</strong> {{ optional($application->created_at)->format('d M Y, H:i') ?? '—' }}</span>
+                <span><strong>Report Period:</strong> {{ $data['report_period'] ?? $data['period'] ?? '-' }}</span>
+                <span><strong>Reporting Officer:</strong> {{ $data['reporting_officer'] ?? optional($application->user)->name ?? '-' }}</span>
+                <span><strong>Submitted:</strong> {{ optional($application->created_at)->format('d M Y, H:i') ?? '-' }}</span>
                 <span><strong>Status:</strong>
                     <span style="display:inline-block;padding:3px 10px;border-radius:999px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;{{ $statusStyle }}">
                         {{ ucfirst($application->status ?? 'pending') }}

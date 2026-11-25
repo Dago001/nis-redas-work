@@ -20,7 +20,7 @@
                 <label for="prsZone">Zone</label>
                 <select id="prsZone" name="zone" class="ni ni-select">
                     <option value="">All Zones</option>
-                    @foreach($zoneOptions as $z)<option value="{{ $z->code }}" @selected($filters['zone'] === $z->code)>{{ $z->code }} — {{ $z->name }}</option>@endforeach
+                    @foreach($zoneOptions as $z)<option value="{{ $z->code }}" @selected($filters['zone'] === $z->code)>{{ $z->code }} - {{ $z->name }}</option>@endforeach
                 </select>
             </div>
             <div class="fg">
@@ -34,7 +34,7 @@
                 <label for="prsForm">Formation</label>
                 <select id="prsForm" name="formation" class="ni ni-select">
                     <option value="">All Formations</option>
-                    @foreach($formationOptions as $f)<option value="{{ $f->code }}" @selected($filters['formation'] === $f->code)>{{ $f->code }} — {{ $f->name }}</option>@endforeach
+                    @foreach($formationOptions as $f)<option value="{{ $f->code }}" @selected($filters['formation'] === $f->code)>{{ $f->code }} - {{ $f->name }}</option>@endforeach
                 </select>
             </div>
             <div class="fg">
@@ -71,7 +71,7 @@
 </div>
 
 <div class="redas-card" style="margin-bottom:20px;">
-    <div class="card-head"><div class="card-head-title">PRS Received Records — Originals &amp; Consolidated ({{ $records->total() }})</div></div>
+    <div class="card-head"><div class="card-head-title">PRS Received Records - Originals &amp; Consolidated ({{ $records->total() }})</div></div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="nis-table">
@@ -113,7 +113,7 @@
                         <td>{{ $z['expected_formations'] }}</td>
                         <td>{{ $z['received_originals'] }}</td>
                         <td>{{ $z['outstanding'] }}</td>
-                        <td>{{ $z['completion_pct'] !== null ? $z['completion_pct'].'%' : '—' }}</td>
+                        <td>{{ $z['completion_pct'] !== null ? $z['completion_pct'].'%' : '-' }}</td>
                         <td>{{ ucfirst($z['consolidated_status']) }}</td>
                     </tr>
                     @endforeach

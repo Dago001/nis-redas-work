@@ -337,7 +337,7 @@
                     if (!field || !field.name || field.type === 'hidden') return;
                     var value;
                     if (field.type === 'checkbox' || field.type === 'radio') value = field.checked ? 'Yes' : 'No';
-                    else value = field.value !== '' ? field.value : '—';
+                    else value = field.value !== '' ? field.value : '-';
                     rows.push([label.textContent.trim(), value]);
                 });
                 if (!rows.length) return;

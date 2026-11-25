@@ -335,7 +335,7 @@ $rankRows = [
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;">
                         <i class="fas fa-passport"></i>
                     </div>
-                    4. DOFIT &mdash; Document Fraud Investigation Team
+                    4. DOFIT - Document Fraud Investigation Team
                 </div>
             </div>
             <div class="card-body">

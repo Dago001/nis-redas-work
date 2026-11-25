@@ -73,7 +73,7 @@
                     <div class="attach-zone" id="archiveDropZone" style="margin-bottom:16px;cursor:pointer;" onclick="document.getElementById('archiveUploadInput').click()">
                         <i class="fas fa-folder-open" style="font-size:2rem;color:var(--nis-400);margin-bottom:8px;"></i>
                         <div style="font-size:.88rem;color:var(--gray-500);margin-bottom:4px;">Drag &amp; drop files here or click to browse</div>
-                        <div style="font-size:.76rem;color:var(--gray-400);">PDF, Word, Excel, Images — max 20MB each</div>
+                        <div style="font-size:.76rem;color:var(--gray-400);">PDF, Word, Excel, Images - max 20MB each</div>
                         <input type="file" name="documents[]" id="archiveUploadInput" multiple
                             accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                             style="display:none;"
@@ -113,7 +113,7 @@
             <div class="card-head">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:var(--nis-50);color:var(--nis-600);"><i class="fas fa-file-pdf"></i></div>
-                    Completed Returns — PDF Archive
+                    Completed Returns - PDF Archive
                 </div>
                 <div style="display:flex;gap:8px;align-items:center;">
                     <input type="search" id="archiveSearch" class="ni" placeholder="Search returns..." style="width:200px;font-size:.82rem;padding:6px 10px;">
@@ -136,7 +136,7 @@
                             @php
                                 $period = $return->return_data['report_period'] ?? null;
                                 $title = ($period ? \Carbon\Carbon::createFromFormat('Y-m', $period)->format('F Y') : 'Return')
-                                    . ' — Monthly Return';
+                                    . ' - Monthly Return';
                             @endphp
                             <tr class="archive-row">
                                 <td>
@@ -151,7 +151,7 @@
                                     </div>
                                 </td>
                                 <td style="font-size:.8rem;">{{ optional($return->user)->name ?? 'N/A' }}</td>
-                                <td style="font-size:.8rem;color:var(--gray-600);">{{ $period ?? '—' }}</td>
+                                <td style="font-size:.8rem;color:var(--gray-600);">{{ $period ?? '-' }}</td>
                                 <td style="font-size:.78rem;color:var(--gray-400);">{{ optional($return->updated_at)->format('d M Y') }}</td>
                                 <td>
                                     <span class="status-badge badge-approved">Approved</span>
@@ -200,7 +200,7 @@
                             <tr>
                                 <td><strong>{{ $doc->title }}</strong></td>
                                 <td>{{ ucwords(str_replace('_', ' ', $doc->doc_type)) }}</td>
-                                <td>{{ $doc->report_period ?? '—' }}</td>
+                                <td>{{ $doc->report_period ?? '-' }}</td>
                                 <td>{{ $doc->original_name }}</td>
                                 <td>{{ number_format($doc->size_bytes / 1024, 1) }} KB</td>
                                 <td>{{ $doc->created_at?->format('d M Y') }}</td>

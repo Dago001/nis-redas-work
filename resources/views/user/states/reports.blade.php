@@ -138,16 +138,16 @@
                     </div>
                     <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
                         <button class="btn-nis btn-outline-nis full-width" onclick="quickGenerate('monthly_return')">
-                            <i class="fas fa-file-alt"></i> This Month's Return — PDF
+                            <i class="fas fa-file-alt"></i> This Month's Return - PDF
                         </button>
                         <button class="btn-nis btn-outline-nis full-width" onclick="quickGenerate('quarterly_return')">
-                            <i class="fas fa-file-alt"></i> This Quarter's Return — PDF
+                            <i class="fas fa-file-alt"></i> This Quarter's Return - PDF
                         </button>
                         <button class="btn-nis btn-ghost full-width" onclick="quickGenerate('full_export')">
-                            <i class="fas fa-file-excel" style="color:#16a34a;"></i> Full Year Export — Excel
+                            <i class="fas fa-file-excel" style="color:#16a34a;"></i> Full Year Export - Excel
                         </button>
                         <button class="btn-nis btn-ghost full-width" onclick="quickGenerate('submission_summary')">
-                            <i class="fas fa-chart-bar"></i> Submission Summary — PDF
+                            <i class="fas fa-chart-bar"></i> Submission Summary - PDF
                         </button>
                     </div>
                 </div>

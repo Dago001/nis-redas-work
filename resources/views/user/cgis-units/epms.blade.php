@@ -49,7 +49,7 @@
             </div>
             <div class="card-body">
                 <div class="nis-subsection">
-                    <div class="nis-subsection-title"><i class="fas fa-id-badge"></i> 1.1 &mdash; Personnel Profile of the Innovation/EPMS Unit</div>
+                    <div class="nis-subsection-title"><i class="fas fa-id-badge"></i> 1.1 - Personnel Profile of the Innovation/EPMS Unit</div>
                     <div class="table-responsive">
                         <table class="nis-table">
                             <thead>
@@ -248,7 +248,7 @@
 
                 {{-- Table 3.3 COD Operations by Passport Offices --}}
                 <div class="nis-subsection">
-                    <div class="nis-subsection-title"><i class="fas fa-building"></i> Table 3.3 &mdash; COD Operations by Passport Offices</div>
+                    <div class="nis-subsection-title"><i class="fas fa-building"></i> Table 3.3 - COD Operations by Passport Offices</div>
                     <div class="table-responsive">
                         <table class="nis-table">
                             <thead>
@@ -271,28 +271,28 @@
                                     'benue' => 'Benue',
                                     'borno' => 'Borno',
                                     'cross_river' => 'Cross River',
-                                    'delta_asaba' => 'Delta — Asaba',
+                                    'delta_asaba' => 'Delta - Asaba',
                                     'warri' => 'Warri',
                                     'ebonyi' => 'Ebonyi',
-                                    'edo' => 'Edo — Auchi, Benin City',
+                                    'edo' => 'Edo - Auchi, Benin City',
                                     'ekiti' => 'Ekiti',
                                     'enugu' => 'Enugu',
                                     'gombe' => 'Gombe',
                                     'imo' => 'Imo',
                                     'jigawa' => 'Jigawa',
-                                    'kaduna' => 'Kaduna — Zaria, Kaduna',
-                                    'kano' => 'Kano — Farm Center, Dawakin Kudu',
-                                    'katsina' => 'Katsina — Daura, Katsina',
+                                    'kaduna' => 'Kaduna - Zaria, Kaduna',
+                                    'kano' => 'Kano - Farm Center, Dawakin Kudu',
+                                    'katsina' => 'Katsina - Daura, Katsina',
                                     'kebbi' => 'Kebbi',
                                     'kogi' => 'Kogi',
                                     'kwara' => 'Kwara',
-                                    'lagos' => 'Lagos — Ikoyi, Festac, Alausa, Alimosho, Ikorodu',
+                                    'lagos' => 'Lagos - Ikoyi, Festac, Alausa, Alimosho, Ikorodu',
                                     'nasarawa' => 'Nasarawa',
                                     'niger' => 'Niger',
-                                    'ogun' => 'Ogun — Sagamu, Abeokuta',
-                                    'ondo' => 'Ondo — Ile-Oluji, Akure',
-                                    'osun' => 'Osun — Osogbo, Ilesha',
-                                    'oyo' => 'Oyo — Oyo Town, Ibadan',
+                                    'ogun' => 'Ogun - Sagamu, Abeokuta',
+                                    'ondo' => 'Ondo - Ile-Oluji, Akure',
+                                    'osun' => 'Osun - Osogbo, Ilesha',
+                                    'oyo' => 'Oyo - Oyo Town, Ibadan',
                                     'plateau' => 'Plateau',
                                     'rivers' => 'Rivers',
                                     'sokoto' => 'Sokoto',
@@ -323,7 +323,7 @@
 
                 {{-- Table 3.4 Technical Support to Attaches at Foreign Missions --}}
                 <div class="nis-subsection">
-                    <div class="nis-subsection-title"><i class="fas fa-globe"></i> Table 3.4 &mdash; Technical Support Services provided to Attach&eacute;s at Foreign Missions</div>
+                    <div class="nis-subsection-title"><i class="fas fa-globe"></i> Table 3.4 - Technical Support Services provided to Attach&eacute;s at Foreign Missions</div>
                     <div class="table-responsive">
                         <table class="nis-table">
                             <thead>
@@ -635,7 +635,7 @@
                         data-prefix="vcms_onboarding" data-cols='["mission","onboarded","deboarded"]'>
                         <i class="fas fa-plus"></i> Add Row
                     </button>
-                    <div style="margin:14px 0 6px;font-size:.84rem;font-weight:700;">Table 4.5 &mdash; VCMS Access Summary</div>
+                    <div style="margin:14px 0 6px;font-size:.84rem;font-weight:700;">Table 4.5 - VCMS Access Summary</div>
                     <div class="table-responsive" style="max-width:560px;">
                         <table class="nis-table">
                             <thead>
@@ -688,7 +688,7 @@
 
                 {{-- 4.6 Contactless Passport Platform --}}
                 <div class="nis-subsection">
-                    <div class="nis-subsection-title"><i class="fas fa-wifi"></i> 4.6 Technical Support Services &mdash; Contactless Passport Platform</div>
+                    <div class="nis-subsection-title"><i class="fas fa-wifi"></i> 4.6 Technical Support Services - Contactless Passport Platform</div>
                     <div class="table-responsive">
                         <table class="nis-table">
                             <thead>
@@ -793,7 +793,7 @@
             <div class="card-body">
                 <p style="font-size:.8rem;color:var(--gray-500);font-style:italic;margin:0 0 10px;">Records of every innovation project handled by the Service/ NIS Personnel with oversight of Innovation/EPMS Unit during the year.</p>
                 <div class="nis-subsection">
-                    <div class="nis-subsection-title"><i class="fas fa-rocket"></i> Table 5.1 &mdash; Innovation Initiative Log</div>
+                    <div class="nis-subsection-title"><i class="fas fa-rocket"></i> Table 5.1 - Innovation Initiative Log</div>
                     <div class="table-responsive">
                         <table class="nis-table">
                             <thead>
@@ -972,7 +972,7 @@
             </div>
             <div class="card-body">
                 <div class="nis-subsection">
-                    <div class="nis-subsection-title"><i class="fas fa-chalkboard-user"></i> Table 8.1 &mdash; Training Undertaken During the Year</div>
+                    <div class="nis-subsection-title"><i class="fas fa-chalkboard-user"></i> Table 8.1 - Training Undertaken During the Year</div>
                     <div class="table-responsive">
                         <table class="nis-table">
                             <thead>
@@ -1250,7 +1250,7 @@
         if (el) el.value = value;
     }
 
-    /* 1. Personnel Strength — row totals across the four cadres */
+    /* 1. Personnel Strength - row totals across the four cadres */
     function recalcPersonnel() {
         var rows = {};
         document.querySelectorAll('.epms-pers').forEach(function (el) {
@@ -1259,7 +1259,7 @@
         Object.keys(rows).forEach(function (key) { setVal('epms-pers-total-' + key, rows[key]); });
     }
 
-    /* 3.1 Vetting Operations — row totals */
+    /* 3.1 Vetting Operations - row totals */
     function recalcVetting() {
         var rows = {};
         document.querySelectorAll('.epms-vet').forEach(function (el) {
@@ -1268,7 +1268,7 @@
         Object.keys(rows).forEach(function (key) { setVal('epms-vet-total-' + key, rows[key]); });
     }
 
-    /* 4.1 Specialised vetting — row totals */
+    /* 4.1 Specialised vetting - row totals */
     function recalcSpecialised() {
         var rows = {};
         document.querySelectorAll('.epms-sv').forEach(function (el) {
@@ -1311,7 +1311,7 @@
         var t = e.target;
         if (!t || !t.classList) return;
         /* A bulk input event on the form itself means a draft or a saved
-           submission was just restored — recompute every total. */
+           submission was just restored - recompute every total. */
         if (t.tagName === 'FORM') { recalcAll(); return; }
         if (t.classList.contains('epms-pers')) recalcPersonnel();
         else if (t.classList.contains('epms-vet')) recalcVetting();
@@ -1328,7 +1328,7 @@
     }
     function fieldVal(name) {
         var f = document.querySelector('[name="' + name + '"]');
-        return f && f.value ? f.value : '—';
+        return f && f.value ? f.value : '-';
     }
     /* Clone a form block and flatten every input into plain text so the
        preview mirrors the official reporting-template tables. */
@@ -1348,7 +1348,7 @@
             }
             var span = document.createElement(field.tagName === 'TEXTAREA' ? 'div' : 'span');
             if (field.tagName === 'TEXTAREA') span.style.whiteSpace = 'pre-wrap';
-            span.textContent = value !== '' ? value : '—';
+            span.textContent = value !== '' ? value : '-';
             field.replaceWith(span);
         });
         return clone;
@@ -1362,7 +1362,7 @@
             + '<img src="{{ asset('nis.png') }}" alt="NIS" style="height:52px;margin-bottom:8px;" onerror="this.style.display=\'none\'"><br>'
             + '<strong style="font-size:1rem;color:var(--nis-800);">NIGERIA IMMIGRATION SERVICE</strong><br>'
             + '<strong style="font-size:.9rem;color:var(--nis-700);">INNOVATION / ELECTRONIC PASSPORT MANAGEMENT SYSTEM (EPMS) UNIT</strong><br>'
-            + '<span style="font-size:.82rem;color:var(--gray-600);">Monthly Return &mdash; ' + esc(fieldVal('report_period')) + '</span><br>'
+            + '<span style="font-size:.82rem;color:var(--gray-600);">Monthly Return - ' + esc(fieldVal('report_period')) + '</span><br>'
             + '<span style="font-size:.82rem;color:var(--gray-600);">Reporting Officer: ' + esc(fieldVal('reporting_officer')) + '</span>'
             + '</div>';
 

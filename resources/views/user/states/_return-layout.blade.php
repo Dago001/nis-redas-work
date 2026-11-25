@@ -96,7 +96,7 @@
         <div class="nis-section" style="margin-bottom:16px;">
             <div class="nis-section-head">
                 <span class="sec-num">A</span>
-                Nigeria Immigration Service — State Command Monthly Reporting Template
+                Nigeria Immigration Service - State Command Monthly Reporting Template
             </div>
             <div class="nis-section-body">
                 <div class="workflow-path" style="margin-bottom:14px;">
@@ -157,7 +157,7 @@
             <div class="nis-section-head"><span class="sec-num">§D</span> Declaration &amp; Attachments</div>
             <div class="nis-section-body">
                 <div class="fg" style="margin-bottom:8px;">
-                    <label><i class="fas fa-paperclip"></i> Attachments <span style="font-weight:400;color:var(--gray-400);text-transform:none;">(PDF, Word, images — max 20MB each)</span></label>
+                    <label><i class="fas fa-paperclip"></i> Attachments <span style="font-weight:400;color:var(--gray-400);text-transform:none;">(PDF, Word, images - max 20MB each)</span></label>
                     <input type="file" name="attachments[]" id="stateAttachInput" class="ni" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
                     <p style="font-size:.74rem;color:var(--gray-400);margin-top:4px;">Nominal roll, pictures, supporting documents.</p>
                 </div>
@@ -191,7 +191,7 @@
         var form = document.getElementById('stateReturnForm');
         if (!form) return;
 
-        /* Top-level directorate tabs — scoped to this page */
+        /* Top-level directorate tabs - scoped to this page */
         var dirTabs = Array.from(document.querySelectorAll('.state-dir-tab'));
         var dirPanels = Array.from(document.querySelectorAll('.state-dir-panel'));
         dirTabs.forEach(function (tab) {
@@ -206,7 +206,7 @@
             });
         });
 
-        /* Inner section tabs — delegated, scoped to the containing directorate panel */
+        /* Inner section tabs - delegated, scoped to the containing directorate panel */
         document.addEventListener('click', function (e) {
             var tab = e.target.closest ? e.target.closest('.entry-tab') : null;
             if (!tab) return;
@@ -358,7 +358,7 @@
            tab > inner entry-tab, migration's own data-m-tab panels, or
            investigation's anchor/page steps). A required field left on a
            hidden tab is not focusable, which makes the browser cancel
-           submission silently — no 'submit' event, no visible error. Before
+           submission silently - no 'submit' event, no visible error. Before
            letting the click through, walk up from the first invalid field and
            activate every ancestor tab/panel so it becomes visible first. */
         function revealInvalidField(invalid) {
@@ -425,7 +425,7 @@
                     return;
                 }
 
-                if (!window.confirm('Submit this State Command return for review?\n\nPlease verify all sections before continuing — this cannot be undone.')) {
+                if (!window.confirm('Submit this State Command return for review?\n\nPlease verify all sections before continuing - this cannot be undone.')) {
                     return;
                 }
 

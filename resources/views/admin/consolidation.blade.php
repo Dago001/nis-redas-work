@@ -8,7 +8,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">Returns Consolidation</h1>
-            <p class="page-subtitle">Merged national aggregates across every formation — the consolidated view surfaced to the executive dashboard.</p>
+            <p class="page-subtitle">Merged national aggregates across every formation - the consolidated view surfaced to the executive dashboard.</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
             <a href="{{ route('admin.hq.reports') }}" class="btn-nis btn-outline-nis">
@@ -241,10 +241,10 @@
                         @forelse($recentApproved as $return)
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $return->user->name ?? '—' }}</td>
-                                <td>{{ $return->scope_code ?? '—' }}</td>
+                                <td>{{ $return->user->name ?? '-' }}</td>
+                                <td>{{ $return->scope_code ?? '-' }}</td>
                                 <td style="text-transform:capitalize;">{{ $return->category }}</td>
-                                <td>{{ $return->return_data['report_period'] ?? '—' }}</td>
+                                <td>{{ $return->return_data['report_period'] ?? '-' }}</td>
                                 <td>{{ optional($return->updated_at)->format('d M Y') }}</td>
                                 <td style="text-align:right;">
                                     <a href="{{ route('admin.hq.returns.show', $return) }}" class="btn-nis btn-ghost" style="padding:6px 12px;font-size:.75rem;">View</a>

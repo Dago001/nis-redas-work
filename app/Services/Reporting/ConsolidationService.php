@@ -236,7 +236,7 @@ class ConsolidationService
                 'level' => $level,
                 'scope_code' => $scopeCode,
                 'report_period' => $period,
-                'title' => $title ?: sprintf('%s Consolidated Report — %s (%s)', ucfirst($level), strtoupper($scopeCode), $period),
+                'title' => $title ?: sprintf('%s Consolidated Report - %s (%s)', ucfirst($level), strtoupper($scopeCode), $period),
                 'status' => ConsolidatedReport::STATUS_DRAFT,
                 'workflow_stage' => 'draft',
                 'current_revision_no' => 1,
