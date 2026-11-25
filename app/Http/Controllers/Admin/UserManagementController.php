@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuthToken;
+use App\Models\NisDirectory;
 use App\Models\ReportingUnit;
 use App\Models\User;
 use App\Services\Messaging\ResendMailService;
@@ -11,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
@@ -29,11 +31,6 @@ class UserManagementController extends Controller
         'DSI' => 'Deputy Superintendent of Immigration (DSI)',
         'ASI1' => 'Assistant Superintendent of Immigration I (ASI I)',
         'ASI2' => 'Assistant Superintendent of Immigration II (ASI II)',
-        'CII' => 'Chief Inspector of Immigration (CII)',
-        'DCII' => 'Deputy Chief Inspector of Immigration (DCII)',
-        'ACII' => 'Assistant Chief Inspector of Immigration (ACII)',
-        'PII' => 'Principal Inspector of Immigration (PII)',
-        'SII' => 'Senior Inspector of Immigration (SII)',
         'II' => 'Inspector of Immigration (II)',
         'AII' => 'Assistant Inspector of Immigration (AII)',
         'CIA' => 'Chief Immigration Assistant (CIA)',
@@ -126,8 +123,8 @@ class UserManagementController extends Controller
     private function formViewData(?User $actor): array
     {
         $categories = [
-            'state_user' => 'State Command Officer',
-            'desk_admin' => 'State Desk Admin',
+            'state_user' => 'Formation / Command Officer (State, Airport, Border, Marine, Mission)',
+            'desk_admin' => 'Formation Desk Admin',
             'directorate_user' => 'Directorate Officer',
             'directorate_admin' => 'Directorate Admin',
             'zonal_commander' => 'Zonal Commander',
@@ -145,6 +142,7 @@ class UserManagementController extends Controller
             'categories' => $categories,
             'ranks' => self::NIS_RANKS,
             'states' => self::STATES,
+            'formationGroups' => $this->directoryFormationGroups(),
             'zones' => self::ZONES,
             'directorates' => self::DIRECTORATES,
             'cgisUnits' => self::CGIS_UNITS,
@@ -165,6 +163,100 @@ class UserManagementController extends Controller
                 'admin' => 'Administrator',
             ],
         ];
+    }
+
+    /**
+     * Load all official NIS formations from nis_directories grouped by category
+     * for the Create/Edit User formation dropdown (falls back to 36 States + FCT).
+     *
+     * @return array<string, array<string, string>>
+     */
+    private function directoryFormationGroups(): array
+    {
+        $labels = [
+            'state_command' => 'State Commands',
+            'airport' => 'Airport Commands',
+            'border' => 'Border Control Posts',
+            'marine' => 'Marine Commands',
+            'passport' => 'Passport Issuing Centres',
+            'training' => 'Training Institutions',
+            'foreign_mission' => 'Foreign Missions',
+        ];
+
+        if (! Schema::hasTable('nis_directories')) {
+            return ['State Commands' => self::STATES];
+        }
+
+        $rows = NisDirectory::query()
+            ->whereIn('category', array_keys($labels))
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get(['id', 'category', 'name', 'state', 'country', 'code']);
+
+        if ($rows->isEmpty()) {
+            return ['State Commands' => self::STATES];
+        }
+
+        $groups = [];
+        foreach ($labels as $catKey => $groupLabel) {
+            $items = $rows->where('category', $catKey);
+            if ($items->isEmpty()) {
+                continue;
+            }
+            $options = [];
+            foreach ($items as $row) {
+                $code = $this->directoryEntryCode($row);
+                $suffix = $row->state ?: $row->country;
+                $options[$code] = $suffix && ! str_contains(strtolower($row->name), strtolower($suffix))
+                    ? "{$row->name} ({$suffix})"
+                    : $row->name;
+            }
+            $groups[$groupLabel] = $options;
+        }
+
+        return $groups;
+    }
+
+    private function directoryEntryCode(NisDirectory $row): string
+    {
+        if (! empty($row->code)) {
+            return strtoupper(trim((string) $row->code));
+        }
+
+        if ($row->category === 'state_command' && ! empty($row->state)) {
+            $stateCode = $this->stateNameToCode((string) $row->state);
+            if ($stateCode !== null) {
+                return $stateCode;
+            }
+        }
+
+        $prefix = match ($row->category) {
+            'airport' => 'AIR',
+            'border' => 'BRD',
+            'marine' => 'MRN',
+            'passport' => 'PPT',
+            'training' => 'TRN',
+            'foreign_mission' => 'MSN',
+            default => 'FRM',
+        };
+
+        return $prefix . '-' . strtoupper(Str::slug(Str::limit($row->name, 28, ''), '_'));
+    }
+
+    private function stateNameToCode(string $stateName): ?string
+    {
+        $needle = strtolower(trim(str_replace([' state', ' command'], '', strtolower($stateName))));
+        if ($needle === 'fct' || str_contains($needle, 'abuja')) {
+            return 'FC';
+        }
+        foreach (self::STATES as $code => $label) {
+            $clean = strtolower(str_replace(' state', '', strtolower($label)));
+            if ($needle === $clean || str_starts_with($clean, $needle) || str_starts_with($needle, $clean)) {
+                return $code;
+            }
+        }
+
+        return null;
     }
 
     public function index(Request $request)
@@ -207,7 +299,7 @@ class UserManagementController extends Controller
             'role' => 'nullable|in:admin,super_admin,zonal,state,officer,directorate,unit_officer,unit_admin',
             'primary_location_type' => 'nullable|in:state,directorate,zonal,unit,headquarters',
             'primary_location_code' => 'nullable|string|max:50',
-            'assigned_state_code' => 'nullable|string|max:10',
+            'assigned_state_code' => 'nullable|string|max:50',
             'assigned_zonal_command_code' => 'nullable|string|max:50',
             'assigned_directorate_code' => 'nullable|string|max:50',
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),
@@ -313,7 +405,7 @@ class UserManagementController extends Controller
             'role' => 'nullable|in:admin,super_admin,zonal,state,officer,directorate,unit_officer,unit_admin',
             'primary_location_type' => 'nullable|in:state,directorate,zonal,unit,headquarters',
             'primary_location_code' => 'nullable|string|max:50',
-            'assigned_state_code' => 'nullable|string|max:10',
+            'assigned_state_code' => 'nullable|string|max:50',
             'assigned_zonal_command_code' => 'nullable|string|max:50',
             'assigned_directorate_code' => 'nullable|string|max:50',
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),

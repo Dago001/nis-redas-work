@@ -113,11 +113,16 @@
                 </div>
 
                 <div class="auth-form-group scope-panel" id="scopeState" style="display:none;">
-                    <label class="form-label-nis" for="assigned_state_code">Assigned State Command</label>
+                    <label class="form-label-nis" for="assigned_state_code">Assigned NIS Formation</label>
+                    @php $currentFormation = strtoupper((string) old('assigned_state_code', $user->assigned_state_code ?? $user->primary_location_code)); @endphp
                     <select id="assigned_state_code" name="assigned_state_code" class="auth-input">
-                        <option value="">Select state command</option>
-                        @foreach($states as $code => $label)
-                            <option value="{{ $code }}" {{ strtoupper((string) old('assigned_state_code', $user->assigned_state_code ?? $user->primary_location_code)) === $code ? 'selected' : '' }}>{{ $label }} ({{ $code }})</option>
+                        <option value="">Select formation (State, Airport, Border, Marine, Passport, Training, Mission)</option>
+                        @foreach($formationGroups as $groupLabel => $options)
+                            <optgroup label="{{ $groupLabel }}">
+                                @foreach($options as $code => $label)
+                                    <option value="{{ $code }}" {{ $currentFormation === strtoupper((string) $code) ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </optgroup>
                         @endforeach
                     </select>
                 </div>

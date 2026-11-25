@@ -239,16 +239,20 @@
                     <span class="iam-hint">System role and location type are assigned automatically based on this selection.</span>
                 </div>
 
-                {{-- Dynamic Scope Selector: State --}}
+                {{-- Dynamic Scope Selector: All NIS Formations (from /directory) --}}
                 <div class="auth-form-group scope-panel" id="scopeState" style="display:none;">
-                    <label class="form-label-nis" for="assigned_state_code">Assigned State Command <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label-nis" for="assigned_state_code">Assigned NIS Formation <span style="color:#dc2626;">*</span></label>
                     <select id="assigned_state_code" name="assigned_state_code" class="auth-input">
-                        <option value="">Select state command</option>
-                        @foreach($states as $code => $label)
-                            <option value="{{ $code }}" {{ old('assigned_state_code') === $code ? 'selected' : '' }}>{{ $label }} ({{ $code }})</option>
+                        <option value="">Select formation (State, Airport, Border, Marine, Passport, Training, Mission)</option>
+                        @foreach($formationGroups as $groupLabel => $options)
+                            <optgroup label="{{ $groupLabel }}">
+                                @foreach($options as $code => $label)
+                                    <option value="{{ $code }}" {{ old('assigned_state_code') === $code ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </optgroup>
                         @endforeach
                     </select>
-                    <span class="iam-hint">Parent Zonal Command is linked automatically.</span>
+                    <span class="iam-hint">Synced with the official NIS Directory (State Commands, Airports, Border Posts, Marine, Passport Centres, Training &amp; Foreign Missions).</span>
                 </div>
 
                 {{-- Dynamic Scope Selector: Zone --}}
