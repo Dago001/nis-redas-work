@@ -99,7 +99,14 @@
                     <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'DA', 0, 2)) }}</div>
                     <div class="topbar-user-info">
                         <div class="topbar-user-name">{{ auth()->user()->name ?? 'Desk Admin' }}</div>
-                        <div class="topbar-user-role">Desk Administration</div>
+                        <div class="topbar-user-role">{{ match ($deskCat) {
+                            'zonal_commander' => 'Zonal Commander',
+                            'directorate_admin' => 'Directorate Admin',
+                            'cgis_desk_admin' => 'CGIS Desk Admin',
+                            'hq_admin' => 'HQ Admin',
+                            'super_admin' => 'Super Admin',
+                            default => 'Desk Administration',
+                        } }}</div>
                     </div>
                     <i class="fas fa-chevron-down" style="font-size:.7rem;color:var(--gray-400);margin-left:4px;"></i>
                 </button>

@@ -186,4 +186,51 @@ class AllRoleDashboardsAndSidebarsTest extends TestCase
             }
         }
     }
+
+    public function test_zonal_commander_and_reviewers_can_preview_and_download_in_scope_submission(): void
+    {
+        $profiles = $this->roleProfiles();
+        $makeUser = fn (string $key) => User::create(array_merge([
+            'name' => ucwords(str_replace('_', ' ', $key)),
+            'email_verified_at' => now(),
+            'password' => Hash::make('Secure@12'),
+            'is_enabled' => true,
+            'must_change_password' => false,
+            'mfa_enabled' => true,
+            'mfa_secret' => 'JBSWY3DPEHPK3PXP',
+            'geolocation_enabled' => false,
+        ], $profiles[$key]));
+
+        $stateUser = $makeUser('state_user');
+        $deskAdmin = $makeUser('desk_admin');
+        $zonalCommander = $makeUser('zonal_commander');
+        $hqAdmin = $makeUser('hq_admin');
+        $superAdmin = $makeUser('super_admin');
+
+        $application = \App\Services\SubmissionWorkflow::create($stateUser, [
+            'period' => now()->format('Y-m'),
+            'reporting_officer' => $stateUser->name,
+            'command_name' => 'Lagos',
+            'local_revenue_passport' => '100',
+        ]);
+
+        // Desk Admin previews, approves (without optional note), and sees it in Approved Submissions
+        $this->actingAs($deskAdmin)->get(route('desk.admin.submissions.show', $application))->assertOk();
+        $this->actingAs($deskAdmin)->patch(route('desk.admin.submissions.approve', $application))->assertRedirect();
+        $this->actingAs($deskAdmin)->get(route('user.desk.home'))
+            ->assertOk()
+            ->assertSee('Approved');
+
+        // Zonal Commander previews, downloads CSV/PDF, accesses reports, and approves without 403
+        $this->actingAs($zonalCommander)->get(route('user.zonal.home'))->assertOk()->assertSee('Preview');
+        $this->actingAs($zonalCommander)->get(route('desk.admin.submissions.show', $application))->assertOk();
+        $this->actingAs($zonalCommander)->get(route('desk.admin.submissions.download', $application))->assertOk();
+        $this->actingAs($zonalCommander)->get(route('user.submissions.pdf', $application))->assertOk();
+        $this->actingAs($zonalCommander)->get(route('desk.admin.reports'))->assertOk();
+        $this->actingAs($zonalCommander)->patch(route('zonal.submissions.approve', $application))->assertRedirect();
+
+        // HQ Admin and Super Admin can also preview the submission without 403
+        $this->actingAs($hqAdmin)->get(route('desk.admin.submissions.show', $application))->assertOk();
+        $this->actingAs($superAdmin)->get(route('desk.admin.submissions.show', $application))->assertOk();
+    }
 }

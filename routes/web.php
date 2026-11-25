@@ -191,9 +191,13 @@ Route::middleware([Authenticate::class, 'access:category=zonal_commander,locatio
 // Desk / directorate / CGIS desk admin review routes
 Route::middleware([Authenticate::class, 'access:category=desk_admin|directorate_admin|cgis_desk_admin|hq_admin,location=state|directorate|unit|headquarters,role=admin|state|directorate|unit_admin|minLevel=1', 'abac.geo'])->group(function () {
     Route::get('/desk-admin/dashboard', [SubmissionReviewController::class, 'index'])->name('user.desk.home');
-    Route::get('/desk-admin/reports', [SubmissionReviewController::class, 'reports'])->name('desk.admin.reports');
     Route::patch('/desk-admin/submissions/{application}/approve', [SubmissionReviewController::class, 'approve'])->middleware([\Illuminate\Routing\Middleware\ThrottleRequests::class . ':60,1'])->name('desk.admin.submissions.approve');
     Route::patch('/desk-admin/submissions/{application}/reject', [SubmissionReviewController::class, 'reject'])->middleware([\Illuminate\Routing\Middleware\ThrottleRequests::class . ':60,1'])->name('desk.admin.submissions.reject');
+});
+
+// Shared reviewer & oversight read/export routes (strictly scope-authorized in SubmissionReviewController)
+Route::middleware([Authenticate::class, 'access:category=desk_admin|zonal_commander|directorate_admin|cgis_desk_admin|hq_admin|admin|super_admin,location=state|zonal|directorate|unit|headquarters,role=admin|state|zonal|directorate|unit_admin|super_admin|minLevel=1', 'abac.geo'])->group(function () {
+    Route::get('/desk-admin/reports', [SubmissionReviewController::class, 'reports'])->name('desk.admin.reports');
     Route::get('/desk-admin/submissions/{application}', [SubmissionReviewController::class, 'show'])->name('desk.admin.submissions.show');
     Route::get('/desk-admin/submissions/{application}/download', [SubmissionReviewController::class, 'download'])->name('desk.admin.submissions.download');
     Route::get('/desk-admin/submissions/{application}/documents/{collection}/{index}', [SubmissionReviewController::class, 'document'])->name('desk.admin.submissions.document');

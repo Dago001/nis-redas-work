@@ -252,9 +252,15 @@ class SubmissionReviewController extends Controller
 
         $request->validate([
             'note' => ['nullable', 'string', 'max:1000'],
+            'comment' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        SubmissionWorkflow::approve($application, $user, $request->input('note'));
+        $note = $request->input('note');
+        if ($note === null || trim((string) $note) === '') {
+            $note = $request->input('comment');
+        }
+
+        SubmissionWorkflow::approve($application, $user, $note);
 
         return back()->with('status', 'Submission approved and routed to the next stage.');
     }

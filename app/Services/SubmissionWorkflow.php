@@ -489,9 +489,8 @@ class SubmissionWorkflow
     {
         try {
             return match ($approver->user_category) {
-                'desk_admin', 'directorate_admin', 'cgis_desk_admin' => route('desk.admin.submissions.show', $application),
+                'desk_admin', 'zonal_commander', 'directorate_admin', 'cgis_desk_admin' => route('desk.admin.submissions.show', $application),
                 'hq_admin' => route('admin.submissions'),
-                'zonal_commander' => route('user.zonal.home'),
                 default => null,
             };
         } catch (\Throwable) {

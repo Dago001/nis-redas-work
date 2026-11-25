@@ -32,7 +32,7 @@
             <p class="page-subtitle">Welcome, <strong>{{ $user->name ?? 'Officer' }}</strong> - {{ $stageName }}</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <a href="{{ route('desk.admin.reports') }}" class="btn-nis btn-outline-nis">
+            <a href="{{ ($user?->user_category === 'zonal_commander') ? route('user.reports') : route('desk.admin.reports') }}" class="btn-nis btn-outline-nis">
                 <i class="fas fa-file-export"></i> Generate Reports
             </a>
             <a href="{{ route('user.archive') }}" class="btn-nis btn-ghost">
@@ -135,7 +135,7 @@
                                         <form method="POST" action="{{ route($approveRoute, $submission) }}" style="display:flex;gap:8px;flex-wrap:wrap;min-width:240px;">
                                             @csrf
                                             @method('PATCH')
-                                            <input type="text" name="comment" maxlength="1000" placeholder="Approval note (optional)" style="padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:.75rem;flex:1;min-width:140px;">
+                                            <input type="text" name="note" maxlength="1000" placeholder="Approval note (optional)" style="padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:.75rem;flex:1;min-width:140px;">
                                             <button type="submit" class="btn-nis btn-sm btn-primary-nis">Approve</button>
                                         </form>
 
