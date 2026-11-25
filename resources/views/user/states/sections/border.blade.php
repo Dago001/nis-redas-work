@@ -22,12 +22,25 @@
         'EDSC' => 'Edo', 'ANSC' => 'Anambra', 'DTSC' => 'Delta', 'ENSC' => 'Enugu', 'BYSC' => 'Bayelsa',
         'NASC' => 'Nasarawa', 'BNSC' => 'Benue', 'KGSC' => 'Kogi', 'TRSC' => 'Taraba',
     ];
+    $borderZoneHqState = [
+        'ZONE-A' => 'Lagos',
+        'ZONE-B' => 'Kaduna',
+        'ZONE-C' => 'Bauchi',
+        'ZONE-D' => 'Niger',
+        'ZONE-E' => 'Imo',
+        'ZONE-F' => 'Oyo',
+        'ZONE-G' => 'Edo',
+        'ZONE-H' => 'Benue',
+    ];
     $borderOwnState = null;
     if ($borderUser && in_array($borderUser->user_category, ['state_user', 'desk_admin'], true) && $borderCmdCode !== '') {
         $borderOwnState = $borderStateLookup[$borderCmdCode]
             ?? ((\App\Services\GeolocationService::stateNameFromCode($borderCmdCode) !== null)
                 ? trim(str_ireplace(' State', '', (string) \App\Services\GeolocationService::stateNameFromCode($borderCmdCode)))
                 : null);
+    } elseif ($borderUser && in_array($borderUser->user_category, ['zonal_officer', 'zonal_commander'], true)) {
+        $zCode = strtoupper(trim((string) ($borderUser->assigned_zonal_command_code ?: $borderUser->primary_location_code)));
+        $borderOwnState = $borderZoneHqState[$zCode] ?? null;
     }
 @endphp
 
@@ -3100,7 +3113,7 @@ $lastSection = $category['section'];
         const stateSelect = clone.querySelector(".command-state");
 
         @php
-            $borderUserCmd = auth()->check() && in_array(auth()->user()->user_category, ['state_user', 'desk_admin'], true)
+            $borderUserCmd = auth()->check() && in_array(auth()->user()->user_category, ['state_user', 'desk_admin', 'zonal_officer'], true)
                 ? (\App\Http\Controllers\Web\DashboardController::commandNameForUser(auth()->user()) ?? '')
                 : '';
         @endphp

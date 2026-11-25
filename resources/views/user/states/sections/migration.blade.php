@@ -34,7 +34,7 @@
         $migCommandCode = strtoupper(trim((string) ($migUser?->primary_location_code ?: $migUser?->assigned_state_code)));
         $migZoneLabel = null;
 
-        if ($migUser && in_array($migUser->user_category, ['state_user', 'desk_admin', 'zonal_commander'], true)) {
+        if ($migUser && in_array($migUser->user_category, ['state_user', 'desk_admin', 'zonal_commander', 'zonal_officer'], true)) {
             $rawZone = strtoupper(trim((string) ($migUser->assigned_zonal_command_code ?: ($migUser->user_category === 'zonal_commander' ? $migUser->primary_location_code : ''))));
             if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
                 $migZoneLabel = 'ZONE '.$zm[1];

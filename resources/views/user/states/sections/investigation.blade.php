@@ -20,7 +20,7 @@
     $invCommandCode = strtoupper(trim((string) ($invUser?->primary_location_code ?: $invUser?->assigned_state_code)));
     $invZoneKey = null;
 
-    if ($invUser && in_array($invUser->user_category, ['state_user', 'desk_admin', 'zonal_commander'], true)) {
+    if ($invUser && in_array($invUser->user_category, ['state_user', 'desk_admin', 'zonal_commander', 'zonal_officer'], true)) {
         $rawZone = strtoupper(trim((string) ($invUser->assigned_zonal_command_code ?: ($invUser->user_category === 'zonal_commander' ? $invUser->primary_location_code : ''))));
         if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
             $invZoneKey = 'ZONE_'.$zm[1];

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>State Command Return - Preview</title>
+    <title>{{ ($user?->user_category === 'zonal_officer') ? 'Zonal Officer Return - Preview' : 'State Command Return - Preview' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         body { background:#f3f4f6; color:#111827; font-family:'Inter',system-ui,sans-serif; margin:0; }
@@ -206,7 +206,7 @@ $sections = \App\Services\PreviewRenderer::buildSections($data, [
             <img class="logo" src="{{ asset('nis-logo.png') }}" alt="NIS Logo">
             <div class="nis-preview-brand-text">
                 <h1>Nigeria Immigration Service</h1>
-                <p class="subtitle">State Command Return - Official Preview</p>
+                <p class="subtitle">{{ ($user?->user_category === 'zonal_officer') ? 'Zonal Officer Return - Official Preview' : 'State Command Return - Official Preview' }}</p>
             </div>
         </div>
         <div class="nis-preview-meta-grid">

@@ -74,7 +74,7 @@ $hrmUser = auth()->user();
 $userCommandCode = strtoupper(trim((string) ($hrmUser?->primary_location_code ?: $hrmUser?->assigned_state_code)));
 $userZoneLetter = null;
 
-if ($hrmUser && in_array($hrmUser->user_category, ['state_user', 'desk_admin', 'zonal_commander'], true)) {
+if ($hrmUser && in_array($hrmUser->user_category, ['state_user', 'desk_admin', 'zonal_commander', 'zonal_officer'], true)) {
     $rawZone = strtoupper(trim((string) ($hrmUser->assigned_zonal_command_code ?: ($hrmUser->user_category === 'zonal_commander' ? $hrmUser->primary_location_code : ''))));
     if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
         $userZoneLetter = $zm[1];

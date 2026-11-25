@@ -695,7 +695,7 @@ class DashboardController extends Controller
         abort_unless($application->user_id === $request->user()->id, 403);
 
         $user = Auth::user();
-        $isStateUser = $user?->user_category === 'state_user';
+        $isStateUser = in_array($user?->user_category, ['state_user', 'zonal_officer'], true);
         $homeUrl = $isStateUser ? route('user.submissions') : $this->formHomeUrl($user);
 
         if (strtolower((string) $application->status) === 'approved') {
@@ -775,6 +775,32 @@ class DashboardController extends Controller
             }
 
             $processingCenters = $scoped;
+        } elseif ($user && in_array($user->user_category, ['zonal_officer', 'zonal_commander'], true)) {
+            $zoneCode = strtoupper(trim((string) ($user->assigned_zonal_command_code ?: $user->primary_location_code)));
+            $zoneStatesMap = [
+                'ZONE-A' => ['lagos', 'ogun'],
+                'ZONE-B' => ['kaduna', 'kano', 'katsina', 'jigawa', 'sokoto', 'kebbi', 'zamfara'],
+                'ZONE-C' => ['bauchi', 'borno', 'yobe', 'adamawa', 'gombe', 'plateau'],
+                'ZONE-D' => ['niger', 'kwara', 'fct', 'abuja'],
+                'ZONE-E' => ['imo', 'abia', 'akwa ibom', 'cross river', 'ebonyi', 'rivers'],
+                'ZONE-F' => ['oyo', 'osun', 'ondo', 'ekiti'],
+                'ZONE-G' => ['edo', 'delta', 'anambra', 'enugu', 'bayelsa'],
+                'ZONE-H' => ['benue', 'nasarawa', 'kogi', 'taraba'],
+            ];
+            $keywords = $zoneStatesMap[$zoneCode] ?? [];
+            $scoped = $keywords !== []
+                ? (clone $centersQuery)
+                    ->where(function ($q) use ($keywords) {
+                        foreach ($keywords as $kw) {
+                            $q->orWhereRaw("LOWER(COALESCE(state, '')) LIKE ?", ['%'.$kw.'%']);
+                        }
+                    })
+                    ->orderBy('name')
+                    ->pluck('name')
+                    ->all()
+                : [];
+
+            $processingCenters = $scoped !== [] ? $scoped : ($zoneCode !== '' ? [$zoneCode] : []);
         } else {
             $processingCenters = $centersQuery->orderBy('name')->pluck('name')->all();
         }
@@ -850,7 +876,7 @@ class DashboardController extends Controller
         $user = Auth::user();
         abort_unless($user !== null && $user->can('update', $application), 403, 'Approved submissions cannot be edited.');
 
-        $isStateUser = $user->user_category === 'state_user';
+        $isStateUser = in_array($user->user_category, ['state_user', 'zonal_officer'], true);
         $existingData = is_array($application->return_data) ? $application->return_data : [];
         $existingAttachments = array_values(array_filter((array) ($existingData['attachments'] ?? []), 'is_string'));
         $existingSupporting = array_values(array_filter((array) ($existingData['supporting_documents'] ?? []), 'is_string'));

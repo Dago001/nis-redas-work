@@ -30,7 +30,8 @@
         $brandRoute = $hdrUser ? $hdrUser->dashboardUrl() : route('user.dashboard');
         $brandText = match ($hdrCat) {
             'admin', 'hq_admin' => 'HQ Admin Portal',
-            'zonal_commander' => 'Zonal Command Portal',
+            'zonal_commander' => 'Zonal Admin Portal',
+            'zonal_officer' => 'Zonal Officer Portal',
             'directorate_admin' => 'Directorate Admin Portal',
             'cgis_desk_admin' => 'CGIS Desk Admin Portal',
             'desk_admin' => 'Desk Admin Portal',

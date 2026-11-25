@@ -74,7 +74,7 @@ $tailorItems = [
 /* The show route passes $commands; the edit route does not, so keep a local
    fallback to guarantee the command dropdowns are always populated. */
 $wlUser = auth()->user();
-if ($wlUser && in_array($wlUser->user_category, ['state_user', 'desk_admin'], true)) {
+if ($wlUser && in_array($wlUser->user_category, ['state_user', 'desk_admin', 'zonal_officer'], true)) {
     $ownCmd = \App\Http\Controllers\Web\DashboardController::commandNameForUser($wlUser)
         ?: strtoupper((string) ($wlUser->primary_location_code ?: $wlUser->assigned_state_code));
     $commandList = $ownCmd !== '' ? [$ownCmd] : ['Assigned Command'];

@@ -19,11 +19,17 @@
     .state-dir-panel .hrm-actions { display:none !important; }
     </style>
 
+    @php
+        $isZonalOfficer = auth()->user()?->user_category === 'zonal_officer';
+        $returnHeading = $isZonalOfficer
+            ? (isset($editing) ? 'Edit Zonal Officer Return' : 'Zonal Officer Return')
+            : (isset($editing) ? 'Edit State Command Return' : 'State Command Return');
+    @endphp
     <div class="page-header" style="margin-bottom:18px;">
         <div>
             <h1 class="page-title" style="margin-bottom:4px;">
                 <i class="fas fa-building-columns" style="margin-right:8px;"></i>
-                {{ isset($editing) ? 'Edit State Command Return' : 'State Command Return' }}
+                {{ $returnHeading }}
             </h1>
             <p class="page-subtitle">{{ isset($editing) ? 'Update the sections below and resubmit for review.' : 'Complete all applicable sections and submit for review.' }}</p>
         </div>
@@ -96,21 +102,23 @@
         <div class="nis-section" style="margin-bottom:16px;">
             <div class="nis-section-head">
                 <span class="sec-num">A</span>
-                Nigeria Immigration Service - State Command Monthly Reporting Template
+                Nigeria Immigration Service - {{ $isZonalOfficer ? 'Zonal Command Monthly Reporting Template' : 'State Command Monthly Reporting Template' }}
             </div>
             <div class="nis-section-body">
                 <div class="workflow-path" style="margin-bottom:14px;">
                     <span class="workflow-step you"><i class="fas fa-user-edit" style="font-size:.68rem;"></i> You</span>
                     <span class="workflow-arrow"><i class="fas fa-arrow-right"></i></span>
+                    @unless($isZonalOfficer)
                     <span class="workflow-step"><i class="fas fa-user-tie" style="font-size:.68rem;"></i> Desk Admin</span>
                     <span class="workflow-arrow"><i class="fas fa-arrow-right"></i></span>
-                    <span class="workflow-step"><i class="fas fa-user-shield" style="font-size:.68rem;"></i> Zonal Commander</span>
+                    @endunless
+                    <span class="workflow-step"><i class="fas fa-user-shield" style="font-size:.68rem;"></i> Zonal Admin</span>
                     <span class="workflow-arrow"><i class="fas fa-arrow-right"></i></span>
                     <span class="workflow-step" style="color:var(--gray-400);"><i class="fas fa-user-cog" style="font-size:.68rem;"></i> HQ Admin</span>
                 </div>
                 <div class="form-grid-4" style="align-items:end;">
                     <div class="fg">
-                        <label>Command</label>
+                        <label>{{ $isZonalOfficer ? 'Zonal Command' : 'Command' }}</label>
                         <input type="text" name="command_name" class="ni" value="{{ $commandValue }}" readonly>
                     </div>
                     <div class="fg">
@@ -425,7 +433,7 @@
                     return;
                 }
 
-                if (!window.confirm('Submit this State Command return for review?\n\nPlease verify all sections before continuing - this cannot be undone.')) {
+                if (!window.confirm('Submit this {{ $isZonalOfficer ? 'Zonal Officer' : 'State Command' }} return for review?\n\nPlease verify all sections before continuing - this cannot be undone.')) {
                     return;
                 }
 
