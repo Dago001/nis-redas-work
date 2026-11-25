@@ -729,5 +729,78 @@ document.addEventListener('click', (e) => {
     });
 })();
 
+/* Global "Other / Others" specify-details input across all dropdowns */
+(function initGlobalOtherSpecifyHandler() {
+    function isOtherSelection(select) {
+        if (!select || select.tagName !== 'SELECT') return false;
+        const opt = select.options[select.selectedIndex];
+        if (!opt) return false;
+        const val = String(select.value || '').trim();
+        const txt = String(opt.textContent || '').trim();
+        if (/specify\s+below/i.test(txt)) return false;
+        return /^others?$/i.test(val) || /^others?$/i.test(txt);
+    }
+
+    function deriveOtherInputName(selectName) {
+        if (!selectName) return '';
+        if (selectName.endsWith('[]')) {
+            return selectName.slice(0, -2) + '_other[]';
+        }
+        if (selectName.endsWith(']')) {
+            return selectName.slice(0, -1) + '_other]';
+        }
+        return selectName + '_other';
+    }
+
+    function syncOtherSpecifyInput(select, shouldFocus) {
+        if (!select || select.tagName !== 'SELECT' || select.dataset.noOtherSpecify === 'true') return;
+        const parent = select.parentElement;
+        if (!parent) return;
+
+        let input = select.nextElementSibling;
+        if (!input || !input.classList.contains('redas-other-specify')) {
+            input = null;
+        }
+
+        if (isOtherSelection(select)) {
+            if (!input) {
+                input = document.createElement('input');
+                input.type = 'text';
+                input.className = select.classList.contains('auth-input')
+                    ? 'auth-input redas-other-specify'
+                    : 'ni redas-other-specify';
+                input.placeholder = 'Please specify details...';
+                input.style.marginTop = '6px';
+                const derivedName = deriveOtherInputName(select.getAttribute('name') || '');
+                if (derivedName) input.name = derivedName;
+                select.insertAdjacentElement('afterend', input);
+            } else {
+                const derivedName = deriveOtherInputName(select.getAttribute('name') || '');
+                if (derivedName) input.name = derivedName;
+            }
+            input.style.display = '';
+            input.disabled = false;
+            input.required = true;
+            if (shouldFocus) input.focus();
+        } else if (input) {
+            input.value = '';
+            input.required = false;
+            input.disabled = true;
+            input.style.display = 'none';
+        }
+    }
+
+    document.addEventListener('change', (e) => {
+        const select = e.target;
+        if (select && select.tagName === 'SELECT') {
+            syncOtherSpecifyInput(select, true);
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('select').forEach((sel) => syncOtherSpecifyInput(sel, false));
+    });
+})();
+
 /* Export for inline scripts */
 window.REDAS = { showToast, animateCounter };
