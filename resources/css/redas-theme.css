@@ -1536,7 +1536,7 @@ body.auth-page {
 
 .auth-input {
     width: 100%;
-    padding: 12px 14px 12px 40px;
+    padding: 12px 14px;
     border: 1.5px solid var(--gray-200);
     border-radius: var(--radius-md);
     font-size: 0.9rem;
@@ -1544,6 +1544,10 @@ body.auth-page {
     background: white;
     outline: none;
     transition: all var(--duration-fast);
+}
+
+.auth-input-wrap .auth-input {
+    padding-left: 40px;
 }
 
 .auth-input:focus {
