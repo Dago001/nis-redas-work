@@ -217,6 +217,10 @@ class StateCombinedFormTest extends TestCase
         $this->assertStringContainsStringIgnoringCase('Murtala Mohammed International Airport', $htmlA);
         $this->assertStringNotContainsStringIgnoringCase('Akanu Ibiam International Airport, Enugu', $htmlA);
 
+        // ICT: 7. E-Documentation/ID Card Activities is ICT Directorate only (hidden from command returns)
+        $this->assertStringNotContainsString('7. E-Documentation/ID Card Activities', $htmlA);
+        $this->assertStringNotContainsString('name="ict[edoc]', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',

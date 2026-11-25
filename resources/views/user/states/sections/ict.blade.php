@@ -63,15 +63,18 @@ $incidentCategories = [
 <div class="hrm-tabs-wrap">
     <div class="entry-tabs-wrap" style="margin-bottom:0;">
         <div class="entry-tabs" id="entryTabs">
-            @php $tabs = [
-                ['ict-cadre','fas fa-users','1. Cadre'],
-                ['ict-rank','fas fa-star','2. Rank'],
-                ['ict-incidents','fas fa-exclamation-triangle','3. Incidents'],
-                ['ict-maintenance','fas fa-tools','4. Maintenance'],
-                ['ict-software','fas fa-laptop-code','5. Software & Data'],
-                ['ict-edoc','fas fa-id-card','6. E-Doc & MIDAS'],
-                ['ict-general-report','fas fa-file-alt','7. General Report'],
-            ]; @endphp
+            @php
+                $showEdoc = ! ($stateEmbedded ?? false);
+                $tabs = [
+                    ['ict-cadre','fas fa-users','1. Cadre'],
+                    ['ict-rank','fas fa-star','2. Rank'],
+                    ['ict-incidents','fas fa-exclamation-triangle','3. Incidents'],
+                    ['ict-maintenance','fas fa-tools','4. Maintenance'],
+                    ['ict-software','fas fa-laptop-code','5. Software & Data'],
+                    ['ict-edoc', $showEdoc ? 'fas fa-id-card' : 'fas fa-server', $showEdoc ? '6. E-Doc & MIDAS' : '6. MIDAS'],
+                    ['ict-general-report','fas fa-file-alt','7. General Report'],
+                ];
+            @endphp
             @foreach($tabs as $i => [$id,$icon,$label])
             <button type="button" class="entry-tab {{ $i === 0 ? 'active' : '' }}" data-tab="{{ $id }}">
                 <span class="tab-dot"></span>
@@ -503,8 +506,9 @@ $incidentCategories = [
         </div>
     </div>
 
-    <!-- TAB 6: E-Documentation/ID Card Activities & MIDAS Deployment -->
+    <!-- TAB 6: E-Documentation/ID Card Activities (ICT Directorate only) & MIDAS Deployment -->
     <div class="tab-panel" id="tab-ict-edoc">
+        @if($showEdoc)
         <div class="redas-card" style="margin-bottom:14px;">
             <div class="card-head">
                 <div class="card-head-title">
@@ -546,6 +550,7 @@ $incidentCategories = [
                 </div>
             </div>
         </div>
+        @endif
 
         <div class="redas-card" style="margin-bottom:14px;">
             <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
