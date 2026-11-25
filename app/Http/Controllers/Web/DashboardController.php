@@ -754,7 +754,7 @@ class DashboardController extends Controller
             $stateKeyword = $this->stateKeywordForUser($user);
             $scoped = $stateKeyword !== null
                 ? (clone $centersQuery)
-                    ->whereRaw('LOWER(COALESCE(state, "")) LIKE ?', ['%'.strtolower($stateKeyword).'%'])
+                    ->whereRaw("LOWER(COALESCE(state, '')) LIKE ?", ['%'.strtolower($stateKeyword).'%'])
                     ->orderBy('name')
                     ->pluck('name')
                     ->all()
