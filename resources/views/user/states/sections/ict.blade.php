@@ -859,9 +859,11 @@ $incidentCategories = [
         html += `<div style="font-size:.84rem;font-weight:700;margin:10px 0 6px;">c. Cybersecurity</div>`;
         html += previewTable(tableRows('ict-cyber-body'), ['Security Deployed', 'Type of Security', 'Incident Report', 'Location', 'Status']);
 
+        @if($showEdoc)
         /* 7. E-Documentation/ID Card Activities */
         html += previewSectionTitle(7, 'E-Documentation/ID Card Activities');
         html += previewTable(matrixPreviewRows('ict-edoc'), ['Rank', ...LOCATION_LABELS, 'Total']);
+        @endif
 
         /* 8. MIDAS Deployment */
         html += previewSectionTitle(8, 'MIDAS Deployment');
