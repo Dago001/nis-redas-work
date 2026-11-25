@@ -27,7 +27,10 @@
         $allCommands = [];
         foreach ($hierarchyZones as $zCode => $zInfo) {
             $letter = strtoupper(str_replace('ZONE-', '', (string) $zCode));
-            $allCommands['ZONE '.$letter] = array_keys((array) ($zInfo['commands'] ?? []));
+            $allCommands['ZONE '.$letter] = array_merge(
+                ['ZONE '.$letter.' HQ'],
+                array_keys((array) ($zInfo['commands'] ?? []))
+            );
         }
 
         $migUser = auth()->user();
@@ -35,7 +38,7 @@
         $migZoneLabel = null;
 
         if ($migUser && in_array($migUser->user_category, ['state_user', 'desk_admin', 'zonal_commander', 'zonal_officer'], true)) {
-            $rawZone = strtoupper(trim((string) ($migUser->assigned_zonal_command_code ?: ($migUser->user_category === 'zonal_commander' ? $migUser->primary_location_code : ''))));
+            $rawZone = strtoupper(trim((string) ($migUser->assigned_zonal_command_code ?: (in_array($migUser->user_category, ['zonal_commander', 'zonal_officer'], true) ? $migUser->primary_location_code : ''))));
             if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
                 $migZoneLabel = 'ZONE '.$zm[1];
             }
@@ -54,12 +57,20 @@
                     $migZoneLabel = 'ZONE '.$zm[1];
                 }
             }
+            if ($migUser->user_category === 'zonal_officer' && $migZoneLabel !== null) {
+                $migCommandCode = $migZoneLabel.' HQ';
+            }
         }
+
+        $migZonalPrefill = \App\Services\ZonalPrefillService::forUser(
+            $migUser,
+            old('period', isset($editing) ? ($editing->report_period ?? ($editing->return_data['period'] ?? null)) : now()->format('Y-m'))
+        );
 
         $migZoneScoped = $migZoneLabel !== null && isset($allCommands[$migZoneLabel]);
         $commands = $migZoneScoped ? [$migZoneLabel => $allCommands[$migZoneLabel]] : $allCommands;
         $restrictMigToOwnCommand = $migUser
-            && in_array($migUser->user_category, ['state_user', 'desk_admin'], true)
+            && in_array($migUser->user_category, ['state_user', 'desk_admin', 'zonal_officer'], true)
             && $migCommandCode !== ''
             && collect($commands)->flatten()->contains(fn ($c) => strtoupper((string) $c) === $migCommandCode);
         $migLockedStyle = 'padding:4px 6px;font-size:0.8rem;text-align:center;background:#f1f5f9;color:#94a3b8;cursor:not-allowed;pointer-events:none;';
@@ -246,10 +257,16 @@
                         <tbody class="som-zone-group" id="som-zone-{{ $zoneId }}" @if(! $migZoneScoped && $zone !== 'ZONE A') style="display:none;" @endif>
                             @foreach($zoneCommands as $commandName)
                             @php
-                                $isOwnMigCmd = $migCommandCode !== '' && strtoupper($commandName) === $migCommandCode;
-                                $isMigRowLocked = $restrictMigToOwnCommand && ! $isOwnMigCmd;
+                                $cmdUpper = strtoupper($commandName);
+                                $isOwnMigCmd = $migCommandCode !== '' && $cmdUpper === $migCommandCode;
+                                $approvedSomVals = (! $isOwnMigCmd && isset($migZonalPrefill['migration_som'][$cmdUpper]))
+                                    ? $migZonalPrefill['migration_som'][$cmdUpper]
+                                    : null;
+                                $isApprovedSomCmd = $approvedSomVals !== null;
+                                $isMigRowLocked = $restrictMigToOwnCommand && ! $isOwnMigCmd && ! $isApprovedSomCmd;
+                                $migApprovedStyle = 'padding:4px 6px;font-size:0.8rem;text-align:center;background:#ecfdf5;font-weight:600;color:#166534;';
                             @endphp
-                            <tr class="som-row" style="{{ $loop->first ? 'border-top:3px solid var(--nis-600) !important;' : '' }}{{ $isOwnMigCmd ? 'background:#f0fdf4;' : ($isMigRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
+                            <tr class="som-row" style="{{ $loop->first ? 'border-top:3px solid var(--nis-600) !important;' : '' }}{{ ($isOwnMigCmd || $isApprovedSomCmd) ? 'background:#f0fdf4;' : ($isMigRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                 @if($loop->first)
                                 <td rowspan="{{ count($zoneCommands) }}" style="vertical-align:middle;font-weight:800;background:var(--gray-50);text-align:center;border-right:1px solid var(--gray-200);opacity:1;">
                                     {{ $zone }}
@@ -259,6 +276,8 @@
                                     <strong>{{ $commandName }}</strong>
                                     @if($isOwnMigCmd)
                                         <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Command</span>
+                                    @elseif($isApprovedSomCmd)
+                                        <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;"><i class="fas fa-check-circle" style="margin-right:3px;"></i>Approved</span>
                                     @elseif($isMigRowLocked)
                                         <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
                                     @endif
@@ -277,15 +296,15 @@
                                 <td>
                                     <input type="number" min="0" class="ni som-field-input"
                                         name="smuggling_of_migrants[{{ $commandName }}][{{ $fieldKey }}]"
-                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="{{ $isMigRowLocked ? '' : '0' }}" placeholder="0"
-                                        @if($isMigRowLocked) disabled readonly tabindex="-1" style="{{ $migLockedStyle }}" @else style="padding:4px 6px;font-size:0.8rem;text-align:center;" @endif>
+                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="{{ $isMigRowLocked ? '' : ($isApprovedSomCmd ? ($approvedSomVals[$fieldKey] ?? 0) : '0') }}" placeholder="0"
+                                        @if($isMigRowLocked) disabled readonly tabindex="-1" style="{{ $migLockedStyle }}" @elseif($isApprovedSomCmd) readonly style="{{ $migApprovedStyle }}" @else style="padding:4px 6px;font-size:0.8rem;text-align:center;" @endif>
                                 </td>
                                 @endforeach
                                 <td>
                                     <input type="number" class="ni som-row-total"
                                         name="smuggling_of_migrants[{{ $commandName }}][total]"
-                                        id="som-total-{{ $commandName }}" value="{{ $isMigRowLocked ? '' : '0' }}" readonly
-                                        @if($isMigRowLocked) disabled tabindex="-1" style="{{ $migLockedStyle }}" @else style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:100px;" @endif>
+                                        id="som-total-{{ $commandName }}" value="{{ $isMigRowLocked ? '' : ($isApprovedSomCmd ? array_sum($approvedSomVals) : '0') }}" readonly
+                                        @if($isMigRowLocked) disabled tabindex="-1" style="{{ $migLockedStyle }}" @elseif($isApprovedSomCmd) style="{{ $migApprovedStyle }}min-width:100px;" @else style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:100px;" @endif>
                                 </td>
                             </tr>
                             @endforeach
@@ -346,10 +365,16 @@
                         <tbody class="tip-zone-group" id="tip-zone-{{ $zoneId }}" @if(! $migZoneScoped && $zone !== 'ZONE A') style="display:none;" @endif>
                             @foreach($zoneCommands as $commandName)
                             @php
-                                $isOwnTipCmd = $migCommandCode !== '' && strtoupper($commandName) === $migCommandCode;
-                                $isTipRowLocked = $restrictMigToOwnCommand && ! $isOwnTipCmd;
+                                $cmdUpper = strtoupper($commandName);
+                                $isOwnTipCmd = $migCommandCode !== '' && $cmdUpper === $migCommandCode;
+                                $approvedTipVals = (! $isOwnTipCmd && isset($migZonalPrefill['migration_tip'][$cmdUpper]))
+                                    ? $migZonalPrefill['migration_tip'][$cmdUpper]
+                                    : null;
+                                $isApprovedTipCmd = $approvedTipVals !== null;
+                                $isTipRowLocked = $restrictMigToOwnCommand && ! $isOwnTipCmd && ! $isApprovedTipCmd;
+                                $migApprovedStyle = 'padding:4px 6px;font-size:0.8rem;text-align:center;background:#ecfdf5;font-weight:600;color:#166534;';
                             @endphp
-                            <tr class="tip-row" style="{{ $loop->first ? 'border-top:3px solid var(--nis-600) !important;' : '' }}{{ $isOwnTipCmd ? 'background:#f0fdf4;' : ($isTipRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
+                            <tr class="tip-row" style="{{ $loop->first ? 'border-top:3px solid var(--nis-600) !important;' : '' }}{{ ($isOwnTipCmd || $isApprovedTipCmd) ? 'background:#f0fdf4;' : ($isTipRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                 @if($loop->first)
                                 <td rowspan="{{ count($zoneCommands) }}" style="vertical-align:middle;font-weight:800;background:var(--gray-50);text-align:center;border-right:1px solid var(--gray-200);opacity:1;">
                                     {{ $zone }}
@@ -359,6 +384,8 @@
                                     <strong>{{ $commandName }}</strong>
                                     @if($isOwnTipCmd)
                                         <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Command</span>
+                                    @elseif($isApprovedTipCmd)
+                                        <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;"><i class="fas fa-check-circle" style="margin-right:3px;"></i>Approved</span>
                                     @elseif($isTipRowLocked)
                                         <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
                                     @endif
@@ -375,15 +402,15 @@
                                 <td>
                                     <input type="number" min="0" class="ni tip-field-input"
                                         name="trafficking_in_persons[{{ $commandName }}][{{ $fieldKey }}]"
-                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="{{ $isTipRowLocked ? '' : '0' }}" placeholder="0"
-                                        @if($isTipRowLocked) disabled readonly tabindex="-1" style="{{ $migLockedStyle }}" @else style="padding:4px 6px;font-size:0.8rem;text-align:center;" @endif>
+                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="{{ $isTipRowLocked ? '' : ($isApprovedTipCmd ? ($approvedTipVals[$fieldKey] ?? 0) : '0') }}" placeholder="0"
+                                        @if($isTipRowLocked) disabled readonly tabindex="-1" style="{{ $migLockedStyle }}" @elseif($isApprovedTipCmd) readonly style="{{ $migApprovedStyle }}" @else style="padding:4px 6px;font-size:0.8rem;text-align:center;" @endif>
                                 </td>
                                 @endforeach
                                 <td>
                                     <input type="number" class="ni tip-row-total"
                                         name="trafficking_in_persons[{{ $commandName }}][total]"
-                                        id="tip-total-{{ $commandName }}" value="{{ $isTipRowLocked ? '' : '0' }}" readonly
-                                        @if($isTipRowLocked) disabled tabindex="-1" style="{{ $migLockedStyle }}" @else style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:100px;" @endif>
+                                        id="tip-total-{{ $commandName }}" value="{{ $isTipRowLocked ? '' : ($isApprovedTipCmd ? array_sum($approvedTipVals) : '0') }}" readonly
+                                        @if($isTipRowLocked) disabled tabindex="-1" style="{{ $migLockedStyle }}" @elseif($isApprovedTipCmd) style="{{ $migApprovedStyle }}min-width:100px;" @else style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:100px;" @endif>
                                 </td>
                             </tr>
                             @endforeach

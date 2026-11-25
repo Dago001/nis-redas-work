@@ -12,7 +12,10 @@
         $letter = strtoupper(str_replace('ZONE-', '', (string) $zCode));
         $allZoneMap['ZONE_'.$letter] = [
             'label' => 'Zone '.$letter,
-            'commands' => array_keys((array) ($zInfo['commands'] ?? [])),
+            'commands' => array_merge(
+                ['ZONE '.$letter.' HQ'],
+                array_keys((array) ($zInfo['commands'] ?? []))
+            ),
         ];
     }
 
@@ -21,7 +24,7 @@
     $invZoneKey = null;
 
     if ($invUser && in_array($invUser->user_category, ['state_user', 'desk_admin', 'zonal_commander', 'zonal_officer'], true)) {
-        $rawZone = strtoupper(trim((string) ($invUser->assigned_zonal_command_code ?: ($invUser->user_category === 'zonal_commander' ? $invUser->primary_location_code : ''))));
+        $rawZone = strtoupper(trim((string) ($invUser->assigned_zonal_command_code ?: (in_array($invUser->user_category, ['zonal_commander', 'zonal_officer'], true) ? $invUser->primary_location_code : ''))));
         if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
             $invZoneKey = 'ZONE_'.$zm[1];
         }
@@ -42,7 +45,16 @@
                 $invZoneKey = 'ZONE_'.$zm[1];
             }
         }
+
+        if ($invUser->user_category === 'zonal_officer' && $invZoneKey !== null) {
+            $invCommandCode = 'ZONE '.str_replace('ZONE_', '', $invZoneKey).' HQ';
+        }
     }
+
+    $invZonalPrefill = \App\Services\ZonalPrefillService::forUser(
+        $invUser,
+        old('period', isset($editing) ? ($editing->report_period ?? ($editing->return_data['period'] ?? null)) : now()->format('Y-m'))
+    );
 
     $showShqRow = $invZoneKey === null;
     $zoneMap = ($invZoneKey !== null && isset($allZoneMap[$invZoneKey]))
@@ -50,7 +62,7 @@
         : $allZoneMap;
 
     $restrictInvToOwnCommand = $invUser
-        && in_array($invUser->user_category, ['state_user', 'desk_admin'], true)
+        && in_array($invUser->user_category, ['state_user', 'desk_admin', 'zonal_officer'], true)
         && $invCommandCode !== ''
         && collect($zoneMap)->pluck('commands')->flatten()->contains(fn ($c) => strtoupper((string) $c) === $invCommandCode);
 
@@ -250,16 +262,24 @@ $rankRows = [
                                 </tr>
                                 @foreach($zone['commands'] as $cmd)
                                     @php
-                                        $isOwnInvCmd = $invCommandCode !== '' && strtoupper($cmd) === $invCommandCode;
-                                        $isInvRowLocked = $restrictInvToOwnCommand && ! $isOwnInvCmd;
+                                        $cmdUpper = strtoupper($cmd);
+                                        $isOwnInvCmd = $invCommandCode !== '' && $cmdUpper === $invCommandCode;
+                                        $approvedInvVals = (! $isOwnInvCmd && isset($invZonalPrefill['investigation_breach'][$cmdUpper]))
+                                            ? $invZonalPrefill['investigation_breach'][$cmdUpper]
+                                            : null;
+                                        $isApprovedInvCmd = $approvedInvVals !== null;
+                                        $isInvRowLocked = $restrictInvToOwnCommand && ! $isOwnInvCmd && ! $isApprovedInvCmd;
+                                        $invApprovedStyle = 'background:#ecfdf5;font-weight:600;color:#166534;';
                                     @endphp
-                                    <tr style="{{ $isOwnInvCmd ? 'background:#f0fdf4;' : ($isInvRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
+                                    <tr style="{{ ($isOwnInvCmd || $isApprovedInvCmd) ? 'background:#f0fdf4;' : ($isInvRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                         <td>{{ ++$sn }}</td>
                                         <td></td>
                                         <td style="padding-left:14px;white-space:nowrap;{{ $isInvRowLocked ? 'color:#94a3b8;' : '' }}">
                                             <strong>{{ $cmd }}</strong>
                                             @if($isOwnInvCmd)
                                                 <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Command</span>
+                                            @elseif($isApprovedInvCmd)
+                                                <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;"><i class="fas fa-check-circle" style="margin-right:3px;"></i>Approved</span>
                                             @elseif($isInvRowLocked)
                                                 <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
                                             @endif
@@ -268,17 +288,17 @@ $rankRows = [
                                             <td>
                                                 <input type="number" min="0" class="ni qty-input"
                                                        name="breach[{{ $zoneKey }}][{{ $cmd }}][{{ $col }}]"
-                                                       value="{{ $isInvRowLocked ? '' : old('breach.'.$zoneKey.'.'.$cmd.'.'.$col) }}"
+                                                       value="{{ $isInvRowLocked ? '' : ($isApprovedInvCmd ? ($approvedInvVals[$col] ?? 0) : old('breach.'.$zoneKey.'.'.$cmd.'.'.$col)) }}"
                                                        placeholder="0"
-                                                       @if($isInvRowLocked) disabled readonly tabindex="-1" style="{{ $invLockedStyle }}" @endif>
+                                                       @if($isInvRowLocked) disabled readonly tabindex="-1" style="{{ $invLockedStyle }}" @elseif($isApprovedInvCmd) readonly style="{{ $invApprovedStyle }}" @endif>
                                             </td>
                                         @endforeach
                                         <td>
                                             <input type="number" min="0" class="ni row-total" readonly tabindex="-1"
                                                    name="breach[{{ $zoneKey }}][{{ $cmd }}][total]"
-                                                   value="{{ $isInvRowLocked ? '' : old('breach.'.$zoneKey.'.'.$cmd.'.total') }}"
+                                                   value="{{ $isInvRowLocked ? '' : ($isApprovedInvCmd ? array_sum($approvedInvVals) : old('breach.'.$zoneKey.'.'.$cmd.'.total')) }}"
                                                    placeholder="0"
-                                                   @if($isInvRowLocked) disabled style="{{ $invLockedStyle }}" @endif>
+                                                   @if($isInvRowLocked) disabled style="{{ $invLockedStyle }}" @elseif($isApprovedInvCmd) style="{{ $invApprovedStyle }}" @endif>
                                         </td>
                                     </tr>
                                 @endforeach

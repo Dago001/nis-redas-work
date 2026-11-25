@@ -192,4 +192,110 @@ class ZonalOfficerToZonalAdminWorkflowTest extends TestCase
         $this->assertTrue(UserNotification::where('user_id', $zonalOfficer->id)->where('tag', 'return')->exists());
         $this->assertTrue(UserNotification::where('user_id', $stateOfficer->id)->where('tag', 'return')->exists());
     }
+
+    public function test_zonal_officer_form_includes_zone_hq_and_autofills_zonal_admin_approved_commands(): void
+    {
+        $stateOfficer = User::factory()->create([
+            'name' => 'Lagos Officer',
+            'role' => 'officer',
+            'user_category' => 'state_user',
+            'primary_location_type' => 'state',
+            'primary_location_code' => 'LASC',
+            'assigned_state_code' => 'LASC',
+            'assigned_zonal_command_code' => 'ZONE-A',
+            'access_level' => 0,
+            'is_enabled' => true,
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+        $deskAdmin = User::factory()->create([
+            'name' => 'Lagos Desk Admin',
+            'role' => 'state',
+            'user_category' => 'desk_admin',
+            'primary_location_type' => 'state',
+            'primary_location_code' => 'LASC',
+            'assigned_state_code' => 'LASC',
+            'assigned_zonal_command_code' => 'ZONE-A',
+            'access_level' => 1,
+            'is_enabled' => true,
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+        $zonalAdmin = User::factory()->create([
+            'name' => 'Zone A Admin',
+            'role' => 'zonal',
+            'user_category' => 'zonal_commander',
+            'primary_location_type' => 'zonal',
+            'primary_location_code' => 'ZONE-A',
+            'assigned_zonal_command_code' => 'ZONE-A',
+            'access_level' => 4,
+            'is_enabled' => true,
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+        $zonalOfficer = User::factory()->create([
+            'name' => 'Zone A Officer',
+            'role' => 'officer',
+            'user_category' => 'zonal_officer',
+            'primary_location_type' => 'zonal',
+            'primary_location_code' => 'ZONE-A',
+            'assigned_zonal_command_code' => 'ZONE-A',
+            'access_level' => 0,
+            'is_enabled' => true,
+            'email_verified_at' => now(),
+            'must_change_password' => false,
+        ]);
+
+        $period = now()->format('Y-m');
+        $lascReturn = SubmissionWorkflow::create($stateOfficer, [
+            'command_name' => 'Lagos State Command',
+            'period' => $period,
+            'report_period' => $period,
+            'hrm' => [
+                'zones' => [
+                    'a' => [
+                        'lasc' => [
+                            'comptroller' => 3,
+                            'superintendent' => 7,
+                            'inspectorate' => 12,
+                            'assistant' => 25,
+                        ],
+                    ],
+                ],
+            ],
+            'breach' => [
+                'ZONE_A' => [
+                    'LASC' => [
+                        'companies' => 4,
+                        'expatriates' => 6,
+                        'officers' => 1,
+                        'nigerians' => 9,
+                    ],
+                ],
+            ],
+            'smuggling_of_migrants' => [
+                'LASC' => [
+                    'migrants_intercepted' => 14,
+                    'smugglers_arrested' => 2,
+                ],
+            ],
+        ]);
+
+        // Desk Admin approves -> Zonal Admin approves (routes to hq_review)
+        SubmissionWorkflow::approve($lascReturn, $deskAdmin);
+        SubmissionWorkflow::approve($lascReturn->fresh(), $zonalAdmin);
+
+        // Zonal Officer opens return form -> sees ZONE A HQ + LASC auto-filled with approved figures
+        $res = $this->actingAs($zonalOfficer)->get(route('user.returns.create'));
+        $res->assertOk()
+            ->assertSee('Zonal Officer Portal')
+            ->assertSee('Zonal Officer Return')
+            ->assertSee('ZONE A HQ')
+            ->assertSee('Approved')
+            ->assertSee('value="25"', false)
+            ->assertSee('value="14"', false);
+    }
 }

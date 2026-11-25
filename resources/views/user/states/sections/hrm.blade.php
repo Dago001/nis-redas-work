@@ -67,7 +67,10 @@ $hierarchyZones = (array) config('nis_hierarchy.zones', []);
 $allZoneCommands = [];
 foreach ($hierarchyZones as $zCode => $zInfo) {
     $letter = strtoupper(str_replace('ZONE-', '', (string) $zCode));
-    $allZoneCommands[$letter] = array_keys((array) ($zInfo['commands'] ?? []));
+    $allZoneCommands[$letter] = array_merge(
+        ['ZONE '.$letter.' HQ'],
+        array_keys((array) ($zInfo['commands'] ?? []))
+    );
 }
 
 $hrmUser = auth()->user();
@@ -75,7 +78,7 @@ $userCommandCode = strtoupper(trim((string) ($hrmUser?->primary_location_code ?:
 $userZoneLetter = null;
 
 if ($hrmUser && in_array($hrmUser->user_category, ['state_user', 'desk_admin', 'zonal_commander', 'zonal_officer'], true)) {
-    $rawZone = strtoupper(trim((string) ($hrmUser->assigned_zonal_command_code ?: ($hrmUser->user_category === 'zonal_commander' ? $hrmUser->primary_location_code : ''))));
+    $rawZone = strtoupper(trim((string) ($hrmUser->assigned_zonal_command_code ?: (in_array($hrmUser->user_category, ['zonal_commander', 'zonal_officer'], true) ? $hrmUser->primary_location_code : ''))));
     if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
         $userZoneLetter = $zm[1];
     }
@@ -96,7 +99,16 @@ if ($hrmUser && in_array($hrmUser->user_category, ['state_user', 'desk_admin', '
             $userZoneLetter = $zm[1];
         }
     }
+
+    if ($hrmUser->user_category === 'zonal_officer' && $userZoneLetter !== null) {
+        $userCommandCode = 'ZONE '.$userZoneLetter.' HQ';
+    }
 }
+
+$hrmZonalPrefill = \App\Services\ZonalPrefillService::forUser(
+    $hrmUser,
+    old('period', isset($editing) ? ($editing->report_period ?? ($editing->return_data['period'] ?? null)) : now()->format('Y-m'))
+);
 
 $zoneCommands = ($userZoneLetter !== null && isset($allZoneCommands[$userZoneLetter]))
     ? [$userZoneLetter => $allZoneCommands[$userZoneLetter]]
@@ -264,19 +276,25 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                         <tbody>
                             @php
                                 $restrictToOwnCommand = $hrmUser
-                                    && in_array($hrmUser->user_category, ['state_user', 'desk_admin'], true)
+                                    && in_array($hrmUser->user_category, ['state_user', 'desk_admin', 'zonal_officer'], true)
                                     && $userCommandCode !== ''
                                     && collect($zoneCommands)->flatten()->contains(fn ($c) => strtoupper((string) $c) === $userCommandCode);
                             @endphp
                             @foreach($zoneCommands as $zone => $commands)
                                 @foreach($commands as $cIndex => $command)
                                 @php
+                                    $cmdUpper = strtoupper($command);
                                     $cmdKey = strtolower(str_replace(' ','_', $command));
-                                    $isOwnCommand = $userCommandCode !== '' && strtoupper($command) === $userCommandCode;
-                                    $isRowLocked = $restrictToOwnCommand && ! $isOwnCommand;
+                                    $isOwnCommand = $userCommandCode !== '' && $cmdUpper === $userCommandCode;
+                                    $approvedVals = (! $isOwnCommand && isset($hrmZonalPrefill['hrm_zones'][$cmdUpper]))
+                                        ? $hrmZonalPrefill['hrm_zones'][$cmdUpper]
+                                        : null;
+                                    $isApprovedCmd = $approvedVals !== null;
+                                    $isRowLocked = $restrictToOwnCommand && ! $isOwnCommand && ! $isApprovedCmd;
                                     $lockedStyle = $isRowLocked ? 'background:#f1f5f9;color:#94a3b8;cursor:not-allowed;pointer-events:none;' : '';
+                                    $approvedStyle = $isApprovedCmd ? 'background:#ecfdf5;font-weight:600;color:#166534;' : '';
                                 @endphp
-                                <tr style="{{ $isOwnCommand ? 'background:#f0fdf4;' : ($isRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
+                                <tr style="{{ $isOwnCommand ? 'background:#f0fdf4;' : ($isApprovedCmd ? 'background:#f0fdf4;' : ($isRowLocked ? 'background:#f8fafc;opacity:.55;' : '')) }}">
                                     @if($cIndex === 0)
                                     <td rowspan="{{ count($commands) + 1 }}" style="font-weight:700;vertical-align:middle;background:#fff;opacity:1;">ZONE {{ $zone }}</td>
                                     @endif
@@ -287,18 +305,20 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                                             @if($restrictToOwnCommand)
                                                 <span style="display:inline-block;margin-left:4px;font-size:.68rem;color:#15803d;font-weight:500;">(Auto-filled from 1. Cadre)</span>
                                             @endif
+                                        @elseif($isApprovedCmd)
+                                            <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;"><i class="fas fa-check-circle" style="margin-right:3px;"></i>Approved</span>
                                         @elseif($isRowLocked)
                                             <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
                                         @endif
                                     </td>
                                     @php
-                                        $ownSyncAttr = ($restrictToOwnCommand && $isOwnCommand) ? 'data-own-command="1" readonly' : '';
-                                        $ownSyncStyle = ($restrictToOwnCommand && $isOwnCommand) ? 'background:#f0fdf4;font-weight:600;color:#166534;' : '';
+                                        $ownSyncAttr = ($restrictToOwnCommand && $isOwnCommand) ? 'data-own-command="1" readonly' : ($isApprovedCmd ? 'readonly' : '');
+                                        $ownSyncStyle = ($restrictToOwnCommand && $isOwnCommand) ? 'background:#f0fdf4;font-weight:600;color:#166534;' : $approvedStyle;
                                     @endphp
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][comptroller]" class="ni hrm-zone-comptroller" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.comptroller') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][superintendent]" class="ni hrm-zone-superintendent" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.superintendent') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][inspectorate]" class="ni hrm-zone-inspectorate" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.inspectorate') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][assistant]" class="ni hrm-zone-assistant" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.assistant') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][comptroller]" class="ni hrm-zone-comptroller" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : ($isApprovedCmd ? $approvedVals['comptroller'] : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.comptroller')) }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][superintendent]" class="ni hrm-zone-superintendent" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : ($isApprovedCmd ? $approvedVals['superintendent'] : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.superintendent')) }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][inspectorate]" class="ni hrm-zone-inspectorate" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : ($isApprovedCmd ? $approvedVals['inspectorate'] : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.inspectorate')) }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][assistant]" class="ni hrm-zone-assistant" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : ($isApprovedCmd ? $approvedVals['assistant'] : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.assistant')) }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
                                     <td><input type="number" id="hrm-zone-total-{{ $zone }}-{{ $cmdKey }}" class="ni" readonly placeholder="0" @if($isRowLocked) disabled tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
                                 </tr>
                                 @endforeach
