@@ -186,6 +186,15 @@ class StateCombinedFormTest extends TestCase
         $this->assertMatchesRegularExpression('/name="breach\[ZONE_A\]\[OGSC\]\[companies\]"[^>]*disabled/', $htmlA);
         $this->assertMatchesRegularExpression('/name="breach\[ZONE_A\]\[_zone\]\[companies\]"[^>]*disabled/', $htmlA);
 
+        // DFU Activities & Suspect Index: officer sees ONLY their own location (LASC), no SHQ, no OGSC, no Zone B
+        $this->assertStringContainsString('name="dfu[ZONE_A][LASC][', $htmlA);
+        $this->assertStringNotContainsString('name="dfu[SHQ]', $htmlA);
+        $this->assertStringNotContainsString('name="dfu[ZONE_A][OGSC]', $htmlA);
+        $this->assertStringNotContainsString('name="dfu[ZONE_B]', $htmlA);
+        $this->assertStringContainsString('name="suspect[ZONE_A][LASC][', $htmlA);
+        $this->assertStringNotContainsString('name="suspect[SHQ]', $htmlA);
+        $this->assertStringNotContainsString('name="suspect[ZONE_A][OGSC]', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',

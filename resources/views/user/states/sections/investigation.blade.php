@@ -318,20 +318,21 @@ $rankRows = [
                 </div>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="nis-table" id="investigation-dfu-table" style="min-width:1900px;">
+                <div class="table-responsive" style="overflow-x:auto;">
+                    <table class="nis-table" id="investigation-dfu-table" style="min-width:1350px;">
                         <thead>
                             <tr>
-                                <th style="width:40px;">S/N</th>
-                                <th style="min-width:120px;">Zone / CMD</th>
+                                <th style="width:42px;">S/N</th>
+                                <th style="min-width:165px;">Zone / Command</th>
                                 @foreach($dfuCols as $colKey => $colLabel)
-                                    <th title="{{ $colLabel }}">{{ $colLabel }}</th>
+                                    <th title="{{ $colLabel }}" style="white-space:normal;line-height:1.25;min-width:110px;">{{ $colLabel }}</th>
                                 @endforeach
-                                <th style="width:100px;">Total</th>
+                                <th style="width:90px;">Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php $sn = 0; @endphp
+                            @if($showShqRow)
                             {{-- SHQ row --}}
                             <tr class="zone-row">
                                 <td>{{ ++$sn }}</td>
@@ -349,8 +350,10 @@ $rankRows = [
                                            value="{{ old('dfu.SHQ._shq.total') }}" placeholder="0">
                                 </td>
                             </tr>
+                            @endif
                             @foreach($zoneMap as $zoneKey => $zone)
                                 @continue($zoneKey === 'SHQ')
+                                @if(! $restrictInvToOwnCommand)
                                 <tr class="zone-row">
                                     <td>{{ ++$sn }}</td>
                                     <td><strong>{{ $zone['label'] }}</strong></td>
@@ -367,10 +370,22 @@ $rankRows = [
                                                value="{{ old('dfu.'.$zoneKey.'._zone.total') }}" placeholder="0">
                                     </td>
                                 </tr>
+                                @endif
                                 @foreach($zone['commands'] as $cmd)
-                                    <tr>
+                                    @php $isOwnDfuCmd = $invCommandCode !== '' && strtoupper($cmd) === $invCommandCode; @endphp
+                                    @if($restrictInvToOwnCommand && ! $isOwnDfuCmd)
+                                        @continue
+                                    @endif
+                                    <tr style="{{ $isOwnDfuCmd ? 'background:#f0fdf4;' : '' }}">
                                         <td>{{ ++$sn }}</td>
-                                        <td style="padding-left:22px;">{{ $cmd }}</td>
+                                        <td style="{{ $isOwnDfuCmd ? 'white-space:nowrap;' : 'padding-left:22px;' }}">
+                                            @if($isOwnDfuCmd)
+                                                <strong>{{ $zone['label'] }} - {{ $cmd }}</strong>
+                                                <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Location</span>
+                                            @else
+                                                {{ $cmd }}
+                                            @endif
+                                        </td>
                                         @foreach($dfuCols as $colKey => $colLabel)
                                             <td>
                                                 <input type="number" min="0" class="ni qty-input"
@@ -623,21 +638,22 @@ $rankRows = [
                 </div>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-<table class="nis-table" id="investigation-suspect-table" style="min-width:1200px;">
+                <div class="table-responsive" style="overflow-x:auto;">
+                    <table class="nis-table" id="investigation-suspect-table" style="width:100%;table-layout:fixed;">
                         <thead>
                             <tr>
-                                <th style="width:40px;">S/N</th>
-                                <th style="min-width:160px;">SHQ / Zone</th>
-                                <th style="min-width:100px;">Command</th>
+                                <th style="width:42px;">S/N</th>
+                                <th style="width:92px;">Zone</th>
+                                <th style="width:165px;">Command</th>
                                 @foreach($suspectCols as $colKey => $colLabel)
-                                    <th title="{{ $colLabel }}">{{ $colLabel }}</th>
+                                    <th title="{{ $colLabel }}" style="white-space:normal;line-height:1.25;">{{ $colLabel }}</th>
                                 @endforeach
-                                <th style="width:100px;">Total</th>
+                                <th style="width:88px;">Total</th>
                             </tr>
                         </thead>
                         <tbody>
                             @php $sn = 0; @endphp
+                            @if($showShqRow)
                             {{-- SHQ row --}}
                             <tr class="zone-row">
                                 <td>{{ ++$sn }}</td>
@@ -656,8 +672,10 @@ $rankRows = [
                                            value="{{ old('suspect.SHQ._shq.total') }}" placeholder="0">
                                 </td>
                             </tr>
+                            @endif
                             @foreach($zoneMap as $zoneKey => $zone)
                                 @continue($zoneKey === 'SHQ')
+                                @if(! $restrictInvToOwnCommand)
                                 <tr class="zone-row">
                                     <td>{{ ++$sn }}</td>
                                     <td><strong>{{ $zone['label'] }}</strong></td>
@@ -675,11 +693,21 @@ $rankRows = [
                                                value="{{ old('suspect.'.$zoneKey.'._zone.total') }}" placeholder="0">
                                     </td>
                                 </tr>
+                                @endif
                                 @foreach($zone['commands'] as $cmd)
-                                    <tr>
+                                    @php $isOwnSuspectCmd = $invCommandCode !== '' && strtoupper($cmd) === $invCommandCode; @endphp
+                                    @if($restrictInvToOwnCommand && ! $isOwnSuspectCmd)
+                                        @continue
+                                    @endif
+                                    <tr style="{{ $isOwnSuspectCmd ? 'background:#f0fdf4;' : '' }}">
                                         <td>{{ ++$sn }}</td>
-                                        <td></td>
-                                        <td style="padding-left:22px;">{{ $cmd }}</td>
+                                        <td><strong>{{ $zone['label'] }}</strong></td>
+                                        <td style="white-space:nowrap;">
+                                            <strong>{{ $cmd }}</strong>
+                                            @if($isOwnSuspectCmd)
+                                                <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Location</span>
+                                            @endif
+                                        </td>
                                         @foreach($suspectCols as $colKey => $colLabel)
                                             <td>
                                                 <input type="number" min="0" class="ni qty-input"
