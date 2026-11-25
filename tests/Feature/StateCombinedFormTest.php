@@ -165,6 +165,12 @@ class StateCombinedFormTest extends TestCase
         $resA->assertDontSee('ZONE D TOTAL');
         $resA->assertDontSee('ZONE H TOTAL');
 
+        // Own command (LASC) inputs are active, while other Zone A commands (e.g., OGSC) are disabled
+        $htmlA = $resA->getContent();
+        $this->assertMatchesRegularExpression('/name="hrm\[zones\]\[a\]\[lasc\]\[comptroller\]"[^>]*>/', $htmlA);
+        $this->assertDoesNotMatchRegularExpression('/name="hrm\[zones\]\[a\]\[lasc\]\[comptroller\]"[^>]*disabled/', $htmlA);
+        $this->assertMatchesRegularExpression('/name="hrm\[zones\]\[a\]\[ogsc\]\[comptroller\]"[^>]*disabled/', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',

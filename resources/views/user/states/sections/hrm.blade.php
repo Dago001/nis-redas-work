@@ -260,27 +260,37 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                             </tr>
                         </thead>
                         <tbody>
+                            @php
+                                $restrictToOwnCommand = $hrmUser
+                                    && in_array($hrmUser->user_category, ['state_user', 'desk_admin'], true)
+                                    && $userCommandCode !== ''
+                                    && collect($zoneCommands)->flatten()->contains(fn ($c) => strtoupper((string) $c) === $userCommandCode);
+                            @endphp
                             @foreach($zoneCommands as $zone => $commands)
                                 @foreach($commands as $cIndex => $command)
                                 @php
                                     $cmdKey = strtolower(str_replace(' ','_', $command));
                                     $isOwnCommand = $userCommandCode !== '' && strtoupper($command) === $userCommandCode;
+                                    $isRowLocked = $restrictToOwnCommand && ! $isOwnCommand;
+                                    $lockedStyle = $isRowLocked ? 'background:#f1f5f9;color:#94a3b8;cursor:not-allowed;pointer-events:none;' : '';
                                 @endphp
-                                <tr style="{{ $isOwnCommand ? 'background:#f0fdf4;' : '' }}">
+                                <tr style="{{ $isOwnCommand ? 'background:#f0fdf4;' : ($isRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                     @if($cIndex === 0)
-                                    <td rowspan="{{ count($commands) + 1 }}" style="font-weight:700;vertical-align:middle;background:#fff;">ZONE {{ $zone }}</td>
+                                    <td rowspan="{{ count($commands) + 1 }}" style="font-weight:700;vertical-align:middle;background:#fff;opacity:1;">ZONE {{ $zone }}</td>
                                     @endif
-                                    <td>
+                                    <td style="{{ $isRowLocked ? 'color:#94a3b8;' : '' }}">
                                         <strong>{{ $command }}</strong>
                                         @if($isOwnCommand)
                                             <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;">Your Command</span>
+                                        @elseif($isRowLocked)
+                                            <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
                                         @endif
                                     </td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][comptroller]" class="ni hrm-zone-comptroller" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.comptroller') }}"></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][superintendent]" class="ni hrm-zone-superintendent" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.superintendent') }}"></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][inspectorate]" class="ni hrm-zone-inspectorate" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.inspectorate') }}"></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][assistant]" class="ni hrm-zone-assistant" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.assistant') }}"></td>
-                                    <td><input type="number" id="hrm-zone-total-{{ $zone }}-{{ $cmdKey }}" class="ni" readonly placeholder="0"></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][comptroller]" class="ni hrm-zone-comptroller" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.comptroller') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][superintendent]" class="ni hrm-zone-superintendent" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.superintendent') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][inspectorate]" class="ni hrm-zone-inspectorate" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.inspectorate') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][assistant]" class="ni hrm-zone-assistant" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.assistant') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
+                                    <td><input type="number" id="hrm-zone-total-{{ $zone }}-{{ $cmdKey }}" class="ni" readonly placeholder="0" @if($isRowLocked) disabled tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
                                 </tr>
                                 @endforeach
                                 <tr class="total-row" style="background:#f1f5f9;">
