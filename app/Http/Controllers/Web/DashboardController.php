@@ -747,10 +747,72 @@ class DashboardController extends Controller
             return ['processingCenters' => [], 'foreignMissions' => []];
         }
 
+        $user = Auth::user();
+        $centersQuery = NisDirectory::where('category', '=', 'passport', 'and');
+
+        if ($user && in_array($user->user_category, ['state_user', 'desk_admin'], true)) {
+            $stateKeyword = $this->stateKeywordForUser($user);
+            $scoped = $stateKeyword !== null
+                ? (clone $centersQuery)
+                    ->whereRaw('LOWER(COALESCE(state, "")) LIKE ?', ['%'.strtolower($stateKeyword).'%'])
+                    ->orderBy('name')
+                    ->pluck('name')
+                    ->all()
+                : [];
+
+            if ($scoped === []) {
+                $fallback = self::commandNameForUser($user) ?: strtoupper((string) ($user->primary_location_code ?: $user->assigned_state_code));
+                $scoped = $fallback !== '' ? [$fallback] : [];
+            }
+
+            $processingCenters = $scoped;
+        } else {
+            $processingCenters = $centersQuery->orderBy('name')->pluck('name')->all();
+        }
+
         return [
-            'processingCenters' => NisDirectory::where('category', '=', 'passport', 'and')->orderBy('name')->pluck('name')->all(),
+            'processingCenters' => $processingCenters,
             'foreignMissions' => NisDirectory::where('category', '=', 'foreign_mission', 'and')->orderBy('name')->pluck('name')->filter()->values()->all(),
         ];
+    }
+
+    private function stateKeywordForUser(User $user): ?string
+    {
+        $code = strtoupper(trim((string) ($user->primary_location_code ?: $user->assigned_state_code)));
+        if ($code === '') {
+            return null;
+        }
+
+        $commandToState = [
+            'LASC' => 'Lagos', 'LASPC' => 'Lagos', 'SEME' => 'Lagos', 'MMIA' => 'Lagos', 'LABPC' => 'Lagos', 'LAPC' => 'Lagos',
+            'OGSC' => 'Ogun', 'IDBC' => 'Ogun',
+            'KNSC' => 'Kano', 'MAKIA' => 'Kano', 'ITSK' => 'Kano',
+            'KDSC' => 'Kaduna',
+            'KTSC' => 'Katsina', 'JIBC' => 'Katsina',
+            'ZMSC' => 'Zamfara',
+            'SOSC' => 'Sokoto', 'ILBC' => 'Sokoto', 'ICSC' => 'Sokoto',
+            'JGSC' => 'Jigawa',
+            'ADSC' => 'Adamawa', 'BASC' => 'Bauchi', 'BOSC' => 'Borno', 'GMSC' => 'Gombe', 'PLSC' => 'Plateau', 'YBSC' => 'Yobe',
+            'FCTC' => 'FCT', 'NGSC' => 'Niger', 'KBSC' => 'Kebbi', 'RMAT' => 'Kebbi', 'KWSC' => 'Kwara',
+            'IMSC' => 'Imo', 'NITSOL' => 'Imo',
+            'RVSC' => 'Rivers', 'RVMC' => 'Rivers', 'NITSA' => 'Rivers',
+            'CRSC' => 'Cross River', 'MFBC' => 'Cross River',
+            'EBSC' => 'Ebonyi', 'AKSC' => 'Akwa Ibom',
+            'OYSC' => 'Oyo', 'EKSC' => 'Ekiti', 'ODSC' => 'Ondo', 'OSSC' => 'Osun',
+            'EDSC' => 'Edo', 'ANSC' => 'Anambra', 'DTSC' => 'Delta', 'ENSC' => 'Enugu', 'BYSC' => 'Bayelsa',
+            'NASC' => 'Nasarawa', 'BNSC' => 'Benue', 'KGSC' => 'Kogi', 'TRSC' => 'Taraba',
+        ];
+
+        if (isset($commandToState[$code])) {
+            return $commandToState[$code];
+        }
+
+        $stateName = GeolocationService::stateNameFromCode($code);
+        if ($stateName !== null) {
+            return trim(str_ireplace(' State', '', $stateName));
+        }
+
+        return null;
     }
 
     /**

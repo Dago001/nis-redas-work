@@ -902,6 +902,9 @@
     function addExecutiveSummaryRow() {
         const tbody = qs('#exec-summary-body');
         const nextIndex = tbody.children.length;
+        if (allCenters.length > 0 && nextIndex >= allCenters.length) {
+            return;
+        }
         const sn = nextIndex + 1;
 
         const tr = document.createElement('tr');
@@ -1081,10 +1084,18 @@
         qs('#passportAddMissionRow')?.addEventListener('click', addForeignMissionRow);
         qs('#passportAddReformRow')?.addEventListener('click', addReformRow);
 
-        // Initialize executive summary with 3 blank rows
-        addExecutiveSummaryRow();
-        addExecutiveSummaryRow();
-        addExecutiveSummaryRow();
+        // Initialize executive summary rows (only up to available centers in this command)
+        const initialExecRows = allCenters.length > 0 ? Math.min(3, allCenters.length) : 1;
+        for (let r = 0; r < initialExecRows; r++) {
+            addExecutiveSummaryRow();
+        }
+        if (allCenters.length === 1) {
+            const firstSel = qs('.exec-center-select');
+            if (firstSel) {
+                firstSel.value = allCenters[0];
+                updateCenterDropdowns();
+            }
+        }
 
         // Initialize foreign missions with 3 blank rows
         addForeignMissionRow();
