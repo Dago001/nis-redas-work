@@ -9,13 +9,20 @@
 <div class="hrm-tabs-wrap">
     <div class="entry-tabs-wrap" style="margin-bottom:0;">
         <div class="entry-tabs" id="passportEntryTabs">
-            @php $tabs = [
-                ['passport-meta','fas fa-info-circle','1. Personnel Strength & Development'],
-                ['passport-admin','fas fa-id-card','2. Passport Admin'],
-                ['passport-exec','fas fa-map-marker-alt','3. Executive Summary'],
-                ['passport-foreign','fas fa-globe','4. Foreign Missions'],
-                ['passport-reports','fas fa-file-alt','5. General Report'],
-            ]; @endphp
+            @php
+                $showForeignMissions = ! ($stateEmbedded ?? false);
+                $tabs = [
+                    ['passport-meta','fas fa-info-circle','1. Personnel Strength & Development'],
+                    ['passport-admin','fas fa-id-card','2. Passport Admin'],
+                    ['passport-exec','fas fa-map-marker-alt','3. Executive Summary'],
+                ];
+                if ($showForeignMissions) {
+                    $tabs[] = ['passport-foreign','fas fa-globe','4. Foreign Missions'];
+                    $tabs[] = ['passport-reports','fas fa-file-alt','5. General Report'];
+                } else {
+                    $tabs[] = ['passport-reports','fas fa-file-alt','4. General Report'];
+                }
+            @endphp
             @foreach($tabs as $i => [$id,$icon,$label])
             <button type="button" class="entry-tab {{ $i === 0 ? 'active' : '' }}" data-tab="{{ $id }}">
                 <span class="tab-dot"></span>
@@ -613,6 +620,7 @@
         </div>
         </div>
 
+@if($showForeignMissions)
 <!-- TAB 4: FOREIGN MISSIONS -->
 <div class="tab-panel" id="tab-passport-foreign">
             <div class="redas-card">
@@ -661,6 +669,7 @@
             <button type="button" class="btn-nis btn-primary-nis hrm-next-btn">Next <i class="fas fa-arrow-right"></i></button>
         </div>
         </div>
+@endif
 
 <!-- TAB 5: GENERAL REPORT -->
 <div class="tab-panel" id="tab-passport-reports">
@@ -1097,10 +1106,12 @@
             }
         }
 
-        // Initialize foreign missions with 3 blank rows
-        addForeignMissionRow();
-        addForeignMissionRow();
-        addForeignMissionRow();
+        // Initialize foreign missions with 3 blank rows (Directorate of Passport only)
+        if (qs('#foreign-missions-body')) {
+            addForeignMissionRow();
+            addForeignMissionRow();
+            addForeignMissionRow();
+        }
 
         /* Recalculate totals from any restored draft / prefilled values */
         calculateAllTotals();

@@ -237,5 +237,9 @@ class StateCombinedFormTest extends TestCase
         $this->assertNotContains('Abakaliki', $centers);
         $this->assertNotContains('Kano', $centers);
         $this->assertNotContains('Enugu', $centers);
+
+        // Foreign Missions tab is Directorate of Passport only (removed from command returns)
+        $res->assertDontSee('Passport Issued in Foreign Missions');
+        $res->assertDontSee('id="tab-passport-foreign"', false);
     }
 }
