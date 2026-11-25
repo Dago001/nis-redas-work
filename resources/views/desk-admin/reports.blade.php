@@ -29,17 +29,17 @@
         </div>
         <div class="card-body">
             <form method="GET" action="{{ route('desk.admin.reports') }}" id="reportFilterForm">
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;">
                     <div>
-                        <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Date From</label>
+                        <label style="display:block;font-size:.8rem;font-weight:700;color:var(--gray-700);margin-bottom:6px;">Date From</label>
                         <input type="date" name="date_from" class="ni" value="{{ $filters['date_from'] ?? '' }}">
                     </div>
                     <div>
-                        <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Date To</label>
+                        <label style="display:block;font-size:.8rem;font-weight:700;color:var(--gray-700);margin-bottom:6px;">Date To</label>
                         <input type="date" name="date_to" class="ni" value="{{ $filters['date_to'] ?? '' }}">
                     </div>
                     <div>
-                        <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Status</label>
+                        <label style="display:block;font-size:.8rem;font-weight:700;color:var(--gray-700);margin-bottom:6px;">Status</label>
                         <select name="status" class="ni ni-select">
                             <option value="">All statuses</option>
                             @foreach(['pending' => 'Pending', 'approved' => 'Approved', 'returned' => 'Returned'] as $value => $label)
@@ -47,15 +47,27 @@
                             @endforeach
                         </select>
                     </div>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <button type="submit" class="btn-nis btn-primary-nis">
-                            <i class="fas fa-chart-line"></i> Generate Report
+                </div>
+
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid #f1f5f9;">
+                    <span style="font-size:.8rem;color:var(--gray-500);">
+                        <i class="fas fa-shield-alt" style="color:var(--nis-600);margin-right:4px;"></i>
+                        Results and exports are scoped strictly to your command.
+                    </span>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                        @if(request()->filled('date_from') || request()->filled('date_to') || request()->filled('status'))
+                            <a href="{{ route('desk.admin.reports') }}" class="btn-nis btn-ghost btn-sm">
+                                <i class="fas fa-rotate-left"></i> Reset
+                            </a>
+                        @endif
+                        <button type="submit" name="format" value="csv" class="btn-nis btn-outline-nis btn-sm">
+                            <i class="fas fa-file-csv"></i> Download CSV
                         </button>
-                        <button type="submit" name="format" value="pdf" class="btn-nis btn-outline-nis">
+                        <button type="submit" name="format" value="pdf" class="btn-nis btn-outline-nis btn-sm">
                             <i class="fas fa-file-pdf"></i> Download PDF
                         </button>
-                        <button type="submit" name="format" value="csv" class="btn-nis btn-outline-nis">
-                            <i class="fas fa-file-csv"></i> Download CSV
+                        <button type="submit" class="btn-nis btn-primary-nis btn-sm">
+                            <i class="fas fa-chart-line"></i> Generate Report
                         </button>
                     </div>
                 </div>
