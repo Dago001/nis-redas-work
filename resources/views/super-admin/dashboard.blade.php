@@ -19,13 +19,7 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
-        text-decoration: none;
         color: inherit;
-        transition: transform .15s ease, box-shadow .15s ease;
-    }
-    .sa-kpi-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     }
 
     .sa-kpi-top {
@@ -99,81 +93,81 @@
     {{-- Row 1: Identity, Security & Governance KPIs --}}
     <div class="sa-section-title"><i class="fas fa-shield-halved text-nis"></i> Identity &amp; Security Governance</div>
     <div class="sa-kpi-grid">
-        <a href="{{ route('admin.users') }}" class="sa-kpi-card blue">
+        <div class="sa-kpi-card blue">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">Total Users</span>
                 <span class="sa-kpi-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-users"></i></span>
             </div>
             <div class="sa-kpi-value">{{ number_format($governance['total_users']) }}</div>
             <div class="sa-kpi-sub">{{ number_format($governance['active_users']) }} active &bull; {{ number_format($governance['disabled_users']) }} disabled</div>
-        </a>
+        </div>
 
-        <a href="{{ route('admin.users') }}" class="sa-kpi-card green">
+        <div class="sa-kpi-card green">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">MFA Adoption</span>
                 <span class="sa-kpi-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-mobile-screen-button"></i></span>
             </div>
             <div class="sa-kpi-value">{{ $governance['mfa_rate'] }}%</div>
             <div class="sa-kpi-sub">{{ number_format($governance['mfa_enabled_users']) }} of {{ number_format($governance['total_users']) }} Google Authenticator enrolled</div>
-        </a>
+        </div>
 
-        <a href="{{ route('admin.users') }}" class="sa-kpi-card amber">
+        <div class="sa-kpi-card amber">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">Pending Password Change</span>
                 <span class="sa-kpi-icon" style="background:#fef3c7;color:#b45309;"><i class="fas fa-key"></i></span>
             </div>
             <div class="sa-kpi-value">{{ number_format($governance['pending_password_changes']) }}</div>
             <div class="sa-kpi-sub">First-login accounts awaiting password reset</div>
-        </a>
+        </div>
 
-        <a href="{{ route('admin.audit-log.index') }}" class="sa-kpi-card red">
+        <div class="sa-kpi-card red">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">Security Events (24h)</span>
                 <span class="sa-kpi-icon" style="background:#fee2e2;color:#b91c1c;"><i class="fas fa-triangle-exclamation"></i></span>
             </div>
             <div class="sa-kpi-value">{{ number_format($governance['security_alerts_24h']) }}</div>
             <div class="sa-kpi-sub">WAF blocks, lockouts &amp; failed attempts</div>
-        </a>
+        </div>
     </div>
 
     {{-- Row 2: National Reporting & Consolidation KPIs --}}
     <div class="sa-section-title"><i class="fas fa-chart-bar text-nis"></i> National Reporting &amp; Consolidation Oversight</div>
     <div class="sa-kpi-grid">
-        <a href="{{ route('superadmin.returns') }}" class="sa-kpi-card blue">
+        <div class="sa-kpi-card blue">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">Original Returns</span>
                 <span class="sa-kpi-icon" style="background:#eff6ff;color:#2563eb;"><i class="fas fa-file-lines"></i></span>
             </div>
             <div class="sa-kpi-value">{{ number_format($stats['total']) }}</div>
             <div class="sa-kpi-sub">All formations &amp; reporting periods</div>
-        </a>
+        </div>
 
-        <a href="{{ route('superadmin.returns', ['status' => 'approved']) }}" class="sa-kpi-card green">
+        <div class="sa-kpi-card green">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">Approved Returns</span>
                 <span class="sa-kpi-icon" style="background:#dcfce7;color:#15803d;"><i class="fas fa-circle-check"></i></span>
             </div>
             <div class="sa-kpi-value">{{ number_format($stats['approved']) }}</div>
             <div class="sa-kpi-sub">Cleared full approval chain</div>
-        </a>
+        </div>
 
-        <a href="{{ route('superadmin.returns', ['status' => 'pending']) }}" class="sa-kpi-card purple">
+        <div class="sa-kpi-card purple">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">In Flight</span>
                 <span class="sa-kpi-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="fas fa-clock"></i></span>
             </div>
             <div class="sa-kpi-value">{{ number_format($stats['pending']) }}</div>
             <div class="sa-kpi-sub">Moving through review stages</div>
-        </a>
+        </div>
 
-        <a href="{{ route('admin.consolidated.index') }}" class="sa-kpi-card teal">
+        <div class="sa-kpi-card teal">
             <div class="sa-kpi-top">
                 <span class="sa-kpi-label">Consolidated Reports</span>
                 <span class="sa-kpi-icon" style="background:#ccfbf1;color:#0f766e;"><i class="fas fa-layer-group"></i></span>
             </div>
             <div class="sa-kpi-value">{{ number_format($governance['consolidated_total']) }}</div>
             <div class="sa-kpi-sub">{{ $governance['consolidated_approved'] }} approved &bull; {{ $governance['consolidated_submitted'] }} submitted</div>
-        </a>
+        </div>
 
         <div class="sa-kpi-card amber">
             <div class="sa-kpi-top">
