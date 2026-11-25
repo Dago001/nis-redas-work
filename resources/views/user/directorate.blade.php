@@ -11,16 +11,31 @@
             </div>
         </div>
 
-        <!-- Deadline Alert -->
+        <!-- Deadline Alert (hidden once current month's return is submitted) -->
+        @php
+            $currentMonth = now()->format('Y-m');
+            $hasSubmittedCurrentMonth = auth()->check() && \App\Models\Application::query()
+                ->where('user_id', auth()->id())
+                ->where('status', '!=', 'returned')
+                ->where(function ($q) use ($currentMonth) {
+                    $q->where('report_period', $currentMonth)
+                      ->orWhere('return_data->report_period', $currentMonth)
+                      ->orWhere('return_data->period', $currentMonth)
+                      ->orWhereBetween('created_at', [now()->startOfMonth(), now()->endOfMonth()]);
+                })
+                ->exists();
+        @endphp
+        @unless($hasSubmittedCurrentMonth)
         <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:24px;" class="animate-fade-up">
             <div style="width:40px;height:40px;background:#f59e0b;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:white;flex-shrink:0;">
-                <i class="fas fa-calendar-exclamation"></i>
+                <i class="fas fa-calendar-alt"></i>
             </div>
             <div style="flex:1;">
                 <strong style="color:#92400e;font-size:.9rem;">Monthly Return Due - {{ now()->endOfMonth()->format('d F Y') }}</strong>
                 <p style="color:#b45309;font-size:.8rem;margin:0;">Submit your {{ now()->format('F Y') }} directorate return before the deadline to avoid penalties.</p>
             </div>
         </div>
+        @endunless
 
         <!-- Directorates Grid -->
         <div class="redas-card animate-fade-up delay-1">
