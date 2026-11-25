@@ -9,6 +9,7 @@ use App\Services\JwtService;
 use App\Services\ReportAccess;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Schema;
@@ -36,6 +37,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+        Paginator::useBootstrapFive();
 
         if ($this->app->environment('production') && ! $this->app->runningInConsole()) {
             JwtService::assertConfigured();

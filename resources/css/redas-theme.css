@@ -1781,3 +1781,36 @@ body.auth-page {
     animation: shimmer 1.5s infinite;
     border-radius: var(--radius-sm);
 }
+
+/* ─── Pagination (Bootstrap 5 NIS Theme) ─── */
+nav .pagination {
+    margin-bottom: 0;
+    gap: 4px;
+}
+
+.pagination .page-link {
+    color: var(--gray-700);
+    border-color: var(--gray-200);
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    padding: 5px 11px;
+    line-height: 1.4;
+}
+
+.pagination .page-link:hover {
+    color: var(--nis-700);
+    background: var(--nis-50);
+    border-color: var(--nis-200);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--nis-700);
+    border-color: var(--nis-700);
+    color: #fff;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: var(--gray-400);
+    background: #fff;
+    border-color: var(--gray-200);
+}

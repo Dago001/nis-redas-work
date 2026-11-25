@@ -1,6 +1,6 @@
 @include('partials.header3')
 
-<main class="redas-content" style="max-width:1100px;margin:32px auto;padding:0 16px;">
+<main class="redas-content" style="max-width:1280px;width:100%;margin:0 auto;">
     <div class="page-header">
         <div>
             <h1 class="page-title">User Management</h1>
@@ -90,10 +90,11 @@
                 </table>
             </div>
         </div>
-    </div>
-
-    <div style="margin-top:18px;">
-        {{ $users->links() }}
+        @if($users->hasPages())
+            <div style="padding:14px 20px;border-top:1px solid var(--gray-100);background:#fafbfc;">
+                {{ $users->links() }}
+            </div>
+        @endif
     </div>
 </main>
 
