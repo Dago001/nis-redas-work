@@ -209,4 +209,31 @@ class StateCombinedFormTest extends TestCase
         $resD->assertDontSee('ZONE A TOTAL');
         $resD->assertDontSee('ZONE B TOTAL');
     }
+
+    public function test_passport_executive_summary_only_shows_centers_in_officers_own_command(): void
+    {
+        $this->disableAbac();
+        $this->seed(\Database\Seeders\NisDirectorySeeder::class);
+
+        $lagosOfficer = $this->stateUser([
+            'primary_location_code' => 'LASC',
+            'assigned_state_code' => 'LASC',
+            'assigned_zonal_command_code' => 'ZONE-A',
+        ]);
+
+        $res = $this->actingAs($lagosOfficer)->get(route('user.returns.create'));
+        $res->assertOk();
+        $html = $res->getContent();
+
+        $this->assertStringContainsString('const allCenters =', $html);
+        preg_match('/const allCenters = (\[.*?\]);/', $html, $m);
+        $this->assertNotEmpty($m[1] ?? '');
+        $centers = json_decode($m[1], true);
+
+        $this->assertContains('Ikeja', $centers);
+        $this->assertContains('Ikoyi', $centers);
+        $this->assertNotContains('Abakaliki', $centers);
+        $this->assertNotContains('Kano', $centers);
+        $this->assertNotContains('Enugu', $centers);
+    }
 }
