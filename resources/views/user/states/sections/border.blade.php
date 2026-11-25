@@ -49,6 +49,12 @@
 [id^="tab-border-"] .alert.alert-secondary { background:#f1f5f9; border-color:#cbd5e1; color:#334155; }
 [id^="tab-border-"] .alert .d-flex { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 [id^="tab-border-"] .redas-card.mb-4 { margin-bottom:16px; }
+[id^="tab-border-"] .summary-box { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-radius:8px; font-size:.82rem; border:1px solid #e2e8f0; background:#f8fafc; color:#1e293b; }
+[id^="tab-border-"] .summary-box.arrival   { background:#ecfdf5; border-color:#bbf7d0; color:#166534; }
+[id^="tab-border-"] .summary-box.departure { background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; }
+[id^="tab-border-"] .summary-box.total     { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+[id^="tab-border-"] .summary-box .summary-title { display:flex; align-items:center; gap:7px; font-weight:700; }
+[id^="tab-border-"] .summary-box .summary-value { font-weight:700; font-size:.86rem; }
 </style>
 
 <!-- ==========================================================
