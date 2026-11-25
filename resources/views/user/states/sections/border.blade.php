@@ -3059,11 +3059,12 @@ $lastSection = $category['section'];
 
         const stateSelect = clone.querySelector(".command-state");
 
-        const borderUserCmd = @json(
-            auth()->check() && in_array(auth()->user()->user_category, ['state_user', 'desk_admin'], true)
+        @php
+            $borderUserCmd = auth()->check() && in_array(auth()->user()->user_category, ['state_user', 'desk_admin'], true)
                 ? (\App\Http\Controllers\Web\DashboardController::commandNameForUser(auth()->user()) ?? '')
-                : ''
-        );
+                : '';
+        @endphp
+        const borderUserCmd = @json($borderUserCmd);
         const stateKeys = Object.keys(landBorderStates).filter(function(st) {
             if (!borderUserCmd) return true;
             return borderUserCmd.toLowerCase().includes(st.toLowerCase());
