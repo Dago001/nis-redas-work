@@ -165,9 +165,10 @@ class StateCombinedFormTest extends TestCase
         $resA->assertDontSee('ZONE D TOTAL');
         $resA->assertDontSee('ZONE H TOTAL');
 
-        // Own command (LASC) inputs are active, while other Zone A commands (e.g., OGSC) are disabled
+        // Own command (LASC) inputs are active & auto-synced from 1. Cadre, while other Zone A commands (e.g., OGSC) are disabled
         $htmlA = $resA->getContent();
-        $this->assertMatchesRegularExpression('/name="hrm\[zones\]\[a\]\[lasc\]\[comptroller\]"[^>]*>/', $htmlA);
+        $resA->assertSee('(Auto-filled from 1. Cadre)');
+        $this->assertMatchesRegularExpression('/name="hrm\[zones\]\[a\]\[lasc\]\[comptroller\]"[^>]*data-own-command="1"/', $htmlA);
         $this->assertDoesNotMatchRegularExpression('/name="hrm\[zones\]\[a\]\[lasc\]\[comptroller\]"[^>]*disabled/', $htmlA);
         $this->assertMatchesRegularExpression('/name="hrm\[zones\]\[a\]\[ogsc\]\[comptroller\]"[^>]*disabled/', $htmlA);
 

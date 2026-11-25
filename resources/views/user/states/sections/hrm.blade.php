@@ -282,15 +282,22 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                                         <strong>{{ $command }}</strong>
                                         @if($isOwnCommand)
                                             <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;">Your Command</span>
+                                            @if($restrictToOwnCommand)
+                                                <span style="display:inline-block;margin-left:4px;font-size:.68rem;color:#15803d;font-weight:500;">(Auto-filled from 1. Cadre)</span>
+                                            @endif
                                         @elseif($isRowLocked)
                                             <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
                                         @endif
                                     </td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][comptroller]" class="ni hrm-zone-comptroller" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.comptroller') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][superintendent]" class="ni hrm-zone-superintendent" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.superintendent') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][inspectorate]" class="ni hrm-zone-inspectorate" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.inspectorate') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
-                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][assistant]" class="ni hrm-zone-assistant" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.assistant') }}" @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
-                                    <td><input type="number" id="hrm-zone-total-{{ $zone }}-{{ $cmdKey }}" class="ni" readonly placeholder="0" @if($isRowLocked) disabled tabindex="-1" style="{{ $lockedStyle }}" @endif></td>
+                                    @php
+                                        $ownSyncAttr = ($restrictToOwnCommand && $isOwnCommand) ? 'data-own-command="1" readonly' : '';
+                                        $ownSyncStyle = ($restrictToOwnCommand && $isOwnCommand) ? 'background:#f0fdf4;font-weight:600;color:#166534;' : '';
+                                    @endphp
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][comptroller]" class="ni hrm-zone-comptroller" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.comptroller') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][superintendent]" class="ni hrm-zone-superintendent" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.superintendent') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][inspectorate]" class="ni hrm-zone-inspectorate" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.inspectorate') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][assistant]" class="ni hrm-zone-assistant" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ $isRowLocked ? '' : old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.assistant') }}" {!! $ownSyncAttr !!} @if($isRowLocked) disabled readonly tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
+                                    <td><input type="number" id="hrm-zone-total-{{ $zone }}-{{ $cmdKey }}" class="ni" readonly placeholder="0" @if($isRowLocked) disabled tabindex="-1" style="{{ $lockedStyle }}" @elseif($ownSyncStyle) style="{{ $ownSyncStyle }}" @endif></td>
                                 </tr>
                                 @endforeach
                                 <tr class="total-row" style="background:#f1f5f9;">
@@ -1138,15 +1145,26 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
     /* Section 1: Cadre */
     function recomputeCadre() {
         let mT = 0, fT = 0;
+        let syncedOwnZone = false;
         document.querySelectorAll('.hrm-cadre-m').forEach(m => {
             const row = m.dataset.row;
             const mV = val(m), fV = val(document.querySelector(`.hrm-cadre-f[data-row="${row}"]`));
-            set(`hrm-cadre-total-${row}`, mV + fV);
+            const rowTotal = mV + fV;
+            set(`hrm-cadre-total-${row}`, rowTotal);
             mT += mV; fT += fV;
+
+            const ownZoneInput = document.querySelector(`.hrm-zone-${row}[data-own-command="1"]`);
+            if (ownZoneInput) {
+                ownZoneInput.value = rowTotal;
+                syncedOwnZone = true;
+            }
         });
         set('hrm-cadre-grand-male', mT);
         set('hrm-cadre-grand-female', fT);
         set('hrm-cadre-grand-total', mT + fT);
+        if (syncedOwnZone) {
+            recomputeZones();
+        }
     }
 
     /* Section 2: Rank */
