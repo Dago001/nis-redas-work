@@ -61,15 +61,37 @@ class GenerateReportJob implements ShouldQueue
         $dateFrom = $filters['date_from'] ?? now()->startOfYear()->toDateString();
         $dateTo = $filters['date_to'] ?? now()->toDateString();
         $sections = array_values(array_filter((array) ($filters['sections'] ?? []), 'is_string'));
+        $scopeLabel = is_string($filters['scope_label'] ?? null) ? trim($filters['scope_label']) : '';
+        $statusFilter = is_string($filters['status_filter'] ?? null) ? strtolower(trim($filters['status_filter'])) : 'all';
 
-        $applications = ReportAccess::applyVisibility(
+        $query = ReportAccess::applyVisibility(
             Application::query()->with('user:id,name,service_number'),
             $user
         )
             ->whereDate('created_at', '>=', $dateFrom)
-            ->whereDate('created_at', '<=', $dateTo)
-            ->orderBy('created_at')
-            ->get();
+            ->whereDate('created_at', '<=', $dateTo);
+
+        if (in_array($statusFilter, ['approved', 'pending', 'returned'], true)) {
+            $query->where('status', $statusFilter);
+        }
+
+        if (! empty($filters['command_code'])) {
+            $query->where('scope_code', strtoupper((string) $filters['command_code']));
+        } elseif (! empty($filters['directorate_code'])) {
+            $query->where('category', 'directorate')
+                ->where('scope_code', strtolower((string) $filters['directorate_code']));
+        } elseif (! empty($filters['cgis_unit_code'])) {
+            $query->where('category', 'cgis_unit')
+                ->where('scope_code', strtolower((string) $filters['cgis_unit_code']));
+        } elseif (! empty($filters['zone_code'])) {
+            $zoneCode = strtoupper((string) $filters['zone_code']);
+            $zoneCommands = array_keys((array) config("nis_hierarchy.zones.{$zoneCode}.commands", []));
+            $dbFormations = ReportAccess::formationCodesForZone($zoneCode);
+            $allZoneCodes = array_values(array_unique(array_merge([$zoneCode], $zoneCommands, $dbFormations)));
+            $query->whereIn('scope_code', $allZoneCodes);
+        }
+
+        $applications = $query->orderBy('created_at')->get();
 
         // Filter by return_type in PHP for SQLite + MySQL portability
         $returnTypeMap = [
@@ -86,7 +108,7 @@ class GenerateReportJob implements ShouldQueue
             })->values();
         }
 
-        [$headers, $rows, $title] = $this->buildDataset($report->report_type, $applications, $sections);
+        [$headers, $rows, $title] = $this->buildDataset($report->report_type, $applications, $sections, $scopeLabel);
 
         $disk = Storage::disk('local');
         $ext = match ($report->format) {
@@ -178,8 +200,30 @@ class GenerateReportJob implements ShouldQueue
      * @param  list<string>  $sections
      * @return array{0:list<string>,1:list<list<mixed>>,2:string}
      */
-    private function buildDataset(string $reportType, $applications, array $sections): array
+    private function buildDataset(string $reportType, $applications, array $sections, string $scopeLabel = ''): array
     {
+        $suffix = $scopeLabel !== '' ? " - {$scopeLabel}" : '';
+
+        if ($reportType === 'consolidated_summary') {
+            $headers = ['Scope / Command', 'Category', 'Total Returns', 'Approved', 'Pending', 'Returned', 'Latest Period'];
+            $rows = [];
+
+            foreach ($applications->groupBy(fn (Application $a) => ($a->scope_code ?? 'UNKNOWN').'|'.($a->category ?? 'state')) as $key => $group) {
+                [$scope, $cat] = explode('|', $key, 2);
+                $rows[] = [
+                    $scope,
+                    ucfirst($cat),
+                    $group->count(),
+                    $group->where('status', 'approved')->count(),
+                    $group->where('status', 'pending')->count(),
+                    $group->where('status', 'returned')->count(),
+                    (string) ($group->max('report_period') ?? '-'),
+                ];
+            }
+
+            return [$headers, $rows, 'NIS REDAS National Consolidated Summary'.$suffix];
+        }
+
         if ($reportType === 'compliance_report') {
             $headers = ['Scope', 'Category', 'Total', 'Approved', 'Pending', 'Returned'];
             $rows = [];
@@ -196,7 +240,7 @@ class GenerateReportJob implements ShouldQueue
                 ];
             }
 
-            return [$headers, $rows, 'NIS REDAS Compliance Report'];
+            return [$headers, $rows, 'NIS REDAS Compliance Report'.$suffix];
         }
 
         if ($reportType === 'full_export') {
@@ -236,7 +280,7 @@ class GenerateReportJob implements ShouldQueue
                 ];
             }
 
-            return [$headers, $rows, 'NIS REDAS Full Indicator Data Export'];
+            return [$headers, $rows, 'NIS REDAS Full Indicator Data Export'.$suffix];
         }
 
         $headers = ['Ref', 'Formation/Scope', 'Category', 'Period', 'Officer', 'Status', 'Stage', 'Version', 'Submitted At'];
@@ -255,7 +299,7 @@ class GenerateReportJob implements ShouldQueue
             ];
         }
 
-        $title = 'NIS REDAS '.ucwords(str_replace('_', ' ', $reportType));
+        $title = 'NIS REDAS '.ucwords(str_replace('_', ' ', $reportType)).$suffix;
 
         return [$headers, $rows, $title];
     }
