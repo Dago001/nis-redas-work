@@ -327,6 +327,7 @@ class UserManagementController extends Controller
             'assigned_section_code' => 'nullable|string|max:80',
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),
             'geo_state' => 'nullable|string|max:10',
+            'geolocation_enabled' => 'sometimes|boolean',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
@@ -371,6 +372,7 @@ class UserManagementController extends Controller
             'assigned_section_code' => $scopes['assigned_section_code'],
             'assigned_cgis_unit_code' => $scopes['assigned_cgis_unit_code'],
             'geo_state' => isset($validated['geo_state']) && $validated['geo_state'] !== '' ? strtoupper(trim($validated['geo_state'])) : null,
+            'geolocation_enabled' => $request->has('geolocation_enabled') ? $request->boolean('geolocation_enabled') : true,
             'access_level' => $normalized['access_level'],
             'email' => strtolower(trim($validated['email'])),
             'password' => Hash::make($validated['password']),
@@ -393,6 +395,7 @@ class UserManagementController extends Controller
                 'primary_location_code' => $user->primary_location_code,
                 'assigned_directorate_code' => $user->assigned_directorate_code,
                 'assigned_zonal_command_code' => $user->assigned_zonal_command_code,
+                'geolocation_enabled' => $user->geolocation_enabled,
             ]
         );
 
@@ -435,6 +438,7 @@ class UserManagementController extends Controller
             'assigned_section_code' => 'nullable|string|max:80',
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),
             'geo_state' => 'nullable|string|max:10',
+            'geolocation_enabled' => 'sometimes|boolean',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
             'password' => ['nullable', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
@@ -480,6 +484,7 @@ class UserManagementController extends Controller
             'assigned_section_code' => $scopes['assigned_section_code'],
             'assigned_cgis_unit_code' => $scopes['assigned_cgis_unit_code'],
             'geo_state' => isset($validated['geo_state']) && $validated['geo_state'] !== '' ? strtoupper(trim($validated['geo_state'])) : null,
+            'geolocation_enabled' => $request->has('geolocation_enabled') ? $request->boolean('geolocation_enabled') : $user->isGeolocationEnabled(),
             'access_level' => $normalized['access_level'],
             'email' => strtolower(trim($validated['email'])),
             'is_enabled' => $request->boolean('is_enabled', true),

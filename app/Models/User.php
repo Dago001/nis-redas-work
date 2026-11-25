@@ -46,6 +46,7 @@ class User extends Authenticatable
         'assigned_desk_admin_code',
         'assigned_zonal_command_code',
         'geo_state',
+        'geolocation_enabled',
         'access_level',
         'email',
         'email_verified_at',
@@ -80,6 +81,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'access_level' => 'integer',
+        'geolocation_enabled' => 'boolean',
         'is_enabled' => 'boolean',
         'must_change_password' => 'boolean',
         'mfa_enabled' => 'boolean',
@@ -145,6 +147,14 @@ class User extends Authenticatable
     public function hasMinimumAccessLevel(int $level): bool
     {
         return (int) $this->access_level >= $level;
+    }
+
+    /**
+     * Whether per-user ABAC geolocation enforcement is activated for this account.
+     */
+    public function isGeolocationEnabled(): bool
+    {
+        return (bool) ($this->geolocation_enabled ?? true);
     }
 
     /**

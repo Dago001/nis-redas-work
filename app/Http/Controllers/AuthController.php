@@ -379,6 +379,10 @@ class AuthController extends Controller
             return ['allowed' => true, 'reason' => '', 'message' => ''];
         }
 
+        if (! $user->isGeolocationEnabled()) {
+            return ['allowed' => true, 'reason' => '', 'message' => ''];
+        }
+
         if (SettingService::getBool('abac_hq_bypass', false) && $user->isHeadquartersUser()) {
             return ['allowed' => true, 'reason' => '', 'message' => ''];
         }

@@ -194,6 +194,66 @@ class UserProvisioningTest extends TestCase
         $response->assertSee('pwChecklist');
         $response->assertSee('assigned_section_code');
         $response->assertSee('workflowChainPreview');
+
+        // Geolocation Activation replaces ABAC Login State Override
+        $response->assertSee('Geolocation Activation');
+        $response->assertDontSee('ABAC Login State Override');
+    }
+
+    public function test_user_can_be_created_with_geolocation_activated_or_not_activated(): void
+    {
+        $superAdmin = $this->makeSuperAdmin();
+
+        // Created with geolocation NOT activated
+        $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'surname' => 'Bello',
+            'first_name' => 'Musa',
+            'service_number' => '63001',
+            'rank' => 'SI',
+            'email' => 'musa.nogeo@immigration.gov.ng',
+            'user_category' => 'state_user',
+            'assigned_state_code' => 'LASC',
+            'geolocation_enabled' => '0',
+            'password' => 'Secure@12',
+            'password_confirmation' => 'Secure@12',
+        ])->assertRedirect(route('admin.users'));
+
+        $noGeo = User::where('service_number', '63001')->firstOrFail();
+        $this->assertFalse($noGeo->geolocation_enabled);
+        $this->assertFalse($noGeo->isGeolocationEnabled());
+
+        // Created with geolocation ACTIVATED
+        $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'surname' => 'Okafor',
+            'first_name' => 'Ngozi',
+            'service_number' => '63002',
+            'rank' => 'SI',
+            'email' => 'ngozi.geo@immigration.gov.ng',
+            'user_category' => 'state_user',
+            'assigned_state_code' => 'LASC',
+            'geolocation_enabled' => '1',
+            'password' => 'Secure@12',
+            'password_confirmation' => 'Secure@12',
+        ])->assertRedirect(route('admin.users'));
+
+        $withGeo = User::where('service_number', '63002')->firstOrFail();
+        $this->assertTrue($withGeo->geolocation_enabled);
+        $this->assertTrue($withGeo->isGeolocationEnabled());
+
+        // Admin can toggle geolocation off on edit
+        $this->actingAs($superAdmin)->patch(route('admin.users.update', $withGeo), [
+            'surname' => 'Okafor',
+            'first_name' => 'Ngozi',
+            'service_number' => '63002',
+            'rank' => 'SI',
+            'email' => 'ngozi.geo@immigration.gov.ng',
+            'user_category' => 'state_user',
+            'assigned_state_code' => 'LASC',
+            'geolocation_enabled' => '0',
+            'is_enabled' => '1',
+        ])->assertRedirect(route('admin.users.edit', $withGeo));
+
+        $this->assertFalse($withGeo->fresh()->isGeolocationEnabled());
     }
 
     public function test_airport_formation_auto_links_zonal_command_and_directorate_user_saves_section(): void

@@ -104,6 +104,10 @@ class AbacGeolocationMiddleware
             return false;
         }
 
+        if (! $user->isGeolocationEnabled()) {
+            return false;
+        }
+
         if (SettingService::getBool('abac_hq_bypass', false) && $user->isHeadquartersUser()) {
             return false;
         }

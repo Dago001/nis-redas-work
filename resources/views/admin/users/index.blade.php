@@ -4,7 +4,7 @@
     <div class="page-header">
         <div>
             <h1 class="page-title">User Management</h1>
-            <p class="page-subtitle">Manage all user accounts, enable/disable access, and override geolocation state assignments.</p>
+            <p class="page-subtitle">Manage all user accounts, enable/disable access, and control per-user geolocation activation.</p>
         </div>
         <a href="{{ route('admin.users.create') }}" class="btn-nis btn-primary-nis">
             <i class="fas fa-user-plus"></i> Add User
@@ -50,7 +50,7 @@
                             <th>Email</th>
                             <th>Category</th>
                             <th>Location</th>
-                            <th>State Override</th>
+                            <th>Geolocation</th>
                             <th>Status</th>
                             <th></th>
                         </tr>
@@ -62,7 +62,11 @@
                                 <td>{{ $user->email }}</td>
                                 <td>{{ ucfirst(str_replace('_', ' ', $user->user_category)) }}</td>
                                 <td>{{ ucfirst($user->primary_location_type) }} {{ $user->primary_location_code ? "({$user->primary_location_code})" : '' }}</td>
-                                <td>{{ $user->geo_state ?? 'None' }}</td>
+                                <td>
+                                    <span class="status-badge {{ $user->isGeolocationEnabled() ? 'badge-approved' : 'badge-inactive' }}">
+                                        {{ $user->isGeolocationEnabled() ? 'Activated' : 'Not Activated' }}
+                                    </span>
+                                </td>
                                 <td>
                                     <span class="status-badge {{ $user->is_enabled ? 'badge-approved' : 'badge-inactive' }}">
                                         {{ $user->is_enabled ? 'Enabled' : 'Disabled' }}

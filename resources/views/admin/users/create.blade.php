@@ -311,15 +311,23 @@
                 <strong>Reporting Workflow:</strong> <span id="workflowChainText"></span>
             </div>
 
-            <div class="auth-form-group" style="margin-top:14px;margin-bottom:0;max-width:420px;">
-                <label class="form-label-nis" for="geo_state">ABAC Login State Override (Optional)</label>
-                <select id="geo_state" name="geo_state" class="auth-input">
-                    <option value="">Default (use officer's assigned state / HQ bypass)</option>
-                    @foreach($states as $code => $label)
-                        <option value="{{ $code }}" {{ old('geo_state') === $code ? 'selected' : '' }}>{{ $label }} ({{ $code }})</option>
-                    @endforeach
-                </select>
-                <span class="iam-hint">Optional: restrict login geolocation to a specific state when ABAC is enabled.</span>
+            @php $geoActive = (string) old('geolocation_enabled', '1') === '1'; @endphp
+            <div style="margin-top:16px;padding:14px 16px;border-radius:10px;border:1px solid #e2e8f0;background:#f8fafc;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                    <label class="form-label-nis" for="geolocation_enabled" style="margin:0;display:flex;align-items:center;gap:8px;">
+                        <i class="fas fa-location-dot text-nis"></i> Geolocation Activation
+                    </label>
+                    <span id="geoStatusBadge" style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:.74rem;font-weight:600;{{ $geoActive ? 'background:#e8f8ef;color:#166534;border:1px solid #bbf7d0;' : 'background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;' }}">
+                        <i class="fas {{ $geoActive ? 'fa-check-circle' : 'fa-minus-circle' }}"></i>
+                        <span id="geoStatusText">{{ $geoActive ? 'Activated' : 'Not Activated' }}</span>
+                    </span>
+                </div>
+                <input type="hidden" name="geolocation_enabled" value="0">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:.84rem;font-weight:500;color:#1e293b;margin:0;">
+                    <input type="checkbox" id="geolocation_enabled" name="geolocation_enabled" value="1" {{ $geoActive ? 'checked' : '' }} style="width:16px;height:16px;accent-color:#006633;">
+                    <span>Activate geolocation verification for this officer's sign-in and active sessions</span>
+                </label>
+                <span class="iam-hint" style="margin-top:6px;">When activated, the officer must authenticate from their assigned location. Uncheck to exempt this account from geolocation checks.</span>
             </div>
         </div>
 
@@ -513,6 +521,22 @@
                 setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy Password'; }, 2000);
             }).catch(() => {});
         });
+
+        const geoCheckbox = document.getElementById('geolocation_enabled');
+        const geoBadge = document.getElementById('geoStatusBadge');
+        const geoText = document.getElementById('geoStatusText');
+        function updateGeoBadge() {
+            if (!geoCheckbox || !geoBadge || !geoText) return;
+            const on = geoCheckbox.checked;
+            geoText.textContent = on ? 'Activated' : 'Not Activated';
+            geoBadge.style.background = on ? '#e8f8ef' : '#f1f5f9';
+            geoBadge.style.color = on ? '#166534' : '#475569';
+            geoBadge.style.borderColor = on ? '#bbf7d0' : '#cbd5e1';
+            const icon = geoBadge.querySelector('i');
+            if (icon) icon.className = on ? 'fas fa-check-circle' : 'fas fa-minus-circle';
+        }
+        geoCheckbox?.addEventListener('change', updateGeoBadge);
+        updateGeoBadge();
     })();
 </script>
 
