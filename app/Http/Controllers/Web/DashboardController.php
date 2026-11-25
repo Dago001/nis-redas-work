@@ -570,7 +570,16 @@ class DashboardController extends Controller
      */
     public function previewStateReturn(Request $request): View
     {
-        $previewData = $request->except(['_token', 'data_consent', 'attachments', 'supporting_documents', 'workflow_path', 'status']);
+        $previewData = $request->except([
+            '_token',
+            '_method',
+            '_idempotency_key',
+            'data_consent',
+            'attachments',
+            'supporting_documents',
+            'workflow_path',
+            'status',
+        ]);
 
         $user = Auth::user();
 

@@ -12,7 +12,19 @@
     .preview-paginator-controls button { padding:6px 10px; border-radius:8px; border:1px solid var(--gray-200); background:#fff; color:var(--gray-700); font-size:.78rem; font-weight:600; cursor:pointer; }
     .preview-paginator-controls button:hover { background:var(--nis-50); color:var(--nis-700); border-color:var(--nis-200); }
     .preview-paginator-controls button:disabled { opacity:.5; cursor:not-allowed; }
-    .preview-section-tabs { display:flex; gap:6px; overflow-x:auto; padding:8px 0 2px; }
+    .preview-section-tabs {
+        display:flex;
+        gap:6px;
+        overflow-x:auto;
+        padding:8px 0 6px;
+        scroll-behavior:smooth;
+        scrollbar-width:thin;
+        scrollbar-color:#94a3b8 #f1f5f9;
+    }
+    .preview-section-tabs::-webkit-scrollbar { height:6px; }
+    .preview-section-tabs::-webkit-scrollbar-track { background:#f1f5f9; border-radius:4px; }
+    .preview-section-tabs::-webkit-scrollbar-thumb { background:#94a3b8; border-radius:4px; }
+    .preview-section-tabs::-webkit-scrollbar-thumb:hover { background:#64748b; }
     .preview-section-tab { flex-shrink:0; padding:5px 10px; border-radius:999px; border:1px solid var(--gray-200); background:#fff; color:var(--gray-600); font-size:.74rem; font-weight:600; cursor:pointer; white-space:nowrap; }
     .preview-section-tab:hover { background:var(--nis-50); color:var(--nis-700); }
     .preview-section-tab.active { background:var(--nis-700); color:#fff; border-color:var(--nis-700); }
@@ -108,6 +120,16 @@
             if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
             if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
         });
+
+        if (tabsWrap) {
+            tabsWrap.addEventListener('wheel', function (e) {
+                if (tabsWrap.scrollWidth <= tabsWrap.clientWidth) return;
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.preventDefault();
+                    tabsWrap.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+        }
 
         buildTabs();
         render();
