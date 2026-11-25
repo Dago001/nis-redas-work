@@ -571,8 +571,59 @@ html {
 
  /* ── Entry Tab System ── */
         .entry-tabs-wrap { background:#fff; border-bottom:2px solid var(--gray-100); position:sticky; top:var(--topbar-height); z-index:90; box-shadow:0 2px 8px rgba(0,0,0,.04); }
-        .entry-tabs { display:flex; overflow-x:auto; scrollbar-width:none; gap:0; }
-        .entry-tabs::-webkit-scrollbar { display:none; }
+        .entry-tabs,
+        .state-dir-tabs,
+        .m-tabs,
+        .border-tabs,
+        .investigation-section-nav {
+            display:flex;
+            overflow-x:auto;
+            overflow-y:hidden;
+            scroll-behavior:smooth;
+            -webkit-overflow-scrolling:touch;
+            scrollbar-width:thin;
+            scrollbar-color:#94a3b8 #f1f5f9;
+        }
+        .entry-tabs { gap:0; padding-bottom:4px; }
+        .entry-tabs::-webkit-scrollbar,
+        .state-dir-tabs::-webkit-scrollbar,
+        .m-tabs::-webkit-scrollbar,
+        .border-tabs::-webkit-scrollbar,
+        .investigation-section-nav::-webkit-scrollbar { height:7px; }
+        .entry-tabs::-webkit-scrollbar-track,
+        .state-dir-tabs::-webkit-scrollbar-track,
+        .m-tabs::-webkit-scrollbar-track,
+        .border-tabs::-webkit-scrollbar-track,
+        .investigation-section-nav::-webkit-scrollbar-track { background:#f1f5f9; border-radius:4px; }
+        .entry-tabs::-webkit-scrollbar-thumb,
+        .state-dir-tabs::-webkit-scrollbar-thumb,
+        .m-tabs::-webkit-scrollbar-thumb,
+        .border-tabs::-webkit-scrollbar-thumb,
+        .investigation-section-nav::-webkit-scrollbar-thumb { background:#94a3b8; border-radius:4px; }
+        .entry-tabs::-webkit-scrollbar-thumb:hover,
+        .state-dir-tabs::-webkit-scrollbar-thumb:hover,
+        .m-tabs::-webkit-scrollbar-thumb:hover,
+        .border-tabs::-webkit-scrollbar-thumb:hover,
+        .investigation-section-nav::-webkit-scrollbar-thumb:hover { background:#64748b; }
+        .redas-tab-scroll-shell { position:relative; display:flex; align-items:stretch; }
+        .redas-tab-scroll-shell > :nth-child(2) { flex:1 1 auto; min-width:0; }
+        .redas-tab-scroll-btn {
+            flex:0 0 32px;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            border:none;
+            background:#f8fafc;
+            color:var(--nis-700);
+            cursor:pointer;
+            font-size:.82rem;
+            transition:background .15s, color .15s;
+            z-index:2;
+        }
+        .redas-tab-scroll-btn:hover { background:var(--nis-50); color:var(--nis-800); }
+        .redas-tab-scroll-btn.left { border-right:1px solid var(--gray-200); }
+        .redas-tab-scroll-btn.right { border-left:1px solid var(--gray-200); }
+        .redas-tab-scroll-btn.visible { display:inline-flex; }
         .entry-tab { display:flex; align-items:center; gap:7px; padding:14px 18px; font-size:.78rem; font-weight:600; color:var(--gray-500); white-space:nowrap; cursor:pointer; border:none; background:none; border-bottom:3px solid transparent; transition:all .2s; position:relative; }
         .entry-tab:hover { color:var(--nis-700); background:var(--nis-50); }
         .entry-tab.active { color:var(--nis-700); border-bottom-color:var(--nis-600); background:var(--nis-50); }

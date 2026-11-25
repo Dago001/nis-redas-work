@@ -207,14 +207,20 @@ html, body {
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
+        scrollbar-width: thin;
+        scrollbar-color: #94a3b8 #f1f5f9;
         gap: 6px;
-        padding-bottom: 4px;
+        padding-bottom: 6px;
     }
 
     .entry-tabs::-webkit-scrollbar,
     .nav-tabs::-webkit-scrollbar {
-        display: none;
+        height: 5px;
+    }
+    .entry-tabs::-webkit-scrollbar-thumb,
+    .nav-tabs::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 4px;
     }
 
     .entry-tab {

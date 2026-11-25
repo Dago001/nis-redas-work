@@ -868,5 +868,86 @@ document.addEventListener('click', (e) => {
     document.addEventListener('DOMContentLoaded', onCalcEvent);
 })();
 
+/* Horizontal scroll controls + mouse-wheel scroll for all section tab bars */
+(function initScrollableTabBars() {
+    const TAB_BAR_SELECTOR = '.entry-tabs, .state-dir-tabs, .m-tabs, .border-tabs, .investigation-section-nav';
+
+    function enhanceTabBar(bar) {
+        if (!bar || bar.dataset.scrollEnhanced === '1') return;
+        bar.dataset.scrollEnhanced = '1';
+
+        const parent = bar.parentElement;
+        if (!parent) return;
+
+        const shell = document.createElement('div');
+        shell.className = 'redas-tab-scroll-shell';
+
+        const leftBtn = document.createElement('button');
+        leftBtn.type = 'button';
+        leftBtn.className = 'redas-tab-scroll-btn left';
+        leftBtn.setAttribute('aria-label', 'Scroll sections left');
+        leftBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+
+        const rightBtn = document.createElement('button');
+        rightBtn.type = 'button';
+        rightBtn.className = 'redas-tab-scroll-btn right';
+        rightBtn.setAttribute('aria-label', 'Scroll sections right');
+        rightBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+
+        parent.insertBefore(shell, bar);
+        shell.appendChild(leftBtn);
+        shell.appendChild(bar);
+        shell.appendChild(rightBtn);
+
+        const updateArrows = () => {
+            const overflow = bar.scrollWidth - bar.clientWidth;
+            const hasOverflow = overflow > 4;
+            leftBtn.classList.toggle('visible', hasOverflow && bar.scrollLeft > 4);
+            rightBtn.classList.toggle('visible', hasOverflow && bar.scrollLeft < overflow - 4);
+        };
+
+        leftBtn.addEventListener('click', () => {
+            bar.scrollBy({ left: -240, behavior: 'smooth' });
+        });
+        rightBtn.addEventListener('click', () => {
+            bar.scrollBy({ left: 240, behavior: 'smooth' });
+        });
+
+        bar.addEventListener('wheel', (e) => {
+            if (bar.scrollWidth <= bar.clientWidth) return;
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                e.preventDefault();
+                bar.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+
+        bar.addEventListener('scroll', updateArrows, { passive: true });
+        window.addEventListener('resize', updateArrows);
+
+        if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(updateArrows).observe(bar);
+        }
+
+        bar._updateScrollArrows = updateArrows;
+        requestAnimationFrame(updateArrows);
+    }
+
+    function initAll() {
+        document.querySelectorAll(TAB_BAR_SELECTOR).forEach(enhanceTabBar);
+    }
+
+    document.addEventListener('DOMContentLoaded', initAll);
+    /* Re-evaluate arrows when switching top-level directorate panels */
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.closest('.state-dir-tab, .entry-tab, .m-tab')) {
+            requestAnimationFrame(() => {
+                document.querySelectorAll(TAB_BAR_SELECTOR).forEach((bar) => {
+                    if (typeof bar._updateScrollArrows === 'function') bar._updateScrollArrows();
+                });
+            });
+        }
+    });
+})();
+
 /* Export for inline scripts */
 window.REDAS = { showToast, animateCounter };
