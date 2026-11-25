@@ -25,18 +25,19 @@
             border-bottom:1px solid #dcfce7;
         }
         .nis-preview-brand img.logo {
-            width:62px;
-            height:62px;
-            object-fit:contain;
-            flex-shrink:0;
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            flex-shrink: 0;
         }
         .nis-preview-brand-text h1 {
-            font-size:1.35rem;
-            font-weight:800;
-            margin:0 0 3px;
-            color:#006838;
-            letter-spacing:-.01em;
-            line-height:1.2;
+            font-size: 1.65rem;
+            font-weight: 800;
+            margin: 0 0 4px;
+            color: #006838;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            line-height: 1.15;
         }
         .nis-preview-brand-text .subtitle {
             margin:0;
@@ -169,6 +170,7 @@
 $sections = \App\Services\PreviewRenderer::buildSections($data, [
     'skipKeys' => $skipKeys,
     'directorateNames' => $directorateNames,
+    'groupByDirectorate' => true,
 ]);
 @endphp
 

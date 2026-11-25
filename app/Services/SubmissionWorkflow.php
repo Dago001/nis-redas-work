@@ -437,6 +437,12 @@ class SubmissionWorkflow
         }
 
         $ref = 'RET-' . str_pad((string) $application->id, 5, '0', STR_PAD_LEFT);
+        $submitterName = $application->user?->name
+            ?? ($application->return_data['reporting_officer'] ?? 'Command Officer');
+        $scopeCode = strtoupper((string) ($application->scope_code ?? ''));
+        $scopeName = $scopeCode !== ''
+            ? (GeolocationService::stateNameFromCode($scopeCode) ?? $scopeCode)
+            : 'Command';
 
         foreach ($query->get() as $approver) {
             if (! ReportAccess::matchesApproverScope($application, $approver)) {
@@ -446,8 +452,8 @@ class SubmissionWorkflow
             UserNotification::create([
                 'user_id' => $approver->id,
                 'type' => 'workflow',
-                'title' => 'Return awaiting your review',
-                'description' => "Return {$ref} is awaiting " . str_replace('_', ' ', $stage) . '.',
+                'title' => "New Return Submitted ({$ref})",
+                'description' => "Submitted by {$submitterName} ({$scopeName}) - awaiting " . str_replace('_', ' ', $stage) . '.',
                 'tag' => 'review',
                 'action_url' => self::reviewUrlForApprover($approver, $application),
                 'payload_json' => ['application_id' => $application->id, 'stage' => $stage],

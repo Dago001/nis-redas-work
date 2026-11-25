@@ -202,20 +202,7 @@
             @endif
         </div>
         <div class="topbar-right">
-            <div style="position:relative;">
-                <button class="topbar-icon-btn" id="notifBtn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button>
-                <div id="notifPanel" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:300px;background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--gray-200);z-index:200;overflow:hidden;">
-                    <div style="padding:12px 16px;font-size:.82rem;font-weight:700;border-bottom:1px solid var(--gray-100);">Notifications</div>
-                    <div class="notif-item unread">
-                        <div class="notif-icon" style="background:#fef9c3;color:#a16207;"><i class="fas fa-clock"></i></div>
-                        <div class="notif-content"><div class="notif-title">Deadline Reminder</div><div class="notif-desc">Monthly return due in 5 days.</div></div>
-                        <div class="notif-time">1d ago</div>
-                    </div>
-                    <div style="padding:10px;text-align:center;border-top:1px solid var(--gray-100);">
-                        <a href="{{ route('user.notifications') }}" style="font-size:.78rem;color:var(--nis-600);font-weight:600;text-decoration:none;">View all</a>
-                    </div>
-                </div>
-            </div>
+            @include('partials.topbar-notifications')
             <div style="position:relative;">
                 <button class="topbar-user" id="userMenuBtn" style="border:none;background:transparent;cursor:pointer;">
                     <div class="topbar-avatar">{{ strtoupper(substr($user->name ?? 'U', 0, 2)) }}</div>

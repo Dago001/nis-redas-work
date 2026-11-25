@@ -22,6 +22,80 @@ final class PreviewRenderer
         'bnsc' => 'BNSC', 'kgsc' => 'KGSC', 'trsc' => 'TRSC', 'nasc' => 'NASC',
     ];
 
+    private const DIRECTORATE_ORDER = [
+        'hrm' => 'Human Resources Management',
+        'prs' => 'Planning, Research, Statistics',
+        'finance' => 'Finance & Accounts',
+        'investigation' => 'Investigation & Compliance',
+        'passport' => 'Passport & Travel Documents',
+        'visa' => 'Visa & Residency',
+        'migration' => 'Migration Directorate',
+        'border' => 'Border Management',
+        'ict' => 'ICT',
+        'works-logistics' => 'Works & Logistics',
+    ];
+
+    private const KEY_TO_DIRECTORATE = [
+        'hrm' => 'hrm',
+        'prs' => 'prs',
+        'finance' => 'finance',
+        'local_revenue_passport' => 'finance',
+        'local_revenue_visa' => 'finance',
+        'local_revenue_e_pass' => 'finance',
+        'local_revenue_other' => 'finance',
+        'foreign_revenue_total' => 'finance',
+        'expenditure_profile_total' => 'finance',
+        'budget_amount' => 'finance',
+        'release_amount' => 'finance',
+        'finance_challenges' => 'finance',
+        'investigation' => 'investigation',
+        'breach' => 'investigation',
+        'dfu' => 'investigation',
+        'dofit' => 'investigation',
+        'surveillance' => 'investigation',
+        'interpol' => 'investigation',
+        'citizenship' => 'investigation',
+        'suspect' => 'investigation',
+        'screening' => 'investigation',
+        'deportation' => 'investigation',
+        'passport' => 'passport',
+        'visa' => 'visa',
+        'migration' => 'migration',
+        'smuggling_of_migrants' => 'migration',
+        'trafficking_in_persons' => 'migration',
+        'refugees_asylum_seekers' => 'migration',
+        'mou_countries' => 'migration',
+        'border' => 'border',
+        'ict' => 'ict',
+        'project_programme_activities' => 'ict',
+        'systems_operational' => 'ict',
+        'midas_sites_deployed' => 'ict',
+        'software_delivered' => 'ict',
+        'hardware_maintenance_cases' => 'ict',
+        'data_breach_incidents' => 'ict',
+        'cybersecurity_incidents' => 'ict',
+        'security_controls_deployed' => 'ict',
+        'ict_other_reports' => 'ict',
+        'works' => 'works-logistics',
+        'works-logistics' => 'works-logistics',
+        'arms_summary' => 'works-logistics',
+        'ammunition_summary' => 'works-logistics',
+        'store_tailoring' => 'works-logistics',
+        'energy_utilities' => 'works-logistics',
+        'arms_returns' => 'works-logistics',
+        'ammunition_returns' => 'works-logistics',
+        'store_accessories' => 'works-logistics',
+        'store_stationery' => 'works-logistics',
+        'store_uniforms' => 'works-logistics',
+        'store_oil_gas' => 'works-logistics',
+        'transport_fleet' => 'works-logistics',
+        'transport_procurement' => 'works-logistics',
+        'works_infra_projects' => 'works-logistics',
+        'works_intervention_projects' => 'works-logistics',
+        'works_notable_activities' => 'works-logistics',
+        'maintenance_log' => 'works-logistics',
+    ];
+
     /**
      * Build an ordered list of preview sections from return data.
      *
@@ -35,6 +109,11 @@ final class PreviewRenderer
         $directorateSlug = $options['directorateSlug'] ?? null;
         $directorateNames = $options['directorateNames'] ?? [];
         $sectionLabels = $options['sectionLabels'] ?? [];
+        $groupByDirectorate = (bool) ($options['groupByDirectorate'] ?? false);
+
+        if ($groupByDirectorate) {
+            return self::buildDirectorateGroupedSections($data, $skipKeys);
+        }
 
         $sections = [];
         $flatFields = [];
@@ -73,6 +152,103 @@ final class PreviewRenderer
 
         if ($flatFields !== []) {
             array_unshift($sections, ['label' => 'Return Details', 'html' => self::kvTable($flatFields)]);
+        }
+
+        return $sections;
+    }
+
+    /**
+     * Group combined state return fields under the 10 official directorates in
+     * canonical order, preserving each directorate's subsections underneath.
+     *
+     * @param array<string, mixed> $data
+     * @param array<int, string> $skipKeys
+     * @return array<int, array{label: string, html: string}>
+     */
+    private static function buildDirectorateGroupedSections(array $data, array $skipKeys): array
+    {
+        $buckets = [];
+        foreach (array_keys(self::DIRECTORATE_ORDER) as $slug) {
+            $buckets[$slug] = ['arrays' => [], 'scalars' => []];
+        }
+        $otherArrays = [];
+        $otherScalars = [];
+
+        foreach ($data as $key => $value) {
+            if (in_array($key, $skipKeys, true) || self::isEmptyValue($value)) {
+                continue;
+            }
+
+            $dir = self::KEY_TO_DIRECTORATE[$key] ?? null;
+            if ($dir === null && is_string($key)) {
+                if (str_starts_with($key, 'local_revenue_') || str_starts_with($key, 'foreign_revenue_') || str_starts_with($key, 'finance_')) {
+                    $dir = 'finance';
+                } elseif (str_starts_with($key, 'works_') || str_starts_with($key, 'store_') || str_starts_with($key, 'transport_') || str_starts_with($key, 'arms_') || str_starts_with($key, 'ammunition_')) {
+                    $dir = 'works-logistics';
+                } elseif (str_starts_with($key, 'ict_')) {
+                    $dir = 'ict';
+                }
+            }
+
+            if ($dir !== null) {
+                if (is_array($value)) {
+                    $buckets[$dir]['arrays'][$key] = $value;
+                } else {
+                    $buckets[$dir]['scalars'][$key] = $value;
+                }
+            } else {
+                if (is_array($value)) {
+                    $otherArrays[$key] = $value;
+                } else {
+                    $otherScalars[$key] = $value;
+                }
+            }
+        }
+
+        $sections = [];
+        foreach (self::DIRECTORATE_ORDER as $slug => $label) {
+            $html = '';
+            $scalars = $buckets[$slug]['scalars'];
+            $arrays = $buckets[$slug]['arrays'];
+
+            if ($scalars !== []) {
+                $html .= self::kvTable($scalars);
+            }
+
+            foreach ($arrays as $subKey => $subVal) {
+                $rendered = self::renderData($subVal);
+                if ($rendered === '') {
+                    continue;
+                }
+                /* If the key itself is the directorate container (e.g. hrm, prs, passport,
+                   visa, migration, border, ict, works, investigation), its child subsections
+                   already have titles from renderData(); otherwise add a subsection header. */
+                if ($subKey !== $slug && ! ($slug === 'works-logistics' && $subKey === 'works')) {
+                    $html .= '<h3 class="sub-section-title">' . e(self::humanize($subKey)) . '</h3>';
+                }
+                $html .= $rendered;
+            }
+
+            $sections[] = [
+                'label' => $label,
+                'html' => $html,
+            ];
+        }
+
+        if ($otherArrays !== [] || $otherScalars !== []) {
+            $otherHtml = '';
+            if ($otherScalars !== []) {
+                $otherHtml .= self::kvTable($otherScalars);
+            }
+            foreach ($otherArrays as $k => $v) {
+                $rendered = self::renderData($v);
+                if ($rendered !== '') {
+                    $otherHtml .= '<h3 class="sub-section-title">' . e(self::humanize($k)) . '</h3>' . $rendered;
+                }
+            }
+            if ($otherHtml !== '') {
+                $sections[] = ['label' => 'Other Details', 'html' => $otherHtml];
+            }
         }
 
         return $sections;

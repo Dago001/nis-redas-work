@@ -160,38 +160,7 @@
             </span>
 
             <!-- Notifications -->
-            <div style="position:relative;">
-                <button class="topbar-icon-btn" id="notifBtn" aria-label="Notifications">
-                    <i class="fas fa-bell"></i>
-                    <span class="notif-dot"></span>
-                </button>
-                <div id="notifPanel" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:320px;background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--gray-200);z-index:200;overflow:hidden;">
-                    <div style="padding:12px 16px;font-size:.82rem;font-weight:700;color:var(--gray-800);border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;">
-                        <span>System Notifications</span>
-                        <span style="color:var(--nis-600);cursor:pointer;font-weight:500;font-size:.76rem;">Mark all read</span>
-                    </div>
-                    @foreach([
-                        ['warning','fas fa-exclamation-triangle', '15 formations overdue',     'Abuja, Kano, Lagos and 12 others have not submitted May returns.', '1h ago'],
-                        ['info',   'fas fa-user-plus',            'New user registration',      '3 new officer accounts pending admin approval.', '3h ago'],
-                        ['success','fas fa-database',             'Backup completed',           'Daily database backup completed successfully (2.3 GB).', '6h ago'],
-                        ['danger', 'fas fa-shield-alt',           'Login anomaly detected',     '7 failed login attempts from IP 102.89.x.x - account locked.', '8h ago'],
-                    ] as [$type, $icon, $title, $desc, $time])
-                    <div class="notif-item unread">
-                        <div class="notif-icon" style="background:{{ $type === 'danger' ? '#fee2e2' : ($type === 'warning' ? '#fef9c3' : ($type === 'success' ? '#dcfce7' : '#dbeafe')) }};color:{{ $type === 'danger' ? '#dc2626' : ($type === 'warning' ? '#a16207' : ($type === 'success' ? '#15803d' : '#1d4ed8')) }};">
-                            <i class="{{ $icon }}"></i>
-                        </div>
-                        <div class="notif-content">
-                            <div class="notif-title">{{ $title }}</div>
-                            <div class="notif-desc">{{ $desc }}</div>
-                        </div>
-                        <div class="notif-time">{{ $time }}</div>
-                    </div>
-                    @endforeach
-                    <div style="padding:10px 16px;text-align:center;border-top:1px solid var(--gray-100);">
-                        <a href="{{ url('/admin/notifications') }}" style="font-size:.78rem;color:var(--nis-600);font-weight:600;text-decoration:none;">View all notifications →</a>
-                    </div>
-                </div>
-            </div>
+            @include('partials.topbar-notifications')
 
             <!-- User menu -->
             <div style="position:relative;">

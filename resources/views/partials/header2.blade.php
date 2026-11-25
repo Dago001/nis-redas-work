@@ -115,31 +115,7 @@
             </span>
 
             <!-- Notifications -->
-            <div style="position:relative;">
-                <button class="topbar-icon-btn" id="notifBtn" aria-label="Notifications">
-                    <i class="fas fa-bell"></i>
-                    <span class="notif-dot"></span>
-                </button>
-                <div id="notifPanel" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:300px;background:white;border-radius:var(--radius-lg);box-shadow:var(--shadow-xl);border:1px solid var(--gray-200);z-index:200;overflow:hidden;">
-                    <div style="padding:12px 16px;font-size:.82rem;font-weight:700;color:var(--gray-800);border-bottom:1px solid var(--gray-100);">Notifications</div>
-                    @foreach([
-                        ['danger', 'fas fa-file-alt', '5 returns awaiting your approval', 'Abuja State, Kano State, Lagos State, Rivers State, Ogun State', '1h ago'],
-                        ['warning','fas fa-clock',    'Kaduna State submission overdue',   'Kaduna State monthly return is 3 days overdue.', '6h ago'],
-                        ['success','fas fa-check',    'HQ approved your forwarded data',   'Q1 2025 zonal aggregate approved by PRS Directorate.', '2d ago'],
-                    ] as [$type, $icon, $title, $desc, $time])
-                    <div class="notif-item unread">
-                        <div class="notif-icon" style="background:{{ $type === 'danger' ? '#fee2e2' : ($type === 'warning' ? '#fef9c3' : '#dcfce7') }};color:{{ $type === 'danger' ? '#dc2626' : ($type === 'warning' ? '#a16207' : '#15803d') }};">
-                            <i class="{{ $icon }}"></i>
-                        </div>
-                        <div class="notif-content">
-                            <div class="notif-title">{{ $title }}</div>
-                            <div class="notif-desc">{{ $desc }}</div>
-                        </div>
-                        <div class="notif-time">{{ $time }}</div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
+            @include('partials.topbar-notifications')
 
             <!-- User menu -->
             <div style="position:relative;">
