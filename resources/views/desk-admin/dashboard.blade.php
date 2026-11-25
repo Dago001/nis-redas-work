@@ -186,13 +186,30 @@
                     </thead>
                     <tbody>
                         @forelse($approvedSubmissions as $submission)
+                            @php
+                                $subPeriod = $submission->report_period
+                                    ?? ($submission->return_data['report_period'] ?? ($submission->return_data['period'] ?? '-'));
+                                if (is_string($subPeriod) && preg_match('/^\d{4}-\d{2}$/', $subPeriod)) {
+                                    try {
+                                        $subPeriod = \Carbon\Carbon::createFromFormat('Y-m', $subPeriod)->format('F Y');
+                                    } catch (\Throwable $e) {
+                                        // keep raw string
+                                    }
+                                }
+                                $isFinalApproved = strtolower((string) $submission->status) === 'approved';
+                                $stageLabel = ucwords(str_replace('_', ' ', (string) ($submission->workflow_stage ?? 'next stage')));
+                                $statusPillText = $isFinalApproved ? 'Approved' : "Approved · {$stageLabel}";
+                                $statusPillStyle = $isFinalApproved
+                                    ? 'background:#ecfdf5;color:#166534;'
+                                    : 'background:#eff6ff;color:#1d4ed8;';
+                            @endphp
                             <tr>
                                 <td style="padding:10px;border-bottom:1px solid #f1f5f9;">#{{ $submission->id }}</td>
                                 <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->user)->name ?? 'N/A' }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ $submission->return_data['report_period'] ?? '-' }}</td>
+                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ $subPeriod }}</td>
                                 <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
-                                    <span style="display:inline-flex;padding:3px 8px;border-radius:999px;background:#ecfdf5;color:#166534;font-size:.72rem;font-weight:700;">
-                                        {{ ucfirst($submission->status) }}
+                                    <span style="display:inline-flex;padding:3px 9px;border-radius:999px;font-size:.72rem;font-weight:700;{{ $statusPillStyle }}">
+                                        {{ $statusPillText }}
                                     </span>
                                 </td>
                                 <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->updated_at)->format('d M Y, H:i') }}</td>

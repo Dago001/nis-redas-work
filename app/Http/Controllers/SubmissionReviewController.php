@@ -37,18 +37,34 @@ class SubmissionReviewController extends Controller
             ->limit(50)
             ->get();
 
-        $approvedSubmissions = ReportAccess::applyApproverScope(
-            Application::query()->with('user')->where('status', 'approved'),
+        $approverStage = SubmissionWorkflow::stageForApprover($user);
+
+        $approvedBaseQuery = ReportAccess::applyApproverScope(
+            Application::query()->where(function ($q) use ($approverStage, $user) {
+                $q->where('status', 'approved')
+                    ->orWhere(function ($sub) use ($approverStage, $user) {
+                        $sub->where('status', '!=', 'returned')
+                            ->whereHas('reviewComments', function ($c) use ($approverStage, $user) {
+                                $c->where('action', 'approved')
+                                    ->where(function ($who) use ($approverStage, $user) {
+                                        if ($approverStage !== null) {
+                                            $who->where('stage', $approverStage);
+                                        }
+                                        $who->orWhere('user_id', $user->id);
+                                    });
+                            });
+                    });
+            }),
             $user
-        )
+        );
+
+        $approvedSubmissions = (clone $approvedBaseQuery)
+            ->with('user')
             ->latest('updated_at')
             ->limit(50)
             ->get();
 
-        $approvedCount = ReportAccess::applyApproverScope(
-            Application::query()->where('status', 'approved'),
-            $user
-        )->count();
+        $approvedCount = (clone $approvedBaseQuery)->count();
 
         $rejectedCount = ReportAccess::applyApproverScope(
             Application::query()->where('status', 'returned'),
