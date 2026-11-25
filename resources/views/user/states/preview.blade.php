@@ -13,7 +13,6 @@
         .nis-preview-banner {
             background:linear-gradient(135deg, #f0fdf4 0%, #ffffff 60%, #f8fafc 100%);
             border:1px solid #bbf7d0;
-            border-top:4px solid #006838;
             border-radius:12px;
             padding:20px 24px;
             margin-bottom:20px;
@@ -49,9 +48,12 @@
         }
         .nis-preview-meta-grid {
             display:grid;
-            grid-template-columns:repeat(auto-fit, minmax(165px, 1fr));
-            gap:10px 14px;
+            grid-template-columns:repeat(5, minmax(0, 1fr));
+            gap:10px;
             margin-top:16px;
+        }
+        @media (max-width: 768px) {
+            .nis-preview-meta-grid { grid-template-columns:repeat(2, minmax(0, 1fr)); }
         }
         .nis-preview-meta-item {
             background:#fff;
@@ -124,7 +126,7 @@
             body { background:#fff; }
             .report-page { margin:0; max-width:none; box-shadow:none; border:none; border-radius:0; padding:0; }
             .preview-note { display:none !important; }
-            .nis-preview-banner { background:#fff; border:1px solid #d1d5db; border-top:3px solid #006838; }
+            .nis-preview-banner { background:#fff; border:1px solid #d1d5db; }
             .report-section { border:none; border-radius:0; padding:0; margin:0 0 16px; overflow:visible; }
             .section-title, .sub-section-title { break-after:avoid; }
             table.report-table thead { display:table-header-group; }
