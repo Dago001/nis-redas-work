@@ -592,10 +592,11 @@ html {
 
         /* ── Table inputs ── */
         .nis-table { width:100%; border-collapse:collapse; font-size:.8rem; }
-        .nis-table th { background:var(--gray-50); color:var(--gray-600); font-weight:700; padding:8px 10px; text-align:left; border:1px solid var(--gray-200); font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+        .nis-table th { background:var(--gray-50); color:var(--gray-600); font-weight:700; padding:8px 8px; text-align:left; border:1px solid var(--gray-200); font-size:.71rem; text-transform:uppercase; letter-spacing:.03em; white-space:normal; line-height:1.25; vertical-align:bottom; }
         .nis-table td { padding:6px 8px; border:1px solid var(--gray-200); vertical-align:middle; }
         .nis-table tr.total-row td { background:var(--gray-50); font-weight:700; }
         .nis-table tr:hover td { background:var(--nis-50); }
+        .nis-table .ni { min-width:68px; box-sizing:border-box; }
         .ni { width:100%; border:1px solid var(--gray-200); border-radius:4px; padding:5px 8px; font-size:.8rem; font-family:inherit; color:var(--gray-800); background:#fff; transition:border-color .15s; }
         .ni:focus { outline:none; border-color:var(--nis-400); box-shadow:0 0 0 2px rgba(0,102,51,.1); }
         .ni[readonly] { background:var(--gray-50); color:var(--gray-500); cursor:not-allowed; }

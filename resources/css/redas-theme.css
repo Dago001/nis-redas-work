@@ -1769,10 +1769,22 @@ body.auth-page {
 .sidebar-overlay.active { display: block; }
 
 /* ─── Scrollbar (global) ─── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 3px; }
+::-webkit-scrollbar { width: 6px; height: 8px; }
+::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--gray-300); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+
+/* ─── Responsive Tables (Global: Desktop + Mobile) ─── */
+.table-responsive,
+.table-wrap,
+.redas-table-wrap {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
 
 /* ─── Loading Skeleton ─── */
 .skeleton {
