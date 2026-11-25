@@ -11,7 +11,7 @@
         <div class="sidebar-section-label">Executive Overview</div>
         <a href="{{ route('superadmin.dashboard') }}" class="sidebar-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-gauge-high"></i></span>
-            <span class="link-text">Executive Dashboard</span>
+            <span class="link-text">Dashboard</span>
         </a>
         <a href="{{ route('superadmin.returns') }}" class="sidebar-link {{ request()->routeIs('superadmin.returns*') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-folder-open"></i></span>
