@@ -1874,7 +1874,7 @@ $lastSection = $category['section'];
             6. Offshore
         </div>
         <div class="card-head-action">
-            <button type="button" id="btnAddState" class="btn btn-primary btn-sm"><i class="fas fa-plus-circle"></i>Add State</button>
+            <button type="button" id="btnAddState" class="btn-nis btn-primary-nis btn-sm"><i class="fas fa-plus-circle"></i> Add State</button>
         </div>
     </div>
 </div>
@@ -1885,20 +1885,18 @@ $lastSection = $category['section'];
      script when the template is cloned. -->
 <template id="offshoreStateTemplate">
     <div class="redas-card offshore-card mb-4">
-        <div class="card-head">
-            <div class="card-head-title">
+        <div class="card-head" style="height:auto;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+            <div class="card-head-title" style="display:flex;align-items:center;gap:10px;">
                 <div class="card-head-icon" style="background:#DCFCE7;color:#166534;"><i class="fas fa-map-marker-alt"></i></div>
-           <div class="offshore-state-wrapper"><label class="ni-label mb-1"></label>
-                <select class="ni offshore-state" name="border[offshore][__ST__][state]"><option value=""><= Select State =></option></select>
+                <div class="offshore-state-wrapper">
+                    <select class="ni ni-select offshore-state" name="border[offshore][__ST__][state]" style="min-width:200px;"><option value="">Select State</option></select>
+                </div>
             </div>
-                <option value=""></option>
-            </select>
+            <div style="display:flex;align-items:center;gap:8px;">
+                <button type="button" class="btn-nis btn-outline-nis btn-sm btnAddTerminal"><i class="fas fa-plus"></i> Add Terminal</button>
+                <button type="button" class="btn-nis btn-sm btnRemoveState" title="Remove State" style="background:#fef2f2;color:#dc2626;border:1px solid #fecaca;"><i class="fas fa-trash"></i></button>
+            </div>
         </div>
-        <div>
-            <button type="button" class="btn btn-success btn-sm btnAddTerminal"> <i class="fas fa-plus"></i>Terminal</button>
-            <button type="button" class="btn btn-danger btn-sm btnRemoveState"> <i class="fas fa-trash"></i></button>
-        </div>
-    </div>
     <div class="card-body">
         <div class="table-responsive">
             <table class="nis-table offshore-table">
@@ -1972,7 +1970,7 @@ $lastSection = $category['section'];
 
         <button
             type="button"
-            class="btn btn-danger btn-sm btnRemoveTerminal">
+            class="btn-nis btn-ghost btn-sm btnRemoveTerminal" style="color:var(--color-danger);padding:4px 8px;">
 
             <i class="fas fa-trash"></i>
 
