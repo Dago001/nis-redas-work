@@ -928,8 +928,11 @@ $incidentCategories = [
 
     /* Submit from preview is wired by the host layout. */
 
-    /* Listen for input */
-    if (form) form.addEventListener('input', recomputeAll);
+    /* Listen for input & change */
+    if (form) {
+        form.addEventListener('input', recomputeAll);
+        form.addEventListener('change', recomputeAll);
+    }
 
     /* Let the host layout's preview tab use this page-specific renderer.
        Guarded so a builder already registered by another form is kept. */

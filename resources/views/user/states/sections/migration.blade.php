@@ -1024,32 +1024,31 @@
             let grandTotal = 0;
 
             MIG_ROOT.querySelectorAll('.staff-male-input').forEach(input => {
-                const femaleInput = input.closest('tr').querySelector('.staff-female-input');
-                const totalOutput = input.closest('tr').querySelector('.staff-total-output');
+                const tr = input.closest('tr');
+                const femaleInput = tr?.querySelector('.staff-female-input');
+                const totalOutput = tr?.querySelector('.staff-total-output');
 
                 const valMale = parseInt(input.value) || 0;
-                const valFemale = parseInt(femaleInput.value) || 0;
+                const valFemale = parseInt(femaleInput?.value) || 0;
                 const valTotal = valMale + valFemale;
 
-                totalOutput.value = valTotal;
+                if (totalOutput) totalOutput.value = valTotal;
 
                 totalMale += valMale;
                 totalFemale += valFemale;
                 grandTotal += valTotal;
             });
 
-            document.getElementById('migration-staff-male-total').textContent = totalMale.toLocaleString();
-            document.getElementById('migration-staff-female-total').textContent = totalFemale.toLocaleString();
-            document.getElementById('migration-staff-grand-total').textContent = grandTotal.toLocaleString();
+            const mEl = document.getElementById('migration-staff-male-total');
+            const fEl = document.getElementById('migration-staff-female-total');
+            const gEl = document.getElementById('migration-staff-grand-total');
+            if (mEl) mEl.textContent = totalMale.toLocaleString();
+            if (fEl) fEl.textContent = totalFemale.toLocaleString();
+            if (gEl) gEl.textContent = grandTotal.toLocaleString();
         };
 
-        MIG_ROOT.querySelectorAll('.staff-male-input, .staff-female-input').forEach(input => {
-            input.addEventListener('input', recalculateStaff);
-        });
-
-        // Auto calculation: Smuggling of Migrants (SOM)
-        const recalculateSom = (e) => {
-            const row = e.target.closest('.som-row');
+        const recalculateSomRow = (row) => {
+            if (!row) return;
             let rowTotal = 0;
             row.querySelectorAll('.som-field-input').forEach(input => {
                 rowTotal += parseInt(input.value) || 0;
@@ -1058,13 +1057,8 @@
             if (output) output.value = rowTotal;
         };
 
-        MIG_ROOT.querySelectorAll('.som-field-input').forEach(input => {
-            input.addEventListener('input', recalculateSom);
-        });
-
-        // Auto calculation: Trafficking In Persons (TIP)
-        const recalculateTip = (e) => {
-            const row = e.target.closest('.tip-row');
+        const recalculateTipRow = (row) => {
+            if (!row) return;
             let rowTotal = 0;
             row.querySelectorAll('.tip-field-input').forEach(input => {
                 rowTotal += parseInt(input.value) || 0;
@@ -1073,31 +1067,49 @@
             if (output) output.value = rowTotal;
         };
 
-        MIG_ROOT.querySelectorAll('.tip-field-input').forEach(input => {
-            input.addEventListener('input', recalculateTip);
-        });
+        const recalculateRefugeeRow = (row) => {
+            if (!row) return;
+            const valApproved = parseInt(row.querySelector('.refugee-approved')?.value) || 0;
+            const valRejected = parseInt(row.querySelector('.refugee-rejected')?.value) || 0;
+            const totalEl = row.querySelector('.refugee-total');
+            if (totalEl) totalEl.value = valApproved + valRejected;
+        };
 
-        // Auto calculation: Refugees Initial Row
-        MIG_ROOT.querySelectorAll('.refugee-row').forEach(row => {
-            row.querySelectorAll('.refugee-apps, .refugee-approved, .refugee-rejected').forEach(input => {
-                input.addEventListener('input', () => {
-                    const valApproved = parseInt(row.querySelector('.refugee-approved').value) || 0;
-                    const valRejected = parseInt(row.querySelector('.refugee-rejected').value) || 0;
-                    row.querySelector('.refugee-total').value = valApproved + valRejected;
-                });
-            });
-        });
+        const recalculateAsylumRow = (row) => {
+            if (!row) return;
+            const valApproved = parseInt(row.querySelector('.asylum-approved')?.value) || 0;
+            const valRejected = parseInt(row.querySelector('.asylum-rejected')?.value) || 0;
+            const totalEl = row.querySelector('.asylum-total');
+            if (totalEl) totalEl.value = valApproved + valRejected;
+        };
 
-        // Auto calculation: Asylum Seekers Initial Row
-        MIG_ROOT.querySelectorAll('.asylum-row').forEach(row => {
-            row.querySelectorAll('.asylum-apps, .asylum-approved, .asylum-rejected').forEach(input => {
-                input.addEventListener('input', () => {
-                    const valApproved = parseInt(row.querySelector('.asylum-approved').value) || 0;
-                    const valRejected = parseInt(row.querySelector('.asylum-rejected').value) || 0;
-                    row.querySelector('.asylum-total').value = valApproved + valRejected;
-                });
-            });
-        });
+        const recalculateAllMigration = () => {
+            recalculateStaff();
+            MIG_ROOT.querySelectorAll('.som-row').forEach(recalculateSomRow);
+            MIG_ROOT.querySelectorAll('.tip-row').forEach(recalculateTipRow);
+            MIG_ROOT.querySelectorAll('.refugee-row').forEach(recalculateRefugeeRow);
+            MIG_ROOT.querySelectorAll('.asylum-row').forEach(recalculateAsylumRow);
+        };
+
+        const handleMigrationInput = (e) => {
+            const t = e.target;
+            if (!t || !t.classList) return;
+            if (t.classList.contains('staff-male-input') || t.classList.contains('staff-female-input')) {
+                recalculateStaff();
+            } else if (t.classList.contains('som-field-input')) {
+                recalculateSomRow(t.closest('.som-row'));
+            } else if (t.classList.contains('tip-field-input')) {
+                recalculateTipRow(t.closest('.tip-row'));
+            } else if (t.classList.contains('refugee-apps') || t.classList.contains('refugee-approved') || t.classList.contains('refugee-rejected')) {
+                recalculateRefugeeRow(t.closest('.refugee-row'));
+            } else if (t.classList.contains('asylum-apps') || t.classList.contains('asylum-approved') || t.classList.contains('asylum-rejected')) {
+                recalculateAsylumRow(t.closest('.asylum-row'));
+            }
+        };
+
+        MIG_ROOT.addEventListener('input', handleMigrationInput);
+        MIG_ROOT.addEventListener('change', handleMigrationInput);
+        recalculateAllMigration();
     });
 })();
 </script>

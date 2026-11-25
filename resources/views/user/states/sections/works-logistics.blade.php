@@ -407,6 +407,7 @@ $storeItemList = $storeItemsJson['items'] ?? [];
                     <table class="nis-table" id="store-accessories-table">
                         <thead>
                             <tr>
+                                <th>Command</th>
                                 <th>Items</th>
                                 <th style="width:130px;">NO. of Qty Supplied</th>
                                 <th style="width:110px;">Qty Issues</th>
@@ -1198,9 +1199,7 @@ $storeItemList = $storeItemsJson['items'] ?? [];
         const tbody = byId(tbodyId);
         const template = rowTemplates[tbodyId];
         if (!tbody || !template) return;
-        const tr = document.createElement('tr');
-        tr.innerHTML = template(nextRowIndex(tbody)).replace(/^<tr[^>]*>|<\/tr>$/g, '');
-        tbody.appendChild(tr);
+        tbody.insertAdjacentHTML('beforeend', template(nextRowIndex(tbody)));
         const tableId = tbody.closest('table')?.id;
         if (tableId && commandTables.includes(tableId)) refreshCommandDropdowns(tableId);
         recomputeAll();
@@ -1434,12 +1433,13 @@ $storeItemList = $storeItemsJson['items'] ?? [];
     /* Recalculate on any field input. The synthetic input event the layout
        dispatches on the form after draft/edit restore targets the form itself,
        so the listener lives on the form (events bubble up, not down). */
-    if (form) {
-        form.addEventListener('input', e => {
+    const calcHost = form || ROOT;
+    if (calcHost) {
+        calcHost.addEventListener('input', e => {
             if (e.target === form) resyncAllCommandSelections();
             recomputeAll();
         });
-        form.addEventListener('change', () => recomputeAll());
+        calcHost.addEventListener('change', () => recomputeAll());
     }
 
     /* ── Preview ── */

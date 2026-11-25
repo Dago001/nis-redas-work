@@ -1307,7 +1307,7 @@
         recalcColumnTotals();
     }
 
-    document.addEventListener('input', function (e) {
+    function handleEpmsCalc(e) {
         var t = e.target;
         if (!t || !t.classList) return;
         /* A bulk input event on the form itself means a draft or a saved
@@ -1317,7 +1317,9 @@
         else if (t.classList.contains('epms-vet')) recalcVetting();
         else if (t.classList.contains('epms-sv')) recalcSpecialised();
         if (/(epms-codloc|epms-state|epms-mission|epms-comp)/.test(t.className)) recalcColumnTotals();
-    });
+    }
+    document.addEventListener('input', handleEpmsCalc);
+    document.addEventListener('change', handleEpmsCalc);
 
     /* ── Full-report preview (hooked into the shared layout via
        window.buildDirectoratePreview, invoked when the Preview tab opens) ── */

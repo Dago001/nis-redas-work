@@ -91,15 +91,19 @@
             <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
                 <div>
                     <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Press Releases Issued</label>
-                    <input type="number" class="ni" name="press_releases_issued" min="0" value="{{ old('press_releases_issued', $editing->return_data['press_releases_issued'] ?? '') }}">
+                    <input type="number" class="ni pm-media-input" name="press_releases_issued" min="0" value="{{ old('press_releases_issued', $editing->return_data['press_releases_issued'] ?? '') }}">
                 </div>
                 <div>
                     <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Media Briefings</label>
-                    <input type="number" class="ni" name="media_briefings" min="0" value="{{ old('media_briefings', $editing->return_data['media_briefings'] ?? '') }}">
+                    <input type="number" class="ni pm-media-input" name="media_briefings" min="0" value="{{ old('media_briefings', $editing->return_data['media_briefings'] ?? '') }}">
                 </div>
                 <div>
                     <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Social Media Posts</label>
-                    <input type="number" class="ni" name="social_media_posts" min="0" value="{{ old('social_media_posts', $editing->return_data['social_media_posts'] ?? '') }}">
+                    <input type="number" class="ni pm-media-input" name="social_media_posts" min="0" value="{{ old('social_media_posts', $editing->return_data['social_media_posts'] ?? '') }}">
+                </div>
+                <div>
+                    <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;color:var(--nis-700);">Total Media Engagements (Auto)</label>
+                    <input type="number" class="ni" readonly value="0" style="background:#f0fdf4;font-weight:700;color:var(--nis-800);" data-calc-sum=".pm-media-input">
                 </div>
             </div>
         </div>
@@ -117,11 +121,15 @@
             <div class="card-body" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;">
                 <div>
                     <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Enquiries Received</label>
-                    <input type="number" class="ni" name="enquiries_received" min="0" value="{{ old('enquiries_received', $editing->return_data['enquiries_received'] ?? '') }}">
+                    <input type="number" class="ni pm-enq-received" name="enquiries_received" min="0" value="{{ old('enquiries_received', $editing->return_data['enquiries_received'] ?? '') }}">
                 </div>
                 <div>
                     <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Enquiries Resolved</label>
-                    <input type="number" class="ni" name="enquiries_resolved" min="0" value="{{ old('enquiries_resolved', $editing->return_data['enquiries_resolved'] ?? '') }}">
+                    <input type="number" class="ni pm-enq-resolved" name="enquiries_resolved" min="0" value="{{ old('enquiries_resolved', $editing->return_data['enquiries_resolved'] ?? '') }}">
+                </div>
+                <div>
+                    <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;color:var(--nis-700);">Pending Enquiries (Auto)</label>
+                    <input type="number" class="ni" readonly value="0" style="background:#f0fdf4;font-weight:700;color:var(--nis-800);" data-calc-diff=".pm-enq-received|.pm-enq-resolved" data-calc-min="0">
                 </div>
                 <div style="grid-column:1/-1;">
                     <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Challenges</label>

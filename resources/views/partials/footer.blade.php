@@ -633,16 +633,18 @@
             document.getElementById("grandTotal").value = maleTotal + femaleTotal;
         }
 
-        document.addEventListener("input", function (e) {
-
+        function handleActuStaffCalc(e) {
             if (
-                e.target.classList.contains("staff-male") ||
-                e.target.classList.contains("staff-female")
+                e.target && e.target.classList && (
+                    e.target.classList.contains("staff-male") ||
+                    e.target.classList.contains("staff-female")
+                )
             ) {
                 calculateStaffStrength();
             }
-
-        });
+        }
+        document.addEventListener("input", handleActuStaffCalc);
+        document.addEventListener("change", handleActuStaffCalc);
 
         calculateStaffStrength();
 
@@ -706,13 +708,14 @@
     }
 
     document.addEventListener('input', function (e) {
-
-        if (e.target.classList.contains('case-input')) {
-
+        if (e.target && e.target.classList && e.target.classList.contains('case-input')) {
             calculateCasesMatrix();
-
         }
-
+    });
+    document.addEventListener('change', function (e) {
+        if (e.target && e.target.classList && e.target.classList.contains('case-input')) {
+            calculateCasesMatrix();
+        }
     });
 
     calculateCasesMatrix();
@@ -964,13 +967,14 @@
         }
 
         tbody.addEventListener("input", function (e) {
-
-            if (e.target.classList.contains("firearm-ammo")) {
-
+            if (e.target && e.target.classList && e.target.classList.contains("firearm-ammo")) {
                 updateTotals();
-
             }
-
+        });
+        tbody.addEventListener("change", function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains("firearm-ammo")) {
+                updateTotals();
+            }
         });
 
         tbody.addEventListener("click", function (e) {

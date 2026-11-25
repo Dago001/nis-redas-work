@@ -885,7 +885,7 @@ $rankRows = [
        on the standalone page that id does not exist, so fall back to document. */
     var INV_ROOT = document.getElementById('dir-investigation') || document;
 
-    /* ---------- Row total auto-calculation ---------- */
+    /* ---------- Row total auto-calculation (delegated) ---------- */
     function recalcRow(tr) {
         if (!tr) return;
         const totalField = tr.querySelector('.row-total');
@@ -897,11 +897,13 @@ $rankRows = [
         totalField.value = sum;
     }
 
-    INV_ROOT.querySelectorAll('.qty-input').forEach(function (input) {
-        input.addEventListener('input', function () {
-            recalcRow(input.closest('tr'));
+    function recalcAllInvestigationRows() {
+        INV_ROOT.querySelectorAll('tr').forEach(function (tr) {
+            if (tr.querySelector('.row-total') && tr.querySelector('.qty-input')) {
+                recalcRow(tr);
+            }
         });
-    });
+    }
 
     /* ---------- Staff Strength grand total ---------- */
     function recalcStaffTotals() {
@@ -915,9 +917,21 @@ $rankRows = [
         if (fEl) fEl.textContent = female;
         if (aEl) aEl.textContent = male + female;
     }
-    INV_ROOT.querySelectorAll('.staff-male, .staff-female').forEach(function (input) {
-        input.addEventListener('input', recalcStaffTotals);
-    });
+
+    function handleInvestigationCalc(e) {
+        const target = e.target;
+        if (!target) return;
+        if (target.classList && target.classList.contains('qty-input')) {
+            recalcRow(target.closest('tr'));
+        }
+        if (target.classList && (target.classList.contains('staff-male') || target.classList.contains('staff-female'))) {
+            recalcStaffTotals();
+        }
+    }
+
+    INV_ROOT.addEventListener('input', handleInvestigationCalc);
+    INV_ROOT.addEventListener('change', handleInvestigationCalc);
+    recalcAllInvestigationRows();
     recalcStaffTotals();
 
     /* ---------- Remove-row buttons (existing rows) ---------- */
@@ -925,7 +939,11 @@ $rankRows = [
         const btn = tr.querySelector('.remove-row-btn');
         if (btn && !btn.dataset.bound) {
             btn.dataset.bound = '1';
-            btn.addEventListener('click', function () { tr.remove(); });
+            btn.addEventListener('click', function () {
+                tr.remove();
+                recalcAllInvestigationRows();
+                recalcStaffTotals();
+            });
         }
     }
     INV_ROOT.querySelectorAll('#investigation-dofit-table tbody tr, #investigation-surveillance-table tbody tr, #investigation-citizenship-table tbody tr, #investigation-screening-table tbody tr, #investigation-dr-table tbody tr').forEach(bindRemove);

@@ -1193,8 +1193,11 @@ $visaStatCols = [
 
     /* Submit from preview is wired globally in the shared layout. */
 
-    /* Listen for input */
-    if (form) form.addEventListener('input', recomputeAll);
+    /* Listen for input & change */
+    if (form) {
+        form.addEventListener('input', recomputeAll);
+        form.addEventListener('change', recomputeAll);
+    }
 
     /* Let the layout's preview tab use this page-specific renderer. */
     window.buildDirectoratePreview = window.buildDirectoratePreview || buildPreview;

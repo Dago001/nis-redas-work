@@ -608,7 +608,9 @@
        after the edit-prefill script sets values via JS and dispatches a
        single bubbled 'input' event on the form itself. */
     var form = document.querySelector('main form');
-    (form || document).addEventListener('input', recalcAll);
+    var host = form || document;
+    host.addEventListener('input', recalcAll);
+    host.addEventListener('change', recalcAll);
 
     recalcAll();
 })();

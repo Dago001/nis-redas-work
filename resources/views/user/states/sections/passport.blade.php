@@ -1001,7 +1001,21 @@
         calcColSum('.calc-exec-female-adult', '#exec-total-female-adult');
         calcColSum('.calc-exec-male-minor', '#exec-total-male-minor');
 
-        // Foreign Missions Column Totals
+        // Foreign Missions Row Totals + Column Totals
+        const missionIdxs = new Set();
+        qsa('.calc-mission-month').forEach(i => {
+            const idx = i.getAttribute('data-idx');
+            if (idx !== null && idx !== '') missionIdxs.add(idx);
+        });
+        missionIdxs.forEach(idx => {
+            let rowSum = 0;
+            qsa(`.calc-mission-month[data-idx="${idx}"]`).forEach(i => {
+                rowSum += parseInt(i.value) || 0;
+            });
+            const rowTotEl = qs(`#mission-total-${idx}`);
+            if (rowTotEl) rowTotEl.value = rowSum > 0 ? rowSum : '';
+        });
+
         const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
         months.forEach(m => {
             calcColSum(`.calc-mission-month-${m}`, `#mission-total-col-${m}`);
@@ -1069,21 +1083,16 @@
     };
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Attach calculation listeners to staff and column sums
-        qsa('.calc-male, .calc-female, .calc-passport-input, .calc-exec-enrolled, .calc-exec-fresh, .calc-exec-reissue, .calc-exec-loss, .calc-exec-cod, .calc-exec-male-adult, .calc-exec-female-adult, .calc-exec-male-minor').forEach(input => {
-            input.addEventListener('input', calculateAllTotals);
+        // Delegated calculation listeners for all static and dynamically added Passport rows
+        ROOT.addEventListener('input', function(e) {
+            if (e.target && e.target.matches('input[type="number"], .calc-male, .calc-female, .calc-passport-input, .calc-mission-month')) {
+                calculateAllTotals();
+            }
         });
-
-        // Attach listeners for Foreign Missions Row Totals
-        qsa('.calc-mission-month').forEach(input => {
-            input.addEventListener('input', function() {
-                const idx = this.getAttribute('data-idx');
-                let rowSum = 0;
-                qsa(`.calc-mission-month[data-idx="${idx}"]`).forEach(i => {
-                    rowSum += parseInt(i.value) || 0;
-                });
-                qs(`#mission-total-${idx}`).value = rowSum > 0 ? rowSum : '';
-            });
+        ROOT.addEventListener('change', function(e) {
+            if (e.target && e.target.matches('input[type="number"], .calc-male, .calc-female, .calc-passport-input, .calc-mission-month')) {
+                calculateAllTotals();
+            }
         });
 
         /* "Add row" buttons (tab switching and the Preview tab are handled

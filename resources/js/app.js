@@ -802,5 +802,71 @@ document.addEventListener('click', (e) => {
     });
 })();
 
+/* Global declarative auto-calculation engine (data-calc-sum & data-calc-diff) */
+(function initGlobalAutoCalculation() {
+    function numVal(el) {
+        if (!el) return 0;
+        const n = parseFloat(el.value);
+        return Number.isFinite(n) ? n : 0;
+    }
+
+    function formatCalcResult(val) {
+        if (!Number.isFinite(val)) return '0';
+        const rounded = Math.round(val * 100) / 100;
+        return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+    }
+
+    function scopeFor(el) {
+        return el.closest('.redas-dir-panel, .directorate-panel, form') || document;
+    }
+
+    function setOutput(target, val) {
+        const formatted = formatCalcResult(val);
+        if ('value' in target) {
+            target.value = formatted;
+        } else {
+            target.textContent = formatted;
+        }
+    }
+
+    function recomputeDeclarativeTargets(root) {
+        const ctx = root || document;
+
+        ctx.querySelectorAll('[data-calc-sum]').forEach((target) => {
+            const selector = target.getAttribute('data-calc-sum');
+            if (!selector) return;
+            const scope = scopeFor(target);
+            let sum = 0;
+            scope.querySelectorAll(selector).forEach((inp) => {
+                if (inp !== target) sum += numVal(inp);
+            });
+            setOutput(target, sum);
+        });
+
+        ctx.querySelectorAll('[data-calc-diff]').forEach((target) => {
+            const expr = target.getAttribute('data-calc-diff');
+            if (!expr || !expr.includes('|')) return;
+            const [leftSel, rightSel] = expr.split('|').map((s) => s.trim());
+            const scope = scopeFor(target);
+            let left = 0;
+            let right = 0;
+            if (leftSel) scope.querySelectorAll(leftSel).forEach((inp) => { if (inp !== target) left += numVal(inp); });
+            if (rightSel) scope.querySelectorAll(rightSel).forEach((inp) => { if (inp !== target) right += numVal(inp); });
+            let result = left - right;
+            const minAttr = target.getAttribute('data-calc-min');
+            if (minAttr !== null && minAttr !== '') {
+                const minVal = parseFloat(minAttr);
+                if (Number.isFinite(minVal) && result < minVal) result = minVal;
+            }
+            setOutput(target, result);
+        });
+    }
+
+    const onCalcEvent = () => recomputeDeclarativeTargets(document);
+    document.addEventListener('input', onCalcEvent);
+    document.addEventListener('change', onCalcEvent);
+    document.addEventListener('DOMContentLoaded', onCalcEvent);
+})();
+
 /* Export for inline scripts */
 window.REDAS = { showToast, animateCounter };

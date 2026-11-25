@@ -2143,7 +2143,7 @@ $lastSection = $category['section'];
      * Auto Calculate on Input (consolidated)
      **************************************************************************/
 
-    document.addEventListener("input", function (e) {
+    function handleBorderCalcEvent(e) {
 
         if (!inScope(e.target)) return;
 
@@ -2184,7 +2184,10 @@ $lastSection = $category['section'];
             );
         }
 
-    });
+    }
+
+    document.addEventListener("input", handleBorderCalcEvent);
+    document.addEventListener("change", handleBorderCalcEvent);
 
     /**************************************************************************
      * Staff Strenght
