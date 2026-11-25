@@ -1782,35 +1782,86 @@ body.auth-page {
     border-radius: var(--radius-sm);
 }
 
-/* ─── Pagination (Bootstrap 5 NIS Theme) ─── */
-nav .pagination {
-    margin-bottom: 0;
-    gap: 4px;
+/* ─── Pagination (NIS-REDAS Native Horizontal Bar) ─── */
+.redas-pagination-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    width: 100%;
 }
 
-.pagination .page-link {
-    color: var(--gray-700);
-    border-color: var(--gray-200);
-    border-radius: var(--radius-sm);
+.redas-pagination-summary {
     font-size: 0.82rem;
-    padding: 5px 11px;
-    line-height: 1.4;
+    color: var(--gray-500);
 }
 
-.pagination .page-link:hover {
-    color: var(--nis-700);
-    background: var(--nis-50);
-    border-color: var(--nis-200);
+.redas-pagination-summary strong {
+    color: var(--gray-700);
+    font-weight: 600;
 }
 
-.pagination .page-item.active .page-link {
-    background-color: var(--nis-700);
-    border-color: var(--nis-700);
-    color: #fff;
+.redas-pagination-list {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-.pagination .page-item.disabled .page-link {
-    color: var(--gray-400);
-    background: #fff;
+.redas-page-item {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.redas-page-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 11px;
+    border: 1px solid var(--gray-200);
+    border-radius: 7px;
+    background: #ffffff;
+    color: var(--gray-700);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    cursor: pointer;
+}
+
+a.redas-page-link:hover {
+    background: var(--nis-50, #f0fdf4);
+    border-color: var(--nis-300, #86efac);
+    color: var(--nis-700, #006633);
+    text-decoration: none;
+}
+
+.redas-page-item.active .redas-page-link {
+    background: var(--nis-700, #006633);
+    border-color: var(--nis-700, #006633);
+    color: #ffffff;
+    font-weight: 600;
+    cursor: default;
+}
+
+.redas-page-item.disabled .redas-page-link {
+    background: #f8fafc;
     border-color: var(--gray-200);
+    color: var(--gray-400);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.redas-page-link.redas-page-dots {
+    border-color: transparent;
+    background: transparent;
+    min-width: 24px;
+    padding: 0 4px;
 }

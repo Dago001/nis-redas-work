@@ -147,7 +147,7 @@
             </div>
             @if($submissions->hasPages())
             <div class="card-body" style="border-top:1px solid var(--gray-100);">
-                {{ $submissions->links('pagination::bootstrap-5') }}
+                {{ $submissions->links() }}
             </div>
             @endif
         </div>

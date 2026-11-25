@@ -37,7 +37,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
-        Paginator::useBootstrapFive();
+        Paginator::defaultView('vendor.pagination.nis-redas');
+        Paginator::defaultSimpleView('vendor.pagination.nis-redas');
 
         if ($this->app->environment('production') && ! $this->app->runningInConsole()) {
             JwtService::assertConfigured();

@@ -216,7 +216,7 @@
 
         @if($items->hasPages())
         <div class="d-flex justify-content-center p-3">
-            {{ $items->links('pagination::bootstrap-5') }}
+            {{ $items->links() }}
         </div>
         @endif
     </section>
