@@ -111,6 +111,8 @@ class PageSmokeTest extends TestCase
                 "Super Admin sidebar route [{$routeName}] returned {$response->getStatusCode()} instead of 200."
             );
             $response->assertSee('Super Admin Console');
+            $response->assertSee('saNotifDot');
+            $response->assertDontSee('ICT Admin');
         }
 
         // Verify Super Admin can create a new user with 5-digit Service No and strong password

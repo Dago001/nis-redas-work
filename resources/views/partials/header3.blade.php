@@ -137,6 +137,9 @@
 <div class="redas-main" id="redasMain">
 
     <!-- ─── Topbar ─── -->
+    @if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
+        @include('super-admin.topbar')
+    @else
     <header class="redas-topbar">
         <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
             <i class="fas fa-bars"></i>
@@ -217,3 +220,4 @@
             </div>
         </div>
     </header>
+    @endif
