@@ -1,18 +1,9 @@
 @auth
 @php
     $navUser = auth()->user();
-    $homeUrl = match ($navUser->role) {
-        'super_admin' => route('superadmin.dashboard'),
-        'admin', 'hq_admin' => route('admin.dashboard'),
-        'zonal_commander' => url('/zonal/dashboard'),
-        'desk_admin', 'directorate_admin' => url('/desk-admin/dashboard'),
-        'directorate' => route('user.directorates.dashboard'),
-        'cgis_unit' => route('user.cgis-units.dashboard'),
-        default => route('user.dashboard'),
-    };
-    $isPrsViewer = in_array($navUser->role, ['super_admin', 'admin', 'hq_admin'], true)
-        || ($navUser->role === 'directorate_admin' && strtolower((string) $navUser->assigned_directorate_code) === 'prs');
-    $canConsolidate = in_array($navUser->role, ['zonal_commander', 'directorate_admin'], true);
+    $homeUrl = $navUser->dashboardUrl();
+    $isPrsViewer = \App\Services\ReportAccess::isPrsViewer($navUser);
+    $canConsolidate = \App\Services\ReportAccess::canManageConsolidated($navUser);
 @endphp
 <nav class="redas-mobile-bottom-nav" aria-label="Mobile navigation">
     <a href="{{ $homeUrl }}" class="redas-mobile-nav-item {{ request()->is('*dashboard') ? 'active' : '' }}">

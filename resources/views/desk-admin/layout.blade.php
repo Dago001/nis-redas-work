@@ -16,38 +16,48 @@
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+@php
+    $deskUser = auth()->user();
+    $deskCat = $deskUser?->user_category;
+    $isZonal = $deskCat === 'zonal_commander';
+    $homeRoute = $deskUser ? $deskUser->dashboardUrl() : route('user.desk.home');
+    $portalSub = match ($deskCat) {
+        'zonal_commander' => 'Zonal Command Portal',
+        'directorate_admin' => 'Directorate Admin Portal',
+        'cgis_desk_admin' => 'CGIS Desk Admin Portal',
+        default => 'Desk Admin Portal',
+    };
+    $menuLabel = match ($deskCat) {
+        'zonal_commander' => 'Zonal Command Menu',
+        'directorate_admin' => 'Directorate Admin Menu',
+        'cgis_desk_admin' => 'CGIS Desk Menu',
+        default => 'Desk Admin Menu',
+    };
+    $breadcrumbTitle = match ($deskCat) {
+        'zonal_commander' => 'Zonal Command Dashboard',
+        'directorate_admin' => 'Directorate Admin Dashboard',
+        'cgis_desk_admin' => 'CGIS Desk Admin Dashboard',
+        default => 'Desk Admin Dashboard',
+    };
+    $reportsRoute = $isZonal ? route('user.reports') : route('desk.admin.reports');
+    $reportsActive = $isZonal ? request()->routeIs('user.reports*') : request()->routeIs('desk.admin.reports');
+@endphp
 <aside class="redas-sidebar" id="redasSidebar">
-    <a href="{{ route('user.desk.home') }}" class="sidebar-brand">
+    <a href="{{ $homeRoute }}" class="sidebar-brand">
         <img src="{{ asset('assets/images/nis.png') }}" alt="NIS" class="sidebar-brand-logo">
         <div class="sidebar-brand-text">
             <span class="sidebar-brand-title">NIS&nbsp;REDAS</span>
-            <span class="sidebar-brand-sub">Desk Admin Portal</span>
+            <span class="sidebar-brand-sub">{{ $portalSub }}</span>
         </div>
     </a>
 
     <nav class="sidebar-nav">
-        <div class="sidebar-section-label">Desk Admin Menu</div>
-        <a href="{{ route('user.desk.home') }}" class="sidebar-link {{ request()->routeIs('user.desk.home') ? 'active' : '' }}">
+        <div class="sidebar-section-label">{{ $menuLabel }}</div>
+        <a href="{{ $homeRoute }}" class="sidebar-link {{ request()->routeIs('user.desk.home', 'user.zonal.home') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-th-large"></i></span>
             <span class="link-text">Review Dashboard</span>
         </a>
-        <a href="{{ route('desk.admin.reports') }}" class="sidebar-link {{ request()->routeIs('desk.admin.reports') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-file-export"></i></span>
-            <span class="link-text">Report Generation</span>
-        </a>
-        <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-archive"></i></span>
-            <span class="link-text">Archived Documents</span>
-        </a>
-        <a href="{{ route('user.submissions') }}" class="sidebar-link {{ request()->is('user/submissions') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-inbox"></i></span>
-            <span class="link-text">Officer Submissions</span>
-        </a>
-        <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-bell"></i></span>
-            <span class="link-text">Notifications</span>
-        </a>
-        @if(in_array(auth()->user()?->user_category, ['zonal_commander', 'directorate_admin'], true))
+        @if(in_array($deskCat, ['zonal_commander', 'directorate_admin'], true))
         <a href="{{ route('consolidated.index') }}" class="sidebar-link {{ request()->routeIs('consolidated.*') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-layer-group"></i></span>
             <span class="link-text">Consolidated Reports</span>
@@ -59,6 +69,18 @@
             <span class="link-text">PRS Reporting</span>
         </a>
         @endcan
+        <a href="{{ $reportsRoute }}" class="sidebar-link {{ $reportsActive ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-file-export"></i></span>
+            <span class="link-text">Report Generation</span>
+        </a>
+        <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-archive"></i></span>
+            <span class="link-text">Archived Documents</span>
+        </a>
+        <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-bell"></i></span>
+            <span class="link-text">Notifications</span>
+        </a>
     </nav>
 </aside>
 
@@ -68,7 +90,7 @@
         <div class="topbar-breadcrumb">
             <span>NIS-REDAS</span>
             <span class="separator"><i class="fas fa-chevron-right" style="font-size:.6rem;"></i></span>
-            <a href="{{ route('user.desk.home') }}" style="color:var(--gray-500);text-decoration:none;">Desk Admin Dashboard</a>
+            <a href="{{ $homeRoute }}" style="color:var(--gray-500);text-decoration:none;">{{ $breadcrumbTitle }}</a>
         </div>
         <div class="topbar-right">
             <div style="position:relative;">
@@ -113,6 +135,5 @@
     @yield('content')
 
     @include('partials.footer')
-</div>
 </body>
 </html>

@@ -1,4 +1,5 @@
 @include('partials.header')
+@php $dashUrl = $user->dashboardUrl(); @endphp
 
 <main class="redas-content" style="max-width:720px;margin:32px auto;padding:0 16px;">
     <div class="page-header">
@@ -6,8 +7,8 @@
             <h1 class="page-title">Profile</h1>
             <p class="page-subtitle">Update your password. Your user details cannot be changed here.</p>
         </div>
-        <a href="{{ url()->previous() ?? route('user.dashboard') }}" class="btn-nis btn-ghost">
-            <i class="fas fa-arrow-left"></i> Back
+        <a href="{{ $dashUrl }}" class="btn-nis btn-ghost">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
         </a>
     </div>
 
@@ -15,17 +16,6 @@
         <div class="alert alert-success" style="margin-bottom:16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
             <span><i class="fas fa-check-circle me-1"></i> {{ session('status') }}</span>
             @if(! $user->must_change_password)
-                @php
-                    $dashUrl = match ($user->role) {
-                        'super_admin' => route('superadmin.dashboard'),
-                        'admin', 'hq_admin' => route('admin.dashboard'),
-                        'zonal_commander' => url('/zonal/dashboard'),
-                        'desk_admin', 'directorate_admin' => url('/desk-admin/dashboard'),
-                        'directorate' => route('user.directorates.dashboard'),
-                        'cgis_unit' => route('user.cgis-units.dashboard'),
-                        default => route('user.dashboard'),
-                    };
-                @endphp
                 <a href="{{ $dashUrl }}" class="btn-nis btn-primary-nis btn-sm">
                     Continue to Dashboard <i class="fas fa-arrow-right ms-1"></i>
                 </a>

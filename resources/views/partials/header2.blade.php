@@ -18,61 +18,53 @@
 
 <!-- ════════════════════ SIDEBAR ════════════════════ -->
 <aside class="redas-sidebar" id="redasSidebar">
-    <a href="{{ route('supervisor.dashboard') }}" class="sidebar-brand">
+    @php
+        $supUser = auth()->user();
+        $supIsZonal = $supUser?->user_category === 'zonal_commander';
+        $supHome = $supUser ? $supUser->dashboardUrl() : route('user.desk.home');
+    @endphp
+    <a href="{{ $supHome }}" class="sidebar-brand">
         <img src="{{ asset('assets/images/nis.png') }}" alt="NIS" class="sidebar-brand-logo">
         <div class="sidebar-brand-text">
             <span class="sidebar-brand-title">NIS&nbsp;REDAS</span>
-            <span class="sidebar-brand-sub">Supervisor Portal</span>
+            <span class="sidebar-brand-sub">{{ $supIsZonal ? 'Zonal Command Portal' : 'Supervisor Portal' }}</span>
         </div>
     </a>
 
     <nav class="sidebar-nav">
         <div class="sidebar-section-label">Main Menu</div>
 
-        <a href="{{ route('supervisor.dashboard') }}" class="sidebar-link active">
+        <a href="{{ $supHome }}" class="sidebar-link {{ request()->routeIs('user.desk.home', 'user.zonal.home', 'supervisor.dashboard*') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
-            <span class="link-text">Dashboard</span>
+            <span class="link-text">Review Dashboard</span>
         </a>
 
-        <a href="{{ url('/supervisor/approvals') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-tasks"></i></span>
-            <span class="link-text">Pending Approvals</span>
-            <span class="link-badge danger">5</span>
+        @if($supIsZonal)
+        <a href="{{ route('consolidated.index') }}" class="sidebar-link {{ request()->routeIs('consolidated.*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-layer-group"></i></span>
+            <span class="link-text">Consolidated Reports</span>
         </a>
+        @endif
 
-        <a href="{{ url('/supervisor/formations') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-map-marker-alt"></i></span>
-            <span class="link-text">Formation Status</span>
-        </a>
-
-        <a href="{{ url('/supervisor/reports') }}" class="sidebar-link">
+        <a href="{{ $supIsZonal ? route('user.reports') : route('desk.admin.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*', 'desk.admin.reports') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-chart-bar"></i></span>
-            <span class="link-text">Zone Analytics</span>
+            <span class="link-text">Reports</span>
         </a>
 
-        <a href="{{ url('/supervisor/notifications') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-bell"></i></span>
-            <span class="link-text">Notifications</span>
-            <span class="link-badge">3</span>
-        </a>
-
-        <hr class="sidebar-divider">
-        <div class="sidebar-section-label">Management</div>
-
-        <a href="{{ url('/supervisor/archive') }}" class="sidebar-link">
+        <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-archive"></i></span>
             <span class="link-text">Document Archive</span>
         </a>
 
-        <a href="{{ url('/supervisor/officers') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-users"></i></span>
-            <span class="link-text">Formation Officers</span>
+        <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-bell"></i></span>
+            <span class="link-text">Notifications</span>
         </a>
 
         <hr class="sidebar-divider">
         <div class="sidebar-section-label">Account</div>
 
-        <a href="{{ url('/supervisor/profile') }}" class="sidebar-link">
+        <a href="{{ route('user.profile') }}" class="sidebar-link {{ request()->routeIs('user.profile') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-user-cog"></i></span>
             <span class="link-text">Profile Settings</span>
         </a>

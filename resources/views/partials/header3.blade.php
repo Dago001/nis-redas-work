@@ -30,82 +30,83 @@
     </a>
 
     <nav class="sidebar-nav">
-        <div class="sidebar-section-label">Overview</div>
+        <div class="sidebar-section-label">Headquarters Menu</div>
 
-        <a href="{{ route('admin.dashboard') }}" class="sidebar-link active">
-            <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
-            <span class="link-text">Nationwide Dashboard</span>
+        <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-th-large"></i></span>
+            <span class="link-text">Dashboard</span>
         </a>
 
-        <a href="{{ url('/admin/analytics') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-chart-area"></i></span>
-            <span class="link-text">Analytics &amp; Reports</span>
+        <a href="{{ route('admin.hq.returns') }}" class="sidebar-link {{ request()->routeIs('admin.hq.returns*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-folder-open"></i></span>
+            <span class="link-text">All Returns</span>
         </a>
 
-        <a href="{{ url('/admin/formations') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-map-marker-alt"></i></span>
-            <span class="link-text">All Formations</span>
+        <a href="{{ route('admin.hq.archive') }}" class="sidebar-link {{ request()->routeIs('admin.hq.archive') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-archive"></i></span>
+            <span class="link-text">Archive</span>
         </a>
 
-        <hr class="sidebar-divider">
-        <div class="sidebar-section-label">Directorates</div>
-
-        @foreach([
-            ['/admin/directorates/hrm',    'fas fa-user-tie',       'Human Resources (HRM)'],
-            ['/admin/directorates/fa',     'fas fa-coins',          'Finance &amp; Accounts'],
-            ['/admin/directorates/bm',     'fas fa-border-all',     'Border Management'],
-            ['/admin/directorates/mg',     'fas fa-plane',          'Migration'],
-            ['/admin/directorates/potd',   'fas fa-passport',       'Passport &amp; OTD'],
-            ['/admin/directorates/vr',     'fas fa-stamp',          'Visa &amp; Residency'],
-            ['/admin/directorates/prs',    'fas fa-chart-bar',      'Planning &amp; Research'],
-            ['/admin/directorates/ic',     'fas fa-search',         'Investigation &amp; Compliance'],
-            ['/admin/directorates/ict',    'fas fa-server',         'ICT / CyberSecurity'],
-            ['/admin/directorates/wl',     'fas fa-tools',          'Works &amp; Logistics'],
-        ] as [$url, $icon, $label])
-        <a href="{{ url($url) }}" class="sidebar-link">
-            <span class="link-icon"><i class="{{ $icon }}"></i></span>
-            <span class="link-text">{!! $label !!}</span>
+        <a href="{{ route('admin.hq.analytics') }}" class="sidebar-link {{ request()->routeIs('admin.hq.analytics') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-chart-pie"></i></span>
+            <span class="link-text">Analytics</span>
         </a>
-        @endforeach
+
+        <a href="{{ route('admin.hq.reports') }}" class="sidebar-link {{ request()->routeIs('admin.hq.reports*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-file-excel"></i></span>
+            <span class="link-text">Report Generation</span>
+        </a>
+
+        <a href="{{ route('admin.consolidation') }}" class="sidebar-link {{ request()->routeIs('admin.consolidation') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-layer-group"></i></span>
+            <span class="link-text">Consolidation</span>
+        </a>
+
+        @can('viewPrsDashboard')
+        <a href="{{ route('prs.dashboard') }}" class="sidebar-link {{ request()->routeIs('prs.*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-chart-line"></i></span>
+            <span class="link-text">PRS Reporting</span>
+        </a>
+        @endcan
+
+        @if(auth()->user()?->user_category === 'hq_admin')
+        <a href="{{ route('admin.consolidated.index') }}" class="sidebar-link {{ request()->routeIs('admin.consolidated.*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-file-signature"></i></span>
+            <span class="link-text">Consolidated Approvals</span>
+        </a>
+
+        <a href="{{ route('admin.submissions') }}" class="sidebar-link {{ request()->routeIs('admin.submissions') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-clipboard-check"></i></span>
+            <span class="link-text">Review Queue</span>
+        </a>
 
         <hr class="sidebar-divider">
         <div class="sidebar-section-label">Administration</div>
 
-        <a href="{{ url('/admin/users') }}" class="sidebar-link">
+        <a href="{{ route('admin.users') }}" class="sidebar-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-users-cog"></i></span>
             <span class="link-text">User Management</span>
-            <span class="link-badge info">142</span>
         </a>
 
-        <a href="{{ url('/admin/archive') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-archive"></i></span>
-            <span class="link-text">Document Archive</span>
-        </a>
-
-        <a href="{{ route('admin.audit-log.index') }}" class="sidebar-link">
+        <a href="{{ route('admin.audit-log.index') }}" class="sidebar-link {{ request()->routeIs('admin.audit-log*') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-shield-alt"></i></span>
             <span class="link-text">Audit Log</span>
         </a>
 
-        <a href="{{ url('/admin/notifications') }}" class="sidebar-link">
+        <a href="{{ route('admin.settings.index') }}" class="sidebar-link {{ request()->routeIs('admin.settings*') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-gear"></i></span>
+            <span class="link-text">Settings</span>
+        </a>
+        @endif
+
+        <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-bell"></i></span>
             <span class="link-text">Notifications</span>
-            <span class="link-badge">7</span>
-        </a>
-
-        <a href="{{ url('/admin/system') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-heartbeat"></i></span>
-            <span class="link-text">System Health</span>
-        </a>
-
-        <a href="{{ route('admin.settings.index') }}" class="sidebar-link">
-            <span class="link-icon"><i class="fas fa-cog"></i></span>
-            <span class="link-text">System Settings</span>
         </a>
 
         <hr class="sidebar-divider">
 
-        <a href="{{ url('/admin/profile') }}" class="sidebar-link">
+        <a href="{{ route('user.profile') }}" class="sidebar-link {{ request()->routeIs('user.profile') ? 'active' : '' }}">
             <span class="link-icon"><i class="fas fa-user-cog"></i></span>
             <span class="link-text">Profile Settings</span>
         </a>

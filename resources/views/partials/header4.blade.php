@@ -89,6 +89,21 @@
                 </a>
             @endif
 
+            <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-archive"></i></span>
+                <span class="link-text">Archived Documents</span>
+            </a>
+
+            <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-export"></i></span>
+                <span class="link-text">Generate Report</span>
+            </a>
+
+            <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-bell"></i></span>
+                <span class="link-text">Notifications</span>
+            </a>
+
             {{-- @foreach($cgisUnits as $slug => $unit)
                 <a href="{{ route('user.cgis-units.show', ['slug' => $slug]) }}" class="sidebar-link {{ request()->routeIs('user.cgis-units.show') && request()->route('slug') === $slug ? 'active' : '' }}">
                     <span class="link-icon"><i class="{{ $unit['icon'] }}"></i></span>
@@ -97,27 +112,23 @@
             @endforeach --}}
 
         @else
-            <div class="sidebar-section-label">{{ in_array($user?->user_category, ['desk_admin', 'directorate_admin']) ? 'Desk Admin Menu' : 'Main Menu' }}</div>
+            <div class="sidebar-section-label">{{ in_array($user?->user_category, ['desk_admin', 'directorate_admin', 'cgis_desk_admin']) ? 'Desk Admin Menu' : ($user?->user_category === 'zonal_commander' ? 'Zonal Command Menu' : 'Main Menu') }}</div>
 
-            @if(in_array($user?->user_category, ['desk_admin', 'directorate_admin']))
-                <a href="{{ route('user.desk.home') }}" class="sidebar-link {{ request()->routeIs('user.desk.home') ? 'active' : '' }}">
+            @if(in_array($user?->user_category, ['desk_admin', 'directorate_admin', 'cgis_desk_admin', 'zonal_commander']))
+                @php $isZonalHdr4 = $user?->user_category === 'zonal_commander'; @endphp
+                <a href="{{ $user->dashboardUrl() }}" class="sidebar-link {{ request()->routeIs('user.desk.home', 'user.zonal.home') ? 'active' : '' }}">
                     <span class="link-icon"><i class="fas fa-th-large"></i></span>
                     <span class="link-text">Review Dashboard</span>
                 </a>
 
-                <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports') ? 'active' : '' }}">
+                <a href="{{ $isZonalHdr4 ? route('user.reports') : route('desk.admin.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*', 'desk.admin.reports') ? 'active' : '' }}">
                     <span class="link-icon"><i class="fas fa-file-export"></i></span>
-                    <span class="link-text">Cumulative Reports</span>
+                    <span class="link-text">Report Generation</span>
                 </a>
 
-                <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive') ? 'active' : '' }}">
+                <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
                     <span class="link-icon"><i class="fas fa-archive"></i></span>
                     <span class="link-text">Archived Documents</span>
-                </a>
-
-                <a href="{{ route('user.submissions') }}" class="sidebar-link {{ request()->is('user/submissions') ? 'active' : '' }}">
-                    <span class="link-icon"><i class="fas fa-inbox"></i></span>
-                    <span class="link-text">Officer Submissions</span>
                 </a>
 
                 <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
@@ -125,7 +136,7 @@
                     <span class="link-text">Notifications</span>
                 </a>
             @else
-                @if($user?->role === 'directorate')
+                @if($user?->user_category === 'directorate_user')
                     <a href="{{ route('user.directorates.dashboard') }}" class="sidebar-link {{ request()->routeIs('user.directorates.dashboard') ? 'active' : '' }}">
                         <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
                         <span class="link-text">Dashboard</span>
@@ -152,21 +163,19 @@
                     <a href="{{ route('user.submissions') }}" class="sidebar-link {{ request()->is('user/submissions') ? 'active' : '' }}">
                         <span class="link-icon"><i class="fas fa-inbox"></i></span>
                         <span class="link-text">My Submissions</span>
-                        <span class="link-badge">3</span>
                     </a>
 
                     <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
                         <span class="link-icon"><i class="fas fa-bell"></i></span>
                         <span class="link-text">Notifications</span>
-                        <span class="link-badge danger">2</span>
                     </a>
 
-                    <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive') ? 'active' : '' }}">
+                    <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
                         <span class="link-icon"><i class="fas fa-archive"></i></span>
                         <span class="link-text">Archive</span>
                     </a>
 
-                    <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports') ? 'active' : '' }}">
+                    <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*') ? 'active' : '' }}">
                         <span class="link-icon"><i class="fas fa-file-export"></i></span>
                         <span class="link-text">Generate Report</span>
                     </a>

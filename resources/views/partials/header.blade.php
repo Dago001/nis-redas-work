@@ -25,21 +25,22 @@
 
     <!-- Brand -->
     @php
-        $brandRoute = route('user.dashboard');
-        $brandText = 'State Officer Portal';
-
-        if (in_array(auth()->user()?->user_category, ['desk_admin', 'directorate_admin'])) {
-            $brandRoute = route('user.desk.home');
-            $brandText = auth()->user()?->user_category === 'directorate_admin'
-                ? 'Directorate Admin Portal'
-                : 'Desk Admin Portal';
-        } elseif (auth()->user()?->user_category === 'zonal_commander') {
-            $brandRoute = route('user.zonal.home');
-            $brandText = 'Zonal Command Portal';
-        } elseif (auth()->user()?->role === 'directorate') {
-            $brandRoute = route('user.directorates.dashboard');
-            $brandText = 'Directorate Portal';
-        }
+        $hdrUser = auth()->user();
+        $hdrCat = $hdrUser?->user_category;
+        $brandRoute = $hdrUser ? $hdrUser->dashboardUrl() : route('user.dashboard');
+        $brandText = match ($hdrCat) {
+            'admin', 'hq_admin' => 'HQ Admin Portal',
+            'zonal_commander' => 'Zonal Command Portal',
+            'directorate_admin' => 'Directorate Admin Portal',
+            'cgis_desk_admin' => 'CGIS Desk Admin Portal',
+            'desk_admin' => 'Desk Admin Portal',
+            'directorate_user' => 'Directorate Portal',
+            'cgis_unit_user' => 'CGIS Unit Portal',
+            default => 'State Officer Portal',
+        };
+        $isDeskGroup = in_array($hdrCat, ['desk_admin', 'directorate_admin', 'cgis_desk_admin'], true);
+        $isZonalGroup = $hdrCat === 'zonal_commander';
+        $isHqGroup = in_array($hdrCat, ['hq_admin', 'admin'], true);
     @endphp
 
     <a href="{{ $brandRoute }}" class="sidebar-brand">
@@ -52,84 +53,142 @@
 
     <!-- Navigation -->
     <nav class="sidebar-nav">
-        <div class="sidebar-section-label">{{ in_array(auth()->user()?->user_category, ['desk_admin', 'directorate_admin']) ? 'Desk Admin Menu' : 'Main Menu' }}</div>
-
-        @if(in_array(auth()->user()?->user_category, ['desk_admin', 'directorate_admin']))
-        <a href="{{ route('user.desk.home') }}" class="sidebar-link {{ request()->routeIs('user.desk.home') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-th-large"></i></span>
-            <span class="link-text">Review Dashboard</span>
-        </a>
-
-        <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-file-export"></i></span>
-            <span class="link-text">Cumulative Reports</span>
-        </a>
-
-        <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-archive"></i></span>
-            <span class="link-text">Archived Documents</span>
-        </a>
-
-        <a href="{{ route('user.submissions') }}" class="sidebar-link {{ request()->is('user/submissions') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-inbox"></i></span>
-            <span class="link-text">Officer Submissions</span>
-        </a>
-
-        <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-bell"></i></span>
-            <span class="link-text">Notifications</span>
-        </a>
-
+        @if($isHqGroup)
+            <div class="sidebar-section-label">Headquarters Menu</div>
+            <a href="{{ route('admin.dashboard') }}" class="sidebar-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-th-large"></i></span>
+                <span class="link-text">Dashboard</span>
+            </a>
+            <a href="{{ route('admin.hq.returns') }}" class="sidebar-link {{ request()->routeIs('admin.hq.returns*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-folder-open"></i></span>
+                <span class="link-text">All Returns</span>
+            </a>
+            <a href="{{ route('admin.hq.archive') }}" class="sidebar-link {{ request()->routeIs('admin.hq.archive') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-archive"></i></span>
+                <span class="link-text">Archive</span>
+            </a>
+            <a href="{{ route('admin.hq.reports') }}" class="sidebar-link {{ request()->routeIs('admin.hq.reports*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-excel"></i></span>
+                <span class="link-text">Report Generation</span>
+            </a>
+            @if($hdrCat === 'hq_admin')
+            <a href="{{ route('admin.users') }}" class="sidebar-link {{ request()->routeIs('admin.users*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-users-gear"></i></span>
+                <span class="link-text">User Management</span>
+            </a>
+            <a href="{{ route('admin.audit-log.index') }}" class="sidebar-link {{ request()->routeIs('admin.audit-log*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-clipboard-list"></i></span>
+                <span class="link-text">Audit Log</span>
+            </a>
+            @endif
+        @elseif($isDeskGroup || $isZonalGroup)
+            <div class="sidebar-section-label">{{ $isZonalGroup ? 'Zonal Command Menu' : 'Desk Admin Menu' }}</div>
+            <a href="{{ $brandRoute }}" class="sidebar-link {{ request()->routeIs('user.desk.home', 'user.zonal.home') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-th-large"></i></span>
+                <span class="link-text">Review Dashboard</span>
+            </a>
+            @if(in_array($hdrCat, ['zonal_commander', 'directorate_admin'], true))
+            <a href="{{ route('consolidated.index') }}" class="sidebar-link {{ request()->routeIs('consolidated.*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-layer-group"></i></span>
+                <span class="link-text">Consolidated Reports</span>
+            </a>
+            @endif
+            @can('viewPrsDashboard')
+            <a href="{{ route('prs.dashboard') }}" class="sidebar-link {{ request()->routeIs('prs.*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-chart-line"></i></span>
+                <span class="link-text">PRS Reporting</span>
+            </a>
+            @endcan
+            <a href="{{ $isZonalGroup ? route('user.reports') : route('desk.admin.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*', 'desk.admin.reports') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-export"></i></span>
+                <span class="link-text">Report Generation</span>
+            </a>
+            <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-archive"></i></span>
+                <span class="link-text">Archived Documents</span>
+            </a>
+            <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-bell"></i></span>
+                <span class="link-text">Notifications</span>
+            </a>
+        @elseif($hdrCat === 'directorate_user')
+            <div class="sidebar-section-label">Directorate Menu</div>
+            <a href="{{ route('user.directorates.dashboard') }}" class="sidebar-link {{ request()->routeIs('user.directorates.dashboard') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
+                <span class="link-text">Dashboard</span>
+            </a>
+            @php $userDirectorateSlug = $hdrUser?->directorateSlug(); @endphp
+            @if($userDirectorateSlug)
+            <a href="{{ route('user.directorates.show', ['slug' => $userDirectorateSlug]) }}" class="sidebar-link {{ request()->routeIs('user.directorates.show') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-signature"></i></span>
+                <span class="link-text">Submit Return</span>
+            </a>
+            @endif
+            <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-archive"></i></span>
+                <span class="link-text">Archived Documents</span>
+            </a>
+            <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-export"></i></span>
+                <span class="link-text">Generate Report</span>
+            </a>
+            <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-bell"></i></span>
+                <span class="link-text">Notifications</span>
+            </a>
+        @elseif($hdrCat === 'cgis_unit_user')
+            <div class="sidebar-section-label">CGIS Unit Menu</div>
+            <a href="{{ route('user.cgis-units.dashboard') }}" class="sidebar-link {{ request()->routeIs('user.cgis-units.dashboard') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
+                <span class="link-text">Dashboard</span>
+            </a>
+            @php $userCgisSlug = $hdrUser?->cgisUnitSlug(); @endphp
+            @if($userCgisSlug)
+            <a href="{{ route('user.cgis-units.show', ['slug' => $userCgisSlug]) }}" class="sidebar-link {{ request()->routeIs('user.cgis-units.show') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-signature"></i></span>
+                <span class="link-text">My Unit Return</span>
+            </a>
+            @endif
+            <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-archive"></i></span>
+                <span class="link-text">Archived Documents</span>
+            </a>
+            <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-export"></i></span>
+                <span class="link-text">Generate Report</span>
+            </a>
+            <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-bell"></i></span>
+                <span class="link-text">Notifications</span>
+            </a>
         @else
-        @if(auth()->user()?->role === 'directorate')
-        {{-- Directorate user: only directorate pages --}}
-        <a href="{{ route('user.directorates.dashboard') }}" class="sidebar-link {{ request()->routeIs('user.directorates.dashboard') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
-            <span class="link-text">Dashboard</span>
-        </a>
-
-        @php $userDirectorateSlug = auth()->user()?->directorateSlug(); @endphp
-        @if($userDirectorateSlug)
-        <a href="{{ route('user.directorates.show', ['slug' => $userDirectorateSlug]) }}" class="sidebar-link {{ request()->routeIs('user.directorates.show') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-file-signature"></i></span>
-            <span class="link-text">Submit Return</span>
-        </a>
+            <div class="sidebar-section-label">Main Menu</div>
+            <a href="{{ route('user.dashboard') }}" class="sidebar-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
+                <span class="link-text">Dashboard</span>
+            </a>
+            <a href="{{ route('user.returns.create') }}" class="sidebar-link {{ request()->is('user/returns/create') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-plus-circle"></i></span>
+                <span class="link-text">Submit New Return</span>
+            </a>
+            <a href="{{ route('user.submissions') }}" class="sidebar-link {{ request()->is('user/submissions') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-inbox"></i></span>
+                <span class="link-text">My Submissions</span>
+            </a>
+            <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-archive"></i></span>
+                <span class="link-text">Archive</span>
+            </a>
+            <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-export"></i></span>
+                <span class="link-text">Generate Report</span>
+            </a>
+            <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-bell"></i></span>
+                <span class="link-text">Notifications</span>
+            </a>
         @endif
-        @else
-        {{-- State user (officer): full access --}}
-        <a href="{{ route('user.dashboard') }}" class="sidebar-link {{ request()->routeIs('user.dashboard') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-tachometer-alt"></i></span>
-            <span class="link-text">Dashboard</span>
-        </a>
-
-        <a href="{{ route('user.returns.create') }}" class="sidebar-link {{ request()->is('user/returns/create') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-plus-circle"></i></span>
-            <span class="link-text">Submit New Return</span>
-        </a>
-
-        <a href="{{ route('user.submissions') }}" class="sidebar-link {{ request()->is('user/submissions') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-inbox"></i></span>
-            <span class="link-text">My Submissions</span>
-            <span class="link-badge">3</span>
-        </a>
-
-        <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-bell"></i></span>
-            <span class="link-text">Notifications</span>
-            <span class="link-badge danger">2</span>
-        </a>
-
-        <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-archive"></i></span>
-            <span class="link-text">Archive</span>
-        </a>
-
-        <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports') ? 'active' : '' }}">
-            <span class="link-icon"><i class="fas fa-file-export"></i></span>
-            <span class="link-text">Generate Report</span>
-        </a>
-        @endif
-        @endif
+    </nav>
 </aside>
 @endif
 
@@ -145,15 +204,7 @@
         <div class="topbar-breadcrumb">
             <span>NIS-REDAS</span>
             <span class="separator"><i class="fas fa-chevron-right" style="font-size:.6rem;"></i></span>
-            @if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
-            <a href="{{ route('superadmin.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">Super Admin</a>
-            @elseif(in_array(auth()->user()?->user_category, ['desk_admin', 'directorate_admin']))
-            <a href="{{ route('user.desk.home') }}" style="color:var(--gray-500);text-decoration:none;">Desk Admin Dashboard</a>
-            @elseif(auth()->user()?->role === 'directorate')
-            <a href="{{ route('user.directorates.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">Directorate Dashboard</a>
-            @else
-            <a href="{{ route('user.dashboard') }}" style="color:var(--gray-500);text-decoration:none;">Dashboard</a>
-            @endif
+            <a href="{{ $brandRoute }}" style="color:var(--gray-500);text-decoration:none;">{{ $brandText }}</a>
         </div>
         <div class="topbar-right">
             <div style="position:relative;">

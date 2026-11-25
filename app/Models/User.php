@@ -150,6 +150,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Canonical dashboard URL for this user based on their user_category.
+     */
+    public function dashboardUrl(): string
+    {
+        return match ($this->user_category) {
+            'super_admin' => route('superadmin.dashboard'),
+            'admin', 'hq_admin' => route('admin.dashboard'),
+            'zonal_commander' => route('user.zonal.home'),
+            'desk_admin', 'directorate_admin', 'cgis_desk_admin' => route('user.desk.home'),
+            'directorate_user' => route('user.directorates.dashboard'),
+            'cgis_unit_user' => route('user.cgis-units.dashboard'),
+            default => route('user.dashboard'),
+        };
+    }
+
+    /**
      * Whether per-user ABAC geolocation enforcement is activated for this account.
      */
     public function isGeolocationEnabled(): bool
