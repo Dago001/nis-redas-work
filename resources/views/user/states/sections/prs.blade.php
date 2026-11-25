@@ -364,7 +364,7 @@ $meRows = [
                             <tr>
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $label }}</td>
-                                <td><input type="text" name="prs[monitoring][{{ $key }}][number]" class="ni prs-monitoring-number" placeholder="0" value="{{ old('prs.monitoring.'.$key.'.number') }}"></td>
+                                <td><input type="number" min="0" name="prs[monitoring][{{ $key }}][number]" class="ni prs-monitoring-number" placeholder="0" value="{{ old('prs.monitoring.'.$key.'.number') }}"></td>
                                 <td><input type="text" name="prs[monitoring][{{ $key }}][remark]" class="ni" placeholder="Remark" value="{{ old('prs.monitoring.'.$key.'.remark') }}"></td>
                             </tr>
                             @endforeach

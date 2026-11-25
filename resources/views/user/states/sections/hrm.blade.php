@@ -1115,7 +1115,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                             <tr>
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $label }}</td>
-                                <td><input type="text" name="hrm[nimcos][{{ $key }}]" class="ni hrm-nimcos-input" data-row="{{ $key }}" placeholder="0" value="{{ old('hrm.nimcos.'.$key) }}"></td>
+                                <td><input type="number" min="0" step="0.01" name="hrm[nimcos][{{ $key }}]" class="ni hrm-nimcos-input" data-row="{{ $key }}" placeholder="0" value="{{ old('hrm.nimcos.'.$key) }}"></td>
                             </tr>
                             @endforeach
                         </tbody>

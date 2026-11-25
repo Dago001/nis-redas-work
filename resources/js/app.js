@@ -641,5 +641,93 @@ document.addEventListener('click', (e) => {
     btn.querySelector('i')?.classList.toggle('fa-eye-slash', !isText);
 });
 
+/* Global strict numeric-only input guard across the entire application */
+(function initGlobalNumericInputGuard() {
+    const NAV_KEYS = new Set([
+        'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
+        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End',
+    ]);
+
+    function isNumericField(el) {
+        if (!el || el.tagName !== 'INPUT' || el.readOnly || el.disabled) return false;
+        const mode = (el.getAttribute('inputmode') || '').toLowerCase();
+        return el.type === 'number' || mode === 'numeric' || mode === 'decimal' || el.dataset.numericOnly === 'true';
+    }
+
+    function allowsDecimal(el) {
+        const mode = (el.getAttribute('inputmode') || '').toLowerCase();
+        if (mode === 'decimal') return true;
+        if (el.type === 'number') {
+            const step = (el.getAttribute('step') || '').toLowerCase();
+            return step === 'any' || step.includes('.');
+        }
+        return false;
+    }
+
+    function allowsNegative(el) {
+        const minAttr = el.getAttribute('min');
+        return minAttr !== null && minAttr !== '' && Number(minAttr) < 0;
+    }
+
+    function sanitizeNumeric(raw, decimal, negative) {
+        let str = String(raw || '');
+        const hasLeadingMinus = negative && str.trimStart().startsWith('-');
+        str = decimal ? str.replace(/[^0-9.]/g, '') : str.replace(/[^0-9]/g, '');
+        if (decimal) {
+            const parts = str.split('.');
+            if (parts.length > 2) str = parts[0] + '.' + parts.slice(1).join('');
+        }
+        return (hasLeadingMinus && str !== '' ? '-' : '') + str;
+    }
+
+    document.addEventListener('keydown', (e) => {
+        const el = e.target;
+        if (!isNumericField(el)) return;
+        if (NAV_KEYS.has(e.key) || e.ctrlKey || e.metaKey || e.altKey) return;
+
+        if (/^[0-9]$/.test(e.key)) return;
+        if (e.key === '.' && allowsDecimal(el) && !String(el.value || '').includes('.')) return;
+        if (e.key === '-' && allowsNegative(el) && (el.selectionStart === 0) && !String(el.value || '').includes('-')) return;
+
+        // Block all letters (including e/E), +, symbols, spaces
+        e.preventDefault();
+    });
+
+    document.addEventListener('paste', (e) => {
+        const el = e.target;
+        if (!isNumericField(el)) return;
+        const pasted = (e.clipboardData || window.clipboardData)?.getData('text') ?? '';
+        const cleaned = sanitizeNumeric(pasted, allowsDecimal(el), allowsNegative(el));
+        if (cleaned !== pasted) {
+            e.preventDefault();
+            if (el.type === 'number') {
+                el.value = cleaned;
+            } else {
+                const start = el.selectionStart ?? el.value.length;
+                const end = el.selectionEnd ?? el.value.length;
+                const next = el.value.slice(0, start) + cleaned + el.value.slice(end);
+                const maxLen = el.maxLength > 0 ? el.maxLength : next.length;
+                el.value = sanitizeNumeric(next, allowsDecimal(el), allowsNegative(el)).slice(0, maxLen);
+            }
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+
+    document.addEventListener('input', (e) => {
+        const el = e.target;
+        if (!isNumericField(el)) return;
+        if (el.type === 'number') {
+            if (el.validity && el.validity.badInput) {
+                el.value = '';
+            }
+            return;
+        }
+        const cleaned = sanitizeNumeric(el.value, allowsDecimal(el), allowsNegative(el));
+        if (cleaned !== el.value) {
+            el.value = cleaned;
+        }
+    });
+})();
+
 /* Export for inline scripts */
 window.REDAS = { showToast, animateCounter };

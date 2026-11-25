@@ -500,7 +500,7 @@
                         </div>
                         <div class="auth-form-group">
                             <label class="form-label-nis">Phone Number</label>
-                            <input type="text" name="gsm_number" class="ni">
+                            <input type="text" name="gsm_number" class="ni" inputmode="numeric" pattern="[0-9]{7,15}" placeholder="e.g. 08012345678">
                         </div>
                         <div class="auth-form-group">
                             <label class="form-label-nis">NIS Number</label>

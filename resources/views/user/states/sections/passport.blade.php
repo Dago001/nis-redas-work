@@ -174,7 +174,7 @@
                                 <td class="row-index">1</td>
                                 <td><input type="text" name="passport[staff_development][0][title]" class="ni"></td>
                                 <td><input type="text" name="passport[staff_development][0][location]" class="ni"></td>
-                                <td><input type="text" name="passport[staff_development][0][cost]" class="ni"></td>
+                                <td><input type="number" min="0" step="0.01" name="passport[staff_development][0][cost]" class="ni" placeholder="0"></td>
                                 <td><input type="number" name="passport[staff_development][0][participants]" class="ni"></td>
                                 <td><input type="text" name="passport[staff_development][0][duration]" class="ni"></td>
                             </tr>
@@ -182,7 +182,7 @@
                                 <td class="row-index">2</td>
                                 <td><input type="text" name="passport[staff_development][1][title]" class="ni"></td>
                                 <td><input type="text" name="passport[staff_development][1][location]" class="ni"></td>
-                                <td><input type="text" name="passport[staff_development][1][cost]" class="ni"></td>
+                                <td><input type="number" min="0" step="0.01" name="passport[staff_development][1][cost]" class="ni" placeholder="0"></td>
                                 <td><input type="number" name="passport[staff_development][1][participants]" class="ni"></td>
                                 <td><input type="text" name="passport[staff_development][1][duration]" class="ni"></td>
                             </tr>
@@ -190,7 +190,7 @@
                                 <td class="row-index">3</td>
                                 <td><input type="text" name="passport[staff_development][2][title]" class="ni"></td>
                                 <td><input type="text" name="passport[staff_development][2][location]" class="ni"></td>
-                                <td><input type="text" name="passport[staff_development][2][cost]" class="ni"></td>
+                                <td><input type="number" min="0" step="0.01" name="passport[staff_development][2][cost]" class="ni" placeholder="0"></td>
                                 <td><input type="number" name="passport[staff_development][2][participants]" class="ni"></td>
                                 <td><input type="text" name="passport[staff_development][2][duration]" class="ni"></td>
                             </tr>
@@ -733,7 +733,7 @@
                         </div>
                         <div>
                             <label style="display:block;font-size:.8rem;font-weight:700;margin-bottom:6px;">Phone Number</label>
-                            <input type="text" name="passport[gsm_number]" class="ni" value="{{ old('passport.gsm_number') }}">
+                            <input type="text" name="passport[gsm_number]" class="ni" inputmode="numeric" pattern="[0-9]{7,15}" placeholder="e.g. 08012345678" value="{{ old('passport.gsm_number') }}">
                         </div>
                     </div>
                 </div>
@@ -804,7 +804,7 @@
             <td class="row-index">${sn}</td>
             <td><input type="text" name="passport[staff_development][${nextIndex}][title]" class="ni"></td>
             <td><input type="text" name="passport[staff_development][${nextIndex}][location]" class="ni"></td>
-            <td><input type="text" name="passport[staff_development][${nextIndex}][cost]" class="ni"></td>
+            <td><input type="number" min="0" step="0.01" name="passport[staff_development][${nextIndex}][cost]" class="ni" placeholder="0"></td>
             <td><input type="number" name="passport[staff_development][${nextIndex}][participants]" class="ni"></td>
             <td><input type="text" name="passport[staff_development][${nextIndex}][duration]" class="ni"></td>
         `;
