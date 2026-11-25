@@ -230,7 +230,9 @@ class StateCombinedFormTest extends TestCase
         $this->assertNotEmpty($m[1] ?? '');
         $centers = json_decode($m[1], true);
 
-        $this->assertContains('Ikeja', $centers);
+        $this->assertContains('Alausa', $centers);
+        $this->assertContains('Festac', $centers);
+        $this->assertContains('Alimosho', $centers);
         $this->assertContains('Ikoyi', $centers);
         $this->assertNotContains('Abakaliki', $centers);
         $this->assertNotContains('Kano', $centers);
