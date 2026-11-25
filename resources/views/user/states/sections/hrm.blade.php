@@ -1717,8 +1717,11 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
 
     /* Submit from preview is wired globally in the shared layout. */
 
-    /* Listen for input */
-    if (form) form.addEventListener('input', recomputeAll);
+    /* Listen for input & change (including spinner arrows & draft restore) */
+    if (form) {
+        form.addEventListener('input', recomputeAll);
+        form.addEventListener('change', recomputeAll);
+    }
 
     /* Let the layout's preview tab use this page-specific renderer. */
     window.buildDirectoratePreview = window.buildDirectoratePreview || buildPreview;
