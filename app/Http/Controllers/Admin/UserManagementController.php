@@ -91,6 +91,17 @@ class UserManagementController extends Controller
         'ZONE-H' => 'Zone H — Makurdi (Benue, Plateau, Nasarawa, Kogi, FCT)',
     ];
 
+    public const STATE_TO_ZONE = [
+        'LA' => 'ZONE-A', 'OG' => 'ZONE-A',
+        'KD' => 'ZONE-B', 'KN' => 'ZONE-B', 'KT' => 'ZONE-B', 'JI' => 'ZONE-B',
+        'BA' => 'ZONE-C', 'BO' => 'ZONE-C', 'YO' => 'ZONE-C', 'AD' => 'ZONE-C', 'GO' => 'ZONE-C', 'TA' => 'ZONE-C',
+        'NI' => 'ZONE-D', 'KW' => 'ZONE-D', 'KE' => 'ZONE-D', 'SO' => 'ZONE-D', 'ZA' => 'ZONE-D',
+        'IM' => 'ZONE-E', 'AB' => 'ZONE-E', 'EB' => 'ZONE-E', 'RI' => 'ZONE-E', 'BY' => 'ZONE-E', 'AK' => 'ZONE-E', 'CR' => 'ZONE-E',
+        'OY' => 'ZONE-F', 'OS' => 'ZONE-F', 'ON' => 'ZONE-F', 'EK' => 'ZONE-F',
+        'ED' => 'ZONE-G', 'DE' => 'ZONE-G', 'AN' => 'ZONE-G', 'EN' => 'ZONE-G',
+        'BE' => 'ZONE-H', 'PL' => 'ZONE-H', 'NA' => 'ZONE-H', 'KO' => 'ZONE-H', 'FC' => 'ZONE-H',
+    ];
+
     public const DIRECTORATES = [
         'hrm' => 'Human Resource Management (HRM)',
         'finance' => 'Finance & Accounts',
@@ -143,6 +154,7 @@ class UserManagementController extends Controller
             'ranks' => self::NIS_RANKS,
             'states' => self::STATES,
             'formationGroups' => $this->directoryFormationGroups(),
+            'formationZoneMap' => $this->formationZoneMap(),
             'zones' => self::ZONES,
             'directorates' => self::DIRECTORATES,
             'cgisUnits' => self::CGIS_UNITS,
@@ -215,6 +227,37 @@ class UserManagementController extends Controller
         }
 
         return $groups;
+    }
+
+    /**
+     * Map every formation code to its official NIS Zonal Command (ZONE-A..ZONE-H)
+     * so Create/Edit User auto-selects the right reporting zone.
+     *
+     * @return array<string, string>
+     */
+    private function formationZoneMap(): array
+    {
+        $map = self::STATE_TO_ZONE;
+
+        if (! Schema::hasTable('nis_directories')) {
+            return $map;
+        }
+
+        $rows = NisDirectory::query()
+            ->whereIn('category', ['state_command', 'airport', 'border', 'marine', 'passport', 'training'])
+            ->get(['category', 'name', 'state', 'code']);
+
+        foreach ($rows as $row) {
+            $code = $this->directoryEntryCode($row);
+            if (! empty($row->state)) {
+                $stateCode = $this->stateNameToCode((string) $row->state);
+                if ($stateCode !== null && isset(self::STATE_TO_ZONE[$stateCode])) {
+                    $map[$code] = self::STATE_TO_ZONE[$stateCode];
+                }
+            }
+        }
+
+        return $map;
     }
 
     private function directoryEntryCode(NisDirectory $row): string
@@ -302,6 +345,7 @@ class UserManagementController extends Controller
             'assigned_state_code' => 'nullable|string|max:50',
             'assigned_zonal_command_code' => 'nullable|string|max:50',
             'assigned_directorate_code' => 'nullable|string|max:50',
+            'assigned_section_code' => 'nullable|string|max:80',
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),
             'geo_state' => 'nullable|string|max:10',
             'email' => 'required|string|email|max:255|unique:users',
@@ -345,6 +389,7 @@ class UserManagementController extends Controller
             'assigned_state_code' => $scopes['assigned_state_code'],
             'assigned_zonal_command_code' => $scopes['assigned_zonal_command_code'],
             'assigned_directorate_code' => $scopes['assigned_directorate_code'],
+            'assigned_section_code' => $scopes['assigned_section_code'],
             'assigned_cgis_unit_code' => $scopes['assigned_cgis_unit_code'],
             'geo_state' => isset($validated['geo_state']) && $validated['geo_state'] !== '' ? strtoupper(trim($validated['geo_state'])) : null,
             'access_level' => $normalized['access_level'],
@@ -408,6 +453,7 @@ class UserManagementController extends Controller
             'assigned_state_code' => 'nullable|string|max:50',
             'assigned_zonal_command_code' => 'nullable|string|max:50',
             'assigned_directorate_code' => 'nullable|string|max:50',
+            'assigned_section_code' => 'nullable|string|max:80',
             'assigned_cgis_unit_code' => 'nullable|in:'.implode(',', array_keys(self::CGIS_UNITS)),
             'geo_state' => 'nullable|string|max:10',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
@@ -452,6 +498,7 @@ class UserManagementController extends Controller
             'assigned_state_code' => $scopes['assigned_state_code'],
             'assigned_zonal_command_code' => $scopes['assigned_zonal_command_code'],
             'assigned_directorate_code' => $scopes['assigned_directorate_code'],
+            'assigned_section_code' => $scopes['assigned_section_code'],
             'assigned_cgis_unit_code' => $scopes['assigned_cgis_unit_code'],
             'geo_state' => isset($validated['geo_state']) && $validated['geo_state'] !== '' ? strtoupper(trim($validated['geo_state'])) : null,
             'access_level' => $normalized['access_level'],
@@ -533,6 +580,9 @@ class UserManagementController extends Controller
         $dirCode = isset($validated['assigned_directorate_code']) && trim((string) $validated['assigned_directorate_code']) !== ''
             ? strtolower(trim((string) $validated['assigned_directorate_code']))
             : null;
+        $sectionCode = isset($validated['assigned_section_code']) && trim((string) $validated['assigned_section_code']) !== ''
+            ? strtoupper(trim((string) $validated['assigned_section_code']))
+            : null;
         $cgisCode = isset($validated['assigned_cgis_unit_code']) && trim((string) $validated['assigned_cgis_unit_code']) !== ''
             ? strtolower(trim((string) $validated['assigned_cgis_unit_code']))
             : null;
@@ -542,7 +592,8 @@ class UserManagementController extends Controller
             $resolvedZone = $zoneCode;
             if ($resolvedZone === null && $resolvedState !== null) {
                 $unit = ReportingUnit::query()->where('code', $resolvedState)->with('parent')->first();
-                $resolvedZone = $unit?->parent?->code;
+                $resolvedZone = $unit?->parent?->code
+                    ?? ($this->formationZoneMap()[$resolvedState] ?? null);
             }
 
             return [
@@ -550,6 +601,7 @@ class UserManagementController extends Controller
                 'assigned_state_code' => $resolvedState,
                 'assigned_zonal_command_code' => $resolvedZone,
                 'assigned_directorate_code' => null,
+                'assigned_section_code' => null,
                 'assigned_cgis_unit_code' => null,
             ];
         }
@@ -562,6 +614,7 @@ class UserManagementController extends Controller
                 'assigned_state_code' => null,
                 'assigned_zonal_command_code' => $resolvedZone,
                 'assigned_directorate_code' => null,
+                'assigned_section_code' => null,
                 'assigned_cgis_unit_code' => null,
             ];
         }
@@ -574,6 +627,7 @@ class UserManagementController extends Controller
                 'assigned_state_code' => null,
                 'assigned_zonal_command_code' => null,
                 'assigned_directorate_code' => $resolvedDir,
+                'assigned_section_code' => $category === 'directorate_user' ? $sectionCode : null,
                 'assigned_cgis_unit_code' => null,
             ];
         }
@@ -586,6 +640,7 @@ class UserManagementController extends Controller
                 'assigned_state_code' => null,
                 'assigned_zonal_command_code' => null,
                 'assigned_directorate_code' => null,
+                'assigned_section_code' => null,
                 'assigned_cgis_unit_code' => $resolvedCgis,
             ];
         }
@@ -595,6 +650,7 @@ class UserManagementController extends Controller
             'assigned_state_code' => null,
             'assigned_zonal_command_code' => null,
             'assigned_directorate_code' => null,
+            'assigned_section_code' => null,
             'assigned_cgis_unit_code' => null,
         ];
     }

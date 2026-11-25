@@ -187,5 +187,48 @@ class UserProvisioningTest extends TestCase
         // Password generator & live 5-rule checklist
         $response->assertSee('generatePwBtn');
         $response->assertSee('pwChecklist');
+        $response->assertSee('assigned_section_code');
+        $response->assertSee('workflowChainPreview');
+    }
+
+    public function test_airport_formation_auto_links_zonal_command_and_directorate_user_saves_section(): void
+    {
+        $this->seed(\Database\Seeders\NisDirectorySeeder::class);
+        $superAdmin = $this->makeSuperAdmin();
+
+        // Airport formation (MMIA in Lagos) auto-links ZONE-A
+        $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'surname' => 'Adeyemi',
+            'first_name' => 'Tunde',
+            'service_number' => '61111',
+            'rank' => 'SI',
+            'email' => 'tunde.mmia@immigration.gov.ng',
+            'user_category' => 'state_user',
+            'assigned_state_code' => 'MMIA',
+            'password' => 'Secure@12',
+            'password_confirmation' => 'Secure@12',
+        ])->assertRedirect(route('admin.users'));
+
+        $mmiaOfficer = User::where('service_number', '61111')->firstOrFail();
+        $this->assertSame('MMIA', $mmiaOfficer->primary_location_code);
+        $this->assertSame('ZONE-A', $mmiaOfficer->assigned_zonal_command_code);
+
+        // Directorate officer saves both directorate and section
+        $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'surname' => 'Suleiman',
+            'first_name' => 'Hauwa',
+            'service_number' => '61112',
+            'rank' => 'DSI',
+            'email' => 'hauwa.hrm@immigration.gov.ng',
+            'user_category' => 'directorate_user',
+            'assigned_directorate_code' => 'hrm',
+            'assigned_section_code' => 'RECRUITMENT',
+            'password' => 'Secure@12',
+            'password_confirmation' => 'Secure@12',
+        ])->assertRedirect(route('admin.users'));
+
+        $dirOfficer = User::where('service_number', '61112')->firstOrFail();
+        $this->assertSame('hrm', $dirOfficer->assigned_directorate_code);
+        $this->assertSame('RECRUITMENT', $dirOfficer->assigned_section_code);
     }
 }

@@ -252,18 +252,19 @@
                             </optgroup>
                         @endforeach
                     </select>
-                    <span class="iam-hint">Synced with the official NIS Directory (State Commands, Airports, Border Posts, Marine, Passport Centres, Training &amp; Foreign Missions).</span>
+                    <span class="iam-hint">Synced with the official NIS Directory. Reporting Zone auto-links below.</span>
                 </div>
 
-                {{-- Dynamic Scope Selector: Zone --}}
+                {{-- Dynamic Scope Selector: Zone (for Zonal Commander OR Formation parent zone) --}}
                 <div class="auth-form-group scope-panel" id="scopeZone" style="display:none;">
-                    <label class="form-label-nis" for="assigned_zonal_command_code">Assigned Zonal Command <span style="color:#dc2626;">*</span></label>
+                    <label class="form-label-nis" for="assigned_zonal_command_code" id="zoneFieldLabel">Assigned Zonal Command <span style="color:#dc2626;">*</span></label>
                     <select id="assigned_zonal_command_code" name="assigned_zonal_command_code" class="auth-input">
                         <option value="">Select zonal command</option>
                         @foreach($zones as $code => $label)
                             <option value="{{ $code }}" {{ old('assigned_zonal_command_code') === $code ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
+                    <span class="iam-hint" id="zoneFieldHint">Determines which Zonal Commander reviews &amp; consolidates this formation's returns.</span>
                 </div>
 
                 {{-- Dynamic Scope Selector: Directorate --}}
@@ -275,6 +276,13 @@
                             <option value="{{ $code }}" {{ old('assigned_directorate_code') === $code ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                {{-- Dynamic Scope Selector: Directorate Section (for Directorate Officer) --}}
+                <div class="auth-form-group scope-panel" id="scopeSection" style="display:none;">
+                    <label class="form-label-nis" for="assigned_section_code">Assigned Section / Sub-Directorate</label>
+                    <input type="text" id="assigned_section_code" name="assigned_section_code" value="{{ old('assigned_section_code') }}" class="auth-input" placeholder="e.g. RECRUITMENT, STATS, PASSPORT-OPS">
+                    <span class="iam-hint">Identifies the officer's section for Directorate completeness tracking &amp; consolidation.</span>
                 </div>
 
                 {{-- Dynamic Scope Selector: CGIS Unit --}}
@@ -296,6 +304,11 @@
                         <span><strong>NIS Service Headquarters (HQ)</strong> &mdash; National Scope</span>
                     </div>
                 </div>
+            </div>
+
+            <div id="workflowChainPreview" style="display:none;margin-top:14px;padding:10px 14px;border-radius:10px;background:#f8fafc;border:1px solid #e2e8f0;font-size:.8rem;color:#334155;">
+                <i class="fas fa-route text-nis me-1"></i>
+                <strong>Reporting Workflow:</strong> <span id="workflowChainText"></span>
             </div>
 
             <div class="auth-form-group" style="margin-top:14px;margin-bottom:0;max-width:420px;">
@@ -380,37 +393,61 @@
             });
         }
 
-        // 2. Dynamic scope panel switching based on Access Category
+        // 2. Dynamic scope panel switching + auto-zone linking + workflow chain preview
         const catSel = document.getElementById('user_category');
+        const formationZoneMap = @json($formationZoneMap);
+        const stateSel = document.getElementById('assigned_state_code');
+        const zoneSel = document.getElementById('assigned_zonal_command_code');
+        const zoneLabel = document.getElementById('zoneFieldLabel');
+        const wfBox = document.getElementById('workflowChainPreview');
+        const wfText = document.getElementById('workflowChainText');
+
         const panels = {
-            state:       { el: document.getElementById('scopeState'),       input: document.getElementById('assigned_state_code') },
-            zone:        { el: document.getElementById('scopeZone'),        input: document.getElementById('assigned_zonal_command_code') },
+            state:       { el: document.getElementById('scopeState'),       input: stateSel },
+            zone:        { el: document.getElementById('scopeZone'),        input: zoneSel },
             directorate: { el: document.getElementById('scopeDirectorate'), input: document.getElementById('assigned_directorate_code') },
+            section:     { el: document.getElementById('scopeSection'),     input: document.getElementById('assigned_section_code') },
             cgis:        { el: document.getElementById('scopeCgis'),        input: document.getElementById('assigned_cgis_unit_code') },
             hq:          { el: document.getElementById('scopeHq'),          input: null },
         };
 
-        const catToScope = {
-            state_user: 'state',
-            desk_admin: 'state',
-            zonal_commander: 'zone',
-            directorate_user: 'directorate',
-            directorate_admin: 'directorate',
-            cgis_unit_user: 'cgis',
-            cgis_desk_admin: 'cgis',
-            hq_admin: 'hq',
-            admin: 'hq',
-            super_admin: 'hq',
+        const catConfig = {
+            state_user:        { show: ['state', 'zone'], req: ['state'], wf: 'Formation Officer submits original return → Formation Desk Admin reviews → Zonal Commander reviews & consolidates → HQ Admin final approval (visible to PRS & Super Admin).' },
+            desk_admin:        { show: ['state', 'zone'], req: ['state'], wf: 'Reviews & approves/returns submissions for their assigned Formation before forwarding to the Zonal Commander.' },
+            zonal_commander:   { show: ['zone'], req: ['zone'], wf: 'Reviews approved Formation returns in their Zone and prepares separate Zonal Consolidated Reports for HQ Admin & PRS.' },
+            directorate_user:  { show: ['directorate', 'section'], req: ['directorate'], wf: 'Directorate Section Officer submits original section return → Directorate Admin reviews & consolidates → HQ Admin final approval (visible to PRS).' },
+            directorate_admin: { show: ['directorate'], req: ['directorate'], wf: 'Reviews section returns in their Directorate and prepares separate Directorate Consolidated Reports for HQ Admin & PRS (PRS Admin also views national dashboard).' },
+            cgis_unit_user:    { show: ['cgis'], req: ['cgis'], wf: 'CGIS Unit Officer submits unit return → CGIS Desk Admin reviews → HQ Admin final approval.' },
+            cgis_desk_admin:   { show: ['cgis'], req: ['cgis'], wf: 'Reviews & approves/returns submissions for their assigned CGIS Unit before forwarding to HQ Admin.' },
+            hq_admin:          { show: ['hq'], req: [], wf: 'Final approval authority for all Formation, Directorate, CGIS Unit, and Consolidated reports nationwide.' },
+            admin:             { show: ['hq'], req: [], wf: 'Read-only national executive visibility across all original and consolidated returns.' },
+            super_admin:       { show: ['hq'], req: [], wf: 'Full platform governance, user & role administration, immutable audit oversight, ABAC settings, and national reporting visibility.' },
         };
 
         function updateScopePanel() {
-            const active = catToScope[catSel?.value] || null;
-            Object.entries(panels).forEach(([key, cfg]) => {
-                const show = key === active;
-                if (cfg.el) cfg.el.style.display = show ? 'block' : 'none';
-                if (cfg.input) cfg.input.required = show;
+            const cfg = catConfig[catSel?.value] || { show: [], req: [], wf: '' };
+            Object.entries(panels).forEach(([key, p]) => {
+                const visible = cfg.show.includes(key);
+                if (p.el) p.el.style.display = visible ? 'block' : 'none';
+                if (p.input) p.input.required = cfg.req.includes(key);
             });
+            if (zoneLabel) {
+                zoneLabel.innerHTML = catSel?.value === 'zonal_commander'
+                    ? 'Assigned Zonal Command <span style="color:#dc2626;">*</span>'
+                    : 'Reporting Zonal Command (Auto-linked)';
+            }
+            if (wfBox && wfText) {
+                wfBox.style.display = cfg.wf ? 'block' : 'none';
+                wfText.textContent = cfg.wf;
+            }
         }
+
+        stateSel?.addEventListener('change', () => {
+            const mappedZone = formationZoneMap[stateSel.value];
+            if (mappedZone && zoneSel) {
+                zoneSel.value = mappedZone;
+            }
+        });
 
         catSel?.addEventListener('change', updateScopePanel);
         updateScopePanel();
