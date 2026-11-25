@@ -139,4 +139,53 @@ class UserProvisioningTest extends TestCase
             'access_level' => 6,
         ]);
     }
+
+    public function test_create_user_page_renders_official_nis_ranks_directory_formations_and_super_admin_chrome(): void
+    {
+        $this->seed(\Database\Seeders\NisDirectorySeeder::class);
+        $superAdmin = $this->makeSuperAdmin();
+
+        $response = $this->actingAs($superAdmin)->get(route('admin.users.create'));
+        $response->assertOk();
+
+        // Uniform Super Admin layout + live notification bell
+        $response->assertSee('Super Admin Console');
+        $response->assertSee('saNotifDot');
+
+        // Officer Identity fields
+        $response->assertSee('Surname');
+        $response->assertSee('First Name');
+        $response->assertSee('Middle Name');
+        $response->assertSee('Service No (Username)');
+        $response->assertSee('NIS Rank');
+        $response->assertSee('Email Address');
+
+        // Official NIS ranks present; removed non-NIS inspector ranks absent
+        $response->assertSee('Comptroller-General of Immigration Service (CGIS)');
+        $response->assertSee('Inspector of Immigration (II)');
+        $response->assertSee('Assistant Inspector of Immigration (AII)');
+        $response->assertSee('Immigration Assistant III (IA III)');
+        $response->assertDontSee('Chief Inspector of Immigration (CII)');
+        $response->assertDontSee('Deputy Chief Inspector of Immigration (DCII)');
+        $response->assertDontSee('Assistant Chief Inspector of Immigration (ACII)');
+        $response->assertDontSee('Principal Inspector of Immigration (PII)');
+        $response->assertDontSee('Senior Inspector of Immigration (SII)');
+
+        // All 7 official NIS Directory formation groups present
+        foreach ([
+            'State Commands',
+            'Airport Commands',
+            'Border Control Posts',
+            'Marine Commands',
+            'Passport Issuing Centres',
+            'Training Institutions',
+            'Foreign Missions',
+        ] as $groupLabel) {
+            $response->assertSee($groupLabel);
+        }
+
+        // Password generator & live 5-rule checklist
+        $response->assertSee('generatePwBtn');
+        $response->assertSee('pwChecklist');
+    }
 }
