@@ -159,5 +159,55 @@ class ReportingUnitSeeder extends Seeder
             ['code'],
             ['name', 'type', 'formation_type', 'is_active', 'updated_at']
         );
+
+        // Seed all 8 authoritative NIS Zones and 52 Commands from config/nis_hierarchy.php with exact parent_id links
+        $hierarchy = (array) config('nis_hierarchy.zones', []);
+        foreach ($hierarchy as $zoneCode => $zoneInfo) {
+            DB::table('reporting_units')->updateOrInsert(
+                ['code' => $zoneCode],
+                [
+                    'name' => $zoneInfo['name'] ?? $zoneCode,
+                    'type' => 'zone',
+                    'formation_type' => null,
+                    'parent_id' => null,
+                    'is_active' => true,
+                    'updated_at' => $now,
+                    'created_at' => $now,
+                ]
+            );
+            $zoneId = DB::table('reporting_units')->where('code', $zoneCode)->value('id');
+
+            foreach (($zoneInfo['commands'] ?? []) as $cmdCode => $cmdName) {
+                $formationType = match (true) {
+                    str_contains(strtolower($cmdName), 'airport') => 'airport',
+                    str_contains(strtolower($cmdName), 'border') => 'border',
+                    str_contains(strtolower($cmdName), 'marine') || str_contains(strtolower($cmdName), 'seaport') => 'marine',
+                    str_contains(strtolower($cmdName), 'passport') => 'passport',
+                    str_contains(strtolower($cmdName), 'training') || str_contains(strtolower($cmdName), 'college') || str_contains(strtolower($cmdName), 'academ') => 'training',
+                    default => 'state',
+                };
+
+                DB::table('reporting_units')->updateOrInsert(
+                    ['code' => $cmdCode],
+                    [
+                        'name' => $cmdName,
+                        'type' => 'formation',
+                        'formation_type' => $formationType,
+                        'parent_id' => $zoneId,
+                        'is_active' => true,
+                        'updated_at' => $now,
+                        'created_at' => $now,
+                    ]
+                );
+            }
+        }
+
+        // Also link 2-letter state codes to their official Zone parent
+        foreach ((array) config('nis_hierarchy.state_to_zone', []) as $stateCode => $zoneCode) {
+            $zoneId = DB::table('reporting_units')->where('code', $zoneCode)->value('id');
+            if ($zoneId) {
+                DB::table('reporting_units')->where('code', $stateCode)->update(['parent_id' => $zoneId, 'updated_at' => $now]);
+            }
+        }
     }
 }

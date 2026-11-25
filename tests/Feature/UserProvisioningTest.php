@@ -171,17 +171,22 @@ class UserProvisioningTest extends TestCase
         $response->assertDontSee('Principal Inspector of Immigration (PII)');
         $response->assertDontSee('Senior Inspector of Immigration (SII)');
 
-        // All 7 official NIS Directory formation groups present
+        // All 8 official NIS Zones and sample authoritative commands present
         foreach ([
-            'State Commands',
-            'Airport Commands',
-            'Border Control Posts',
-            'Marine Commands',
-            'Passport Issuing Centres',
-            'Training Institutions',
-            'Foreign Missions',
-        ] as $groupLabel) {
-            $response->assertSee($groupLabel);
+            'ZONE A — Zone A HQ Ikeja',
+            'ZONE B — Zone B HQ Kaduna',
+            'ZONE C — Zone C HQ Bauchi',
+            'ZONE D — Zone D HQ Minna',
+            'ZONE E — Zone E HQ Owerri',
+            'ZONE F — Zone F HQ Ibadan',
+            'ZONE G — Zone G HQ Benin',
+            'ZONE H — Zone H HQ Makurdi',
+            'LASC — Lagos State Command',
+            'FCTC — FCT Command',
+            'NITSOL — Nigeria Immigration Training School Orlu',
+            'TRSC — Taraba State Command',
+        ] as $expectedLabel) {
+            $response->assertSee($expectedLabel);
         }
 
         // Password generator & live 5-rule checklist
@@ -230,5 +235,30 @@ class UserProvisioningTest extends TestCase
         $dirOfficer = User::where('service_number', '61112')->firstOrFail();
         $this->assertSame('hrm', $dirOfficer->assigned_directorate_code);
         $this->assertSame('RECRUITMENT', $dirOfficer->assigned_section_code);
+
+        // Verify official NIS Zone assignments: FCTC -> ZONE-D, PLSC -> ZONE-C, SOSC -> ZONE-B, BYSC -> ZONE-G, TRSC -> ZONE-H
+        $checks = [
+            ['62001', 'FCTC', 'ZONE-D'],
+            ['62002', 'PLSC', 'ZONE-C'],
+            ['62003', 'SOSC', 'ZONE-B'],
+            ['62004', 'BYSC', 'ZONE-G'],
+            ['62005', 'TRSC', 'ZONE-H'],
+        ];
+        foreach ($checks as [$sn, $cmd, $expectedZone]) {
+            $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+                'surname' => 'Officer',
+                'first_name' => $cmd,
+                'service_number' => $sn,
+                'rank' => 'CSI',
+                'email' => strtolower($cmd).'@immigration.gov.ng',
+                'user_category' => 'desk_admin',
+                'assigned_state_code' => $cmd,
+                'password' => 'Secure@12',
+                'password_confirmation' => 'Secure@12',
+            ])->assertRedirect(route('admin.users'));
+
+            $u = User::where('service_number', $sn)->firstOrFail();
+            $this->assertSame($expectedZone, $u->assigned_zonal_command_code, "{$cmd} must map to {$expectedZone}");
+        }
     }
 }

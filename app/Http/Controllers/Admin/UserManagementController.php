@@ -81,25 +81,25 @@ class UserManagementController extends Controller
     ];
 
     public const ZONES = [
-        'ZONE-A' => 'Zone A — Lagos (Lagos, Ogun)',
-        'ZONE-B' => 'Zone B — Kaduna (Kaduna, Kano, Katsina, Jigawa)',
-        'ZONE-C' => 'Zone C — Bauchi (Bauchi, Borno, Yobe, Adamawa, Gombe, Taraba)',
-        'ZONE-D' => 'Zone D — Minna (Niger, Kwara, Kebbi, Sokoto, Zamfara)',
-        'ZONE-E' => 'Zone E — Owerri (Imo, Abia, Ebonyi, Rivers, Bayelsa, Akwa Ibom, Cross River)',
-        'ZONE-F' => 'Zone F — Ibadan (Oyo, Osun, Ondo, Ekiti)',
-        'ZONE-G' => 'Zone G — Benin (Edo, Delta, Anambra, Enugu)',
-        'ZONE-H' => 'Zone H — Makurdi (Benue, Plateau, Nasarawa, Kogi, FCT)',
+        'ZONE-A' => 'ZONE A — ZONE A HQ IKEJA',
+        'ZONE-B' => 'ZONE B — ZONE B HQ KADUNA',
+        'ZONE-C' => 'ZONE C — ZONE C HQ BAUCHI',
+        'ZONE-D' => 'ZONE D — ZONE D HQ MINNA',
+        'ZONE-E' => 'ZONE E — ZONE E HQ OWERRI',
+        'ZONE-F' => 'ZONE F — ZONE F HQ IBADAN',
+        'ZONE-G' => 'ZONE G — ZONE G HQ BENIN',
+        'ZONE-H' => 'ZONE H — ZONE H HQ MAKURDI',
     ];
 
     public const STATE_TO_ZONE = [
         'LA' => 'ZONE-A', 'OG' => 'ZONE-A',
-        'KD' => 'ZONE-B', 'KN' => 'ZONE-B', 'KT' => 'ZONE-B', 'JI' => 'ZONE-B',
-        'BA' => 'ZONE-C', 'BO' => 'ZONE-C', 'YO' => 'ZONE-C', 'AD' => 'ZONE-C', 'GO' => 'ZONE-C', 'TA' => 'ZONE-C',
-        'NI' => 'ZONE-D', 'KW' => 'ZONE-D', 'KE' => 'ZONE-D', 'SO' => 'ZONE-D', 'ZA' => 'ZONE-D',
-        'IM' => 'ZONE-E', 'AB' => 'ZONE-E', 'EB' => 'ZONE-E', 'RI' => 'ZONE-E', 'BY' => 'ZONE-E', 'AK' => 'ZONE-E', 'CR' => 'ZONE-E',
-        'OY' => 'ZONE-F', 'OS' => 'ZONE-F', 'ON' => 'ZONE-F', 'EK' => 'ZONE-F',
-        'ED' => 'ZONE-G', 'DE' => 'ZONE-G', 'AN' => 'ZONE-G', 'EN' => 'ZONE-G',
-        'BE' => 'ZONE-H', 'PL' => 'ZONE-H', 'NA' => 'ZONE-H', 'KO' => 'ZONE-H', 'FC' => 'ZONE-H',
+        'KN' => 'ZONE-B', 'KD' => 'ZONE-B', 'KT' => 'ZONE-B', 'ZA' => 'ZONE-B', 'SO' => 'ZONE-B', 'JI' => 'ZONE-B',
+        'AD' => 'ZONE-C', 'BA' => 'ZONE-C', 'BO' => 'ZONE-C', 'GO' => 'ZONE-C', 'PL' => 'ZONE-C', 'YO' => 'ZONE-C',
+        'FC' => 'ZONE-D', 'NI' => 'ZONE-D', 'KE' => 'ZONE-D', 'KW' => 'ZONE-D',
+        'IM' => 'ZONE-E', 'RI' => 'ZONE-E', 'CR' => 'ZONE-E', 'EB' => 'ZONE-E', 'AK' => 'ZONE-E', 'AB' => 'ZONE-E',
+        'OY' => 'ZONE-F', 'EK' => 'ZONE-F', 'ON' => 'ZONE-F', 'OS' => 'ZONE-F',
+        'ED' => 'ZONE-G', 'AN' => 'ZONE-G', 'DE' => 'ZONE-G', 'EN' => 'ZONE-G', 'BY' => 'ZONE-G',
+        'NA' => 'ZONE-H', 'BE' => 'ZONE-H', 'KO' => 'ZONE-H', 'TA' => 'ZONE-H',
     ];
 
     public const DIRECTORATES = [
@@ -178,82 +178,61 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Load all official NIS formations from nis_directories grouped by category
-     * for the Create/Edit User formation dropdown (falls back to 36 States + FCT).
+     * Load all official NIS Commands grouped by their authoritative Zone (ZONE-A..ZONE-H)
+     * from config/nis_hierarchy.php, plus Foreign Missions from nis_directories.
      *
      * @return array<string, array<string, string>>
      */
     private function directoryFormationGroups(): array
     {
-        $labels = [
-            'state_command' => 'State Commands',
-            'airport' => 'Airport Commands',
-            'border' => 'Border Control Posts',
-            'marine' => 'Marine Commands',
-            'passport' => 'Passport Issuing Centres',
-            'training' => 'Training Institutions',
-            'foreign_mission' => 'Foreign Missions',
-        ];
-
-        if (! Schema::hasTable('nis_directories')) {
-            return ['State Commands' => self::STATES];
-        }
-
-        $rows = NisDirectory::query()
-            ->whereIn('category', array_keys($labels))
-            ->orderBy('sort_order')
-            ->orderBy('name')
-            ->get(['id', 'category', 'name', 'state', 'country', 'code']);
-
-        if ($rows->isEmpty()) {
-            return ['State Commands' => self::STATES];
-        }
-
         $groups = [];
-        foreach ($labels as $catKey => $groupLabel) {
-            $items = $rows->where('category', $catKey);
-            if ($items->isEmpty()) {
-                continue;
-            }
+        $hierarchy = (array) config('nis_hierarchy.zones', []);
+
+        foreach ($hierarchy as $zoneCode => $zoneInfo) {
+            $groupLabel = str_replace('-', ' ', $zoneCode) . ' — ' . ($zoneInfo['name'] ?? $zoneCode);
             $options = [];
-            foreach ($items as $row) {
-                $code = $this->directoryEntryCode($row);
-                $suffix = $row->state ?: $row->country;
-                $options[$code] = $suffix && ! str_contains(strtolower($row->name), strtolower($suffix))
-                    ? "{$row->name} ({$suffix})"
-                    : $row->name;
+            foreach (($zoneInfo['commands'] ?? []) as $cmdCode => $cmdName) {
+                $options[$cmdCode] = "{$cmdCode} — {$cmdName}";
             }
-            $groups[$groupLabel] = $options;
+            if ($options !== []) {
+                $groups[$groupLabel] = $options;
+            }
+        }
+
+        if (Schema::hasTable('nis_directories')) {
+            $missions = NisDirectory::query()
+                ->where('category', 'foreign_mission')
+                ->orderBy('name')
+                ->get(['category', 'name', 'country', 'code']);
+
+            if ($missions->isNotEmpty()) {
+                $missionOpts = [];
+                foreach ($missions as $row) {
+                    $code = $this->directoryEntryCode($row);
+                    $missionOpts[$code] = $row->country && ! str_contains(strtolower($row->name), strtolower($row->country))
+                        ? "{$row->name} ({$row->country})"
+                        : $row->name;
+                }
+                $groups['Foreign Missions'] = $missionOpts;
+            }
         }
 
         return $groups;
     }
 
     /**
-     * Map every formation code to its official NIS Zonal Command (ZONE-A..ZONE-H)
-     * so Create/Edit User auto-selects the right reporting zone.
+     * Map every official command code and 2-letter state code to its authoritative NIS Zone.
      *
      * @return array<string, string>
      */
     private function formationZoneMap(): array
     {
-        $map = self::STATE_TO_ZONE;
+        $map = (array) config('nis_hierarchy.state_to_zone', self::STATE_TO_ZONE);
+        $hierarchy = (array) config('nis_hierarchy.zones', []);
 
-        if (! Schema::hasTable('nis_directories')) {
-            return $map;
-        }
-
-        $rows = NisDirectory::query()
-            ->whereIn('category', ['state_command', 'airport', 'border', 'marine', 'passport', 'training'])
-            ->get(['category', 'name', 'state', 'code']);
-
-        foreach ($rows as $row) {
-            $code = $this->directoryEntryCode($row);
-            if (! empty($row->state)) {
-                $stateCode = $this->stateNameToCode((string) $row->state);
-                if ($stateCode !== null && isset(self::STATE_TO_ZONE[$stateCode])) {
-                    $map[$code] = self::STATE_TO_ZONE[$stateCode];
-                }
+        foreach ($hierarchy as $zoneCode => $zoneInfo) {
+            foreach (array_keys($zoneInfo['commands'] ?? []) as $cmdCode) {
+                $map[strtoupper($cmdCode)] = $zoneCode;
             }
         }
 
