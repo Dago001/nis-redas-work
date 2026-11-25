@@ -355,6 +355,8 @@ class UserManagementController extends Controller
         $scopes = $this->resolveOperationalScopes($normalized['user_category'], $validated);
         $fullName = $this->composeFullName($validated);
 
+        $requireEmailVerification = filter_var(env('ADMIN_CREATED_REQUIRE_EMAIL_VERIFY', false), FILTER_VALIDATE_BOOL);
+
         $user = User::create([
             'name' => $fullName,
             'surname' => isset($validated['surname']) ? trim($validated['surname']) : null,
@@ -375,12 +377,15 @@ class UserManagementController extends Controller
             'geolocation_enabled' => $request->has('geolocation_enabled') ? $request->boolean('geolocation_enabled') : true,
             'access_level' => $normalized['access_level'],
             'email' => strtolower(trim($validated['email'])),
+            'email_verified_at' => $requireEmailVerification ? null : now(),
             'password' => Hash::make($validated['password']),
             'must_change_password' => true,
             'is_enabled' => $request->boolean('is_enabled', true),
         ]);
 
-        $this->sendVerificationEmail($user);
+        if ($requireEmailVerification) {
+            $this->sendVerificationEmail($user);
+        }
 
         \App\Services\AuditLogger::logCrud(
             user: $request->user(),
@@ -400,7 +405,9 @@ class UserManagementController extends Controller
         );
 
         return redirect()->route('admin.users')
-            ->with('status', sprintf('User %s (%s) created successfully. Verification email dispatched.', $user->name, $user->service_number));
+            ->with('status', $requireEmailVerification
+                ? sprintf('User %s (%s) created successfully. Verification email dispatched.', $user->name, $user->service_number)
+                : sprintf('User %s (%s) created successfully with default password. Officer can sign in immediately and will be prompted to change password.', $user->name, $user->service_number));
     }
 
     public function edit(Request $request, User $user)

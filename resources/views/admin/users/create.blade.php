@@ -213,7 +213,7 @@
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="email">Email Address <span style="color:#dc2626;">*</span></label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}" class="auth-input" placeholder="officer@immigration.gov.ng" required>
-                    <span class="iam-hint">Required for verification &amp; onboarding email.</span>
+                    <span class="iam-hint">Default password &amp; onboarding notifications will be sent to this address.</span>
                 </div>
             </div>
         </div>

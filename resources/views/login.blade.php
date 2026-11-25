@@ -30,7 +30,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 24px;
+            padding: 16px 20px;
+            overflow-y: auto;
             background:
                 linear-gradient(135deg, rgba(6, 36, 20, 0.58) 0%, rgba(10, 25, 47, 0.66) 100%),
                 url("{{ asset('assets/images/nis-hq-bg.jpg') }}") center center / cover no-repeat fixed;
@@ -38,14 +39,14 @@
 
         .login-card {
             width: 100%;
-            max-width: 460px;
+            max-width: 440px;
             background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.45);
-            border-radius: 20px;
+            border-radius: 18px;
             box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
-            padding: 30px 24px;
+            padding: 22px 24px;
         }
 
         .login-brand {
@@ -53,17 +54,17 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 10px;
         }
 
         .login-brand img {
-            width: 38px;
-            height: 38px;
+            width: 34px;
+            height: 34px;
             object-fit: contain;
         }
 
         .login-brand-name {
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 800;
             color: var(--nis-700);
             letter-spacing: .02em;
@@ -72,21 +73,21 @@
         .login-title {
             margin: 0;
             text-align: center;
-            font-size: 1.55rem;
+            font-size: 1.4rem;
             line-height: 1.2;
             font-weight: 600;
             color: #334155;
         }
 
         .login-subtitle {
-            margin: 8px 0 24px;
+            margin: 5px 0 16px;
             text-align: center;
             color: #475569;
-            font-size: .94rem;
+            font-size: .88rem;
         }
 
         .auth-form-group {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .pw-wrap {
@@ -127,21 +128,21 @@
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 14px;
         }
 
         .forgot-btn {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: .84rem;
+            font-size: .82rem;
             color: var(--nis-600);
             font-weight: 600;
             padding: 0;
         }
 
         .back-link-wrap {
-            margin-top: 18px;
+            margin-top: 12px;
             text-align: center;
         }
 
@@ -175,21 +176,21 @@
         <p class="login-subtitle">Sign in to access your dashboard.</p>
 
         @if($errors->any())
-        <div style="background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:var(--radius-md);padding:12px 16px;font-size:.875rem;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+        <div style="background:#fee2e2;border:1px solid #fca5a5;color:#dc2626;border-radius:var(--radius-md);padding:9px 12px;font-size:.82rem;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;">
             <i class="fas fa-exclamation-circle" style="margin-top:2px;flex-shrink:0;"></i>
             <span>{{ $errors->first('username') ?? $errors->first('password') ?? $errors->first() }}</span>
         </div>
         @endif
 
         @if(session('status'))
-        <div style="background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:var(--radius-md);padding:12px 16px;font-size:.875rem;margin-bottom:20px;display:flex;gap:10px;align-items:flex-start;">
+        <div style="background:#dcfce7;border:1px solid #86efac;color:#15803d;border-radius:var(--radius-md);padding:9px 12px;font-size:.82rem;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start;">
             <i class="fas fa-check-circle" style="margin-top:2px;flex-shrink:0;"></i>
             <span>{{ session('status') }}</span>
         </div>
         @endif
 
         @if(session('unverified_login'))
-        <form method="POST" action="{{ route('verify.email.resend') }}" style="background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:var(--radius-md);padding:12px 16px;font-size:.85rem;margin-bottom:20px;">
+        <form method="POST" action="{{ route('verify.email.resend') }}" style="background:#fffbeb;border:1px solid #fcd34d;color:#92400e;border-radius:var(--radius-md);padding:9px 12px;font-size:.82rem;margin-bottom:12px;">
             @csrf
             <input type="hidden" name="login" value="{{ session('unverified_login') }}">
             <span>Didn't get the link?</span>
@@ -221,9 +222,6 @@
                     <span class="auth-input-icon"><i class="fas fa-id-badge"></i></span>
                 </div>
                 <div id="serviceNoClientError" class="inline-error" style="display:none;"><i class="fas fa-circle-xmark"></i><span>Numbers only (4 or 5 digits).</span></div>
-                @error('username')
-                <div class="inline-error"><i class="fas fa-circle-xmark"></i>{{ $message }}</div>
-                @enderror
             </div>
 
             <div class="auth-form-group">
