@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NIS-REDAS — Nigeria Immigration Service Reporting Dashboard & Archiving System. Centralised digital platform for operational returns and document management.">
+    <meta name="description" content="NIS-REDAS - Nigeria Immigration Service Reporting Dashboard & Archiving System. Centralised digital platform for operational returns and document management.">
     <title>NIS-REDAS | Nigeria Immigration Service</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/images/nis.png') }}">
     @include('partials.head-meta')
@@ -70,7 +70,7 @@
         <div class="hero-text-side animate-fade-up">
             {{-- <div class="hero-eyebrow">
                 <i class="fas fa-shield-alt"></i>
-                Official NIS Digital Platform &mdash; Version 2.0
+                Official NIS Digital Platform - Version 2.0
             </div> --}}
 
             <h1 class="hero-title">
@@ -80,7 +80,7 @@
             </h1>
 
             <p class="hero-desc">
-                NIS-REDAS centralises operational data from all formations — HQ, Zonal Commands, State Commands, Area Commands, and Foreign Missions — into a single, secure, real-time digital platform.
+                NIS-REDAS centralises operational data from all formations - HQ, Zonal Commands, State Commands, Area Commands, and Foreign Missions - into a single, secure, real-time digital platform.
             </p>
 
             <div class="hero-actions">
@@ -149,18 +149,18 @@
         <div class="section-header">
             <div class="section-eyebrow reveal">Platform Capabilities</div>
             <h2 class="section-title reveal reveal-delay-1">Everything the NIS Needs,<br>In One Place</h2>
-            <p class="section-desc reveal reveal-delay-2">A unified platform covering the full operational lifecycle — from data entry at the state command to executive dashboards at HQ.</p>
+            <p class="section-desc reveal reveal-delay-2">A unified platform covering the full operational lifecycle - from data entry at the state command to executive dashboards at HQ.</p>
         </div>
 
         <div class="features-grid">
             @foreach([
-                ['fas fa-edit',         'Report Submission Portal',        'Structured data entry forms for monthly, quarterly, and annual returns across all operational domains — passport, border crossings, deportations, visa, and more.'],
+                ['fas fa-edit',         'Report Submission Portal',        'Structured data entry forms for monthly, quarterly, and annual returns across all operational domains - passport, border crossings, deportations, visa, and more.'],
                 ['fas fa-project-diagram','Approval Workflow',             'Multi-tier review: Formation Officer → State/Zonal Supervisor → HQ Analyst. Each stage with automated notifications, comments, and audit trail.'],
-                ['fas fa-chart-area',   'Analytics Dashboards',            'Real-time KPI dashboards for management — formation compliance heatmaps, trend charts, and one-click summary report generation.'],
+                ['fas fa-chart-area',   'Analytics Dashboards',            'Real-time KPI dashboards for management - formation compliance heatmaps, trend charts, and one-click summary report generation.'],
                 ['fas fa-archive',      'Digital Archive',                 'Secure, searchable repository for scanned passport and immigration case files from all 42 Nigerian Foreign Missions. Bulk upload with progress tracking.'],
-                ['fas fa-users-cog',    'User & Role Management',          'Granular RBAC aligned to the NIS chain of command — from Data Entry Officer to CGIS — with bulk provisioning and audit log access.'],
+                ['fas fa-users-cog',    'User & Role Management',          'Granular RBAC aligned to the NIS chain of command - from Data Entry Officer to CGIS - with bulk provisioning and audit log access.'],
                 ['fas fa-shield-alt',   'Security & Compliance',           'AES-256 data at rest, TLS 1.2+ in transit, OWASP Top 10 protection, MFA for supervisors, and full NDPA 2023 compliance built-in.'],
-                ['fas fa-bell',         'Deadline Reminders',              'Automated email and in-app notifications — 7 days and 2 days before submission deadlines — so no formation misses its return window.'],
+                ['fas fa-bell',         'Deadline Reminders',              'Automated email and in-app notifications - 7 days and 2 days before submission deadlines - so no formation misses its return window.'],
                 ['fas fa-file-export',  'Report Generation',               'Export data to Excel or PDF. Pre-formatted statistical bulletins. Custom report builder for PRS analysts with dimension selection and filters.'],
             ] as [$icon, $title, $desc])
             <div class="feature-card reveal" style="transition-delay:{{ $loop->index * 0.07 }}s;">
@@ -211,7 +211,7 @@
             <div class="section-eyebrow reveal" style="color:var(--gold-300);">Role-Based Access</div>
             <h2 class="section-title reveal reveal-delay-1" style="color:white;">The Right Tools for Every Level</h2>
             <p class="section-desc reveal reveal-delay-2" style="color:rgba(255,255,255,0.6);">
-                REDAS adapts to your NIS rank and formation — from field data entry to national executive oversight.
+                REDAS adapts to your NIS rank and formation - from field data entry to national executive oversight.
             </p>
         </div>
 
@@ -221,7 +221,7 @@
                 ['fas fa-tasks',      'Supervisor',         'Zonal Command','Review and approve officer submissions within your zone, view formation compliance, escalate to HQ.'],
                 ['fas fa-chart-pie',  'HQ Admin',        'PRS Directorate', 'Aggregate national data, run trend analytics, configure templates, generate statistical bulletins and exports.'],
                 ['fas fa-users-cog',  'Super Admin',          'PRS & ICT Directorate', 'User management, audit log access, system health monitoring, bulk provisioning, and security incident reports.'],
-                ['fas fa-user-tie',   'Executive',          'CGIS / DCGs ','Read-only KPI dashboard, geographic visualisations, one-click summary reports — real time.'],
+                ['fas fa-user-tie',   'Executive',          'CGIS / DCGs ','Read-only KPI dashboard, geographic visualisations, one-click summary reports - real time.'],
                 ['fas fa-archive',    'Archive Management',    'All Users',     'Bulk upload scanned passport and immigration case files, index by applicant metadata, track upload progress.'],
             ] as [$icon, $role, $level, $desc])
             <div class="role-card reveal" style="transition-delay:{{ $loop->index * 0.07 }}s;">
@@ -258,7 +258,7 @@
     <div class="footer-container">
         <div class="footer-brand">
             <strong>Nigeria Immigration Service</strong><br>
-            Service Headquarters, Airport Road, Sauka, Abuja — FCT
+            Service Headquarters, Airport Road, Sauka, Abuja - FCT
         </div>
         <div style="text-align:center;">
             <div style="display:flex;gap:16px;justify-content:center;margin-bottom:8px;">
@@ -270,12 +270,12 @@
                     <i class="fas fa-address-book me-1"></i>Directory
                 </a>
                 <span style="color:rgba(255,255,255,0.2);">|</span>
-                <span style="color:rgba(255,255,255,0.5);font-size:.78rem;"><i class="fas fa-lock me-1"></i>RESTRICTED — Internal Use</span>
+                <span style="color:rgba(255,255,255,0.5);font-size:.78rem;"><i class="fas fa-lock me-1"></i>RESTRICTED - Internal Use</span>
             </div>
         </div>
         <div class="footer-copy">
             &copy; {{ date('Y') }} Nigeria Immigration Service. All rights reserved.<br>
-            NIS-REDAS v2.0 — ICT Directorate
+            NIS-REDAS v2.0 - ICT Directorate
         </div>
     </div>
 </footer>
