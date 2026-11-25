@@ -85,7 +85,7 @@
 <main class="redas-content">
     <div class="page-header" style="margin-bottom:20px;">
         <div>
-            <h1 class="page-title">Super Admin Command Center</h1>
+            <h1 class="page-title">Super Admin</h1>
             <p class="page-subtitle">National governance, identity &amp; access management, security auditing, and consolidated reporting oversight.</p>
         </div>
     </div>
