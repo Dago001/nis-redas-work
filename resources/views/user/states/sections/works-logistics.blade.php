@@ -73,13 +73,20 @@ $tailorItems = [
 
 /* The show route passes $commands; the edit route does not, so keep a local
    fallback to guarantee the command dropdowns are always populated. */
-$commandList = $commands ?? [
-    'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
-    'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe',
-    'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara',
-    'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau',
-    'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
-];
+$wlUser = auth()->user();
+if ($wlUser && in_array($wlUser->user_category, ['state_user', 'desk_admin'], true)) {
+    $ownCmd = \App\Http\Controllers\Web\DashboardController::commandNameForUser($wlUser)
+        ?: strtoupper((string) ($wlUser->primary_location_code ?: $wlUser->assigned_state_code));
+    $commandList = $ownCmd !== '' ? [$ownCmd] : ['Assigned Command'];
+} else {
+    $commandList = $commands ?? [
+        'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno',
+        'Cross River', 'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe',
+        'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara',
+        'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau',
+        'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
+    ];
+}
 
 $armsJson = json_decode(file_get_contents(resource_path('js/arms.json')) ?: '{}', true);
 $armsByCategory = collect($armsJson['arms'] ?? [])

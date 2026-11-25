@@ -3059,7 +3059,18 @@ $lastSection = $category['section'];
 
         const stateSelect = clone.querySelector(".command-state");
 
-        Object.keys(landBorderStates).forEach(function(state){
+        const borderUserCmd = @json(
+            auth()->check() && in_array(auth()->user()->user_category, ['state_user', 'desk_admin'], true)
+                ? (\App\Http\Controllers\Web\DashboardController::commandNameForUser(auth()->user()) ?? '')
+                : ''
+        );
+        const stateKeys = Object.keys(landBorderStates).filter(function(st) {
+            if (!borderUserCmd) return true;
+            return borderUserCmd.toLowerCase().includes(st.toLowerCase());
+        });
+        const effectiveStates = stateKeys.length > 0 ? stateKeys : Object.keys(landBorderStates);
+
+        effectiveStates.forEach(function(state){
 
             const option = document.createElement("option");
 

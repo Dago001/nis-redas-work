@@ -23,16 +23,46 @@
             'Immigration Assistant III'
         ];
 
-        $commands = [
-            'ZONE A' => ['LASC', 'SEBC', 'IDBC', 'LSPMC', 'LAPC', 'LABPC', 'MMIA', 'OGSC'],
-            'ZONE B' => ['KDSC', 'KNSC', 'ITSK', 'MAKIA', 'KTSC', 'JIBIYA', 'SOSC', 'ICSC', 'ILBC', 'ZMSC', 'JGSC'],
-            'ZONE C' => ['BASC', 'YBSC', 'BOSC', 'ADSC', 'GMSC', 'PLSC'],
-            'ZONE D' => ['FCTC', 'NAIA', 'KWSC', 'NGSC', 'KBSC'],
-            'ZONE E' => ['ABSC', 'AKSC', 'CRSC', 'MFBC', 'EBSC', 'IMSC', 'NITSOL', 'RVSC', 'NITSA', 'RVMC'],
-            'ZONE F' => ['OYSC', 'OSSC', 'ODSC', 'EKSC'],
-            'ZONE G' => ['ANSC', 'BYSC', 'DTSC', 'ENSC', 'EDSC'],
-            'ZONE H' => ['BNSC', 'KGSC', 'TRSC', 'NASC']
-        ];
+        $hierarchyZones = (array) config('nis_hierarchy.zones', []);
+        $allCommands = [];
+        foreach ($hierarchyZones as $zCode => $zInfo) {
+            $letter = strtoupper(str_replace('ZONE-', '', (string) $zCode));
+            $allCommands['ZONE '.$letter] = array_keys((array) ($zInfo['commands'] ?? []));
+        }
+
+        $migUser = auth()->user();
+        $migCommandCode = strtoupper(trim((string) ($migUser?->primary_location_code ?: $migUser?->assigned_state_code)));
+        $migZoneLabel = null;
+
+        if ($migUser && in_array($migUser->user_category, ['state_user', 'desk_admin', 'zonal_commander'], true)) {
+            $rawZone = strtoupper(trim((string) ($migUser->assigned_zonal_command_code ?: ($migUser->user_category === 'zonal_commander' ? $migUser->primary_location_code : ''))));
+            if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
+                $migZoneLabel = 'ZONE '.$zm[1];
+            }
+            if ($migZoneLabel === null && $migCommandCode !== '') {
+                foreach ($allCommands as $zLbl => $cmds) {
+                    if (in_array($migCommandCode, $cmds, true)) {
+                        $migZoneLabel = $zLbl;
+                        break;
+                    }
+                }
+            }
+            if ($migZoneLabel === null && $migCommandCode !== '') {
+                $stateToZone = (array) config('nis_hierarchy.state_to_zone', []);
+                $mappedZone = strtoupper((string) ($stateToZone[$migCommandCode] ?? ''));
+                if (preg_match('/^ZONE-?([A-H])$/', $mappedZone, $zm)) {
+                    $migZoneLabel = 'ZONE '.$zm[1];
+                }
+            }
+        }
+
+        $migZoneScoped = $migZoneLabel !== null && isset($allCommands[$migZoneLabel]);
+        $commands = $migZoneScoped ? [$migZoneLabel => $allCommands[$migZoneLabel]] : $allCommands;
+        $restrictMigToOwnCommand = $migUser
+            && in_array($migUser->user_category, ['state_user', 'desk_admin'], true)
+            && $migCommandCode !== ''
+            && collect($commands)->flatten()->contains(fn ($c) => strtoupper((string) $c) === $migCommandCode);
+        $migLockedStyle = 'padding:4px 6px;font-size:0.8rem;text-align:center;background:#f1f5f9;color:#94a3b8;cursor:not-allowed;pointer-events:none;';
 
         $mouCountries = [
             'ecowas' => ['Benin', 'Burkina Faso', 'Cabo Verde', "Cote d'Ivoire", 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Liberia', 'Mali', 'Niger', 'Nigeria', 'Senegal', 'Sierra Leone', 'Togo'],
@@ -149,6 +179,7 @@
             <div class="redas-card">
                 <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 20px;border-bottom:1px solid var(--gray-200);">
                     <div class="card-head-title">Anti-Smuggling of Migrants Returns (ANTI-SOM)</div>
+                    @if(! $migZoneScoped)
                     <div style="display:flex;gap:8px;align-items:center;">
                         <select id="som-zone-selector" class="ni ni-select" style="padding:4px 10px;font-size:0.8rem;width:150px;height:34px;">
                             <option value="">Add Zone...</option>
@@ -164,19 +195,21 @@
                             <i class="fas fa-plus"></i> Add Zone Rows
                         </button>
                     </div>
+                    @endif
                 </div>
                 <div style="background:var(--gray-50);padding:8px 20px;font-size:0.75rem;font-weight:700;color:var(--gray-500);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                    <span>ACTIVE ZONES IN FORM:</span>
+                    <span>ACTIVE ZONE IN FORM:</span>
                     <div id="som-active-list" style="display:flex;gap:4px;">
-                        <span class="status-badge badge-approved" id="som-badge-zone_a">Zone A</span>
+                        @php $firstMigZone = array_key_first($commands) ?? 'ZONE A'; @endphp
+                        <span class="status-badge badge-approved" id="som-badge-{{ strtolower(str_replace(' ', '_', $firstMigZone)) }}">{{ $firstMigZone }}</span>
                     </div>
                 </div>
                 <div class="card-body no-pad" style="overflow-x:auto;">
                     <table class="redas-table" style="min-width:1250px;font-size:0.8rem;">
                         <thead>
                             <tr>
-                                <th style="width:110px;text-align:center;">Zone</th>
-                                <th style="width:110px;">Command</th>
+                                <th style="width:95px;text-align:center;">Zone</th>
+                                <th style="width:150px;">Command</th>
                                 <th>Migrants Intercepted</th>
                                 <th>Smugglers Arrested</th>
                                 <th>Cases Investigation</th>
@@ -186,20 +219,31 @@
                                 <th>Referral Agencies</th>
                                 <th>Nigerians Repatriated</th>
                                 <th>Foreigners Repatriated</th>
-                                <th style="width:150px;min-width:150px;">Total</th>
+                                <th style="width:130px;min-width:120px;">Total</th>
                             </tr>
                         </thead>
                         @foreach($commands as $zone => $zoneCommands)
                         @php $zoneId = strtolower(str_replace(' ', '_', $zone)); @endphp
-                        <tbody class="som-zone-group {{ $zone === 'ZONE A' ? '' : 'd-none' }}" id="som-zone-{{ $zoneId }}">
+                        <tbody class="som-zone-group" id="som-zone-{{ $zoneId }}" @if(! $migZoneScoped && $zone !== 'ZONE A') style="display:none;" @endif>
                             @foreach($zoneCommands as $commandName)
-                            <tr class="som-row" @if($loop->first) style="border-top:3px solid var(--nis-600) !important;" @endif>
+                            @php
+                                $isOwnMigCmd = $migCommandCode !== '' && strtoupper($commandName) === $migCommandCode;
+                                $isMigRowLocked = $restrictMigToOwnCommand && ! $isOwnMigCmd;
+                            @endphp
+                            <tr class="som-row" style="{{ $loop->first ? 'border-top:3px solid var(--nis-600) !important;' : '' }}{{ $isOwnMigCmd ? 'background:#f0fdf4;' : ($isMigRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                 @if($loop->first)
-                                <td rowspan="{{ count($zoneCommands) }}" style="vertical-align:middle;font-weight:800;background:var(--gray-50);text-align:center;border-right:1px solid var(--gray-200);">
+                                <td rowspan="{{ count($zoneCommands) }}" style="vertical-align:middle;font-weight:800;background:var(--gray-50);text-align:center;border-right:1px solid var(--gray-200);opacity:1;">
                                     {{ $zone }}
                                 </td>
                                 @endif
-                                <td><strong>{{ $commandName }}</strong></td>
+                                <td style="white-space:nowrap;{{ $isMigRowLocked ? 'color:#94a3b8;' : '' }}">
+                                    <strong>{{ $commandName }}</strong>
+                                    @if($isOwnMigCmd)
+                                        <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Command</span>
+                                    @elseif($isMigRowLocked)
+                                        <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
+                                    @endif
+                                </td>
                                 @foreach([
                                     'migrants_intercepted',
                                     'smugglers_arrested',
@@ -214,13 +258,15 @@
                                 <td>
                                     <input type="number" min="0" class="ni som-field-input"
                                         name="smuggling_of_migrants[{{ $commandName }}][{{ $fieldKey }}]"
-                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="0" placeholder="0" style="padding:4px 6px;font-size:0.8rem;text-align:center;">
+                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="{{ $isMigRowLocked ? '' : '0' }}" placeholder="0"
+                                        @if($isMigRowLocked) disabled readonly tabindex="-1" style="{{ $migLockedStyle }}" @else style="padding:4px 6px;font-size:0.8rem;text-align:center;" @endif>
                                 </td>
                                 @endforeach
                                 <td>
                                     <input type="number" class="ni som-row-total"
                                         name="smuggling_of_migrants[{{ $commandName }}][total]"
-                                        id="som-total-{{ $commandName }}" value="0" readonly style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:130px;">
+                                        id="som-total-{{ $commandName }}" value="{{ $isMigRowLocked ? '' : '0' }}" readonly
+                                        @if($isMigRowLocked) disabled tabindex="-1" style="{{ $migLockedStyle }}" @else style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:100px;" @endif>
                                 </td>
                             </tr>
                             @endforeach
@@ -236,6 +282,7 @@
             <div class="redas-card">
                 <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:12px 20px;border-bottom:1px solid var(--gray-200);">
                     <div class="card-head-title">Trafficking In Persons Returns (TIP)</div>
+                    @if(! $migZoneScoped)
                     <div style="display:flex;gap:8px;align-items:center;">
                         <select id="tip-zone-selector" class="ni ni-select" style="padding:4px 10px;font-size:0.8rem;width:150px;height:34px;">
                             <option value="">Add Zone...</option>
@@ -251,19 +298,20 @@
                             <i class="fas fa-plus"></i> Add Zone Rows
                         </button>
                     </div>
+                    @endif
                 </div>
                 <div style="background:var(--gray-50);padding:8px 20px;font-size:0.75rem;font-weight:700;color:var(--gray-500);display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                    <span>ACTIVE ZONES IN FORM:</span>
+                    <span>ACTIVE ZONE IN FORM:</span>
                     <div id="tip-active-list" style="display:flex;gap:4px;">
-                        <span class="status-badge badge-approved" id="tip-badge-zone_a">Zone A</span>
+                        <span class="status-badge badge-approved" id="tip-badge-{{ strtolower(str_replace(' ', '_', $firstMigZone)) }}">{{ $firstMigZone }}</span>
                     </div>
                 </div>
                 <div class="card-body no-pad" style="overflow-x:auto;">
                     <table class="redas-table" style="min-width:1150px;font-size:0.8rem;">
                         <thead>
                             <tr>
-                                <th style="width:110px;text-align:center;">Zone</th>
-                                <th style="width:110px;">Command</th>
+                                <th style="width:95px;text-align:center;">Zone</th>
+                                <th style="width:150px;">Command</th>
                                 <th>TIP Victims Rescued</th>
                                 <th>Traffickers Arrested</th>
                                 <th>Victims referred NAPTIP</th>
@@ -271,20 +319,31 @@
                                 <th>Victims Reunited</th>
                                 <th>CL Victims Apprehended NAPTIP</th>
                                 <th>Victims Repatriated NAPTIP</th>
-                                <th style="width:150px;min-width:150px;">Total</th>
+                                <th style="width:130px;min-width:120px;">Total</th>
                             </tr>
                         </thead>
                         @foreach($commands as $zone => $zoneCommands)
                         @php $zoneId = strtolower(str_replace(' ', '_', $zone)); @endphp
-                        <tbody class="tip-zone-group {{ $zone === 'ZONE A' ? '' : 'd-none' }}" id="tip-zone-{{ $zoneId }}">
+                        <tbody class="tip-zone-group" id="tip-zone-{{ $zoneId }}" @if(! $migZoneScoped && $zone !== 'ZONE A') style="display:none;" @endif>
                             @foreach($zoneCommands as $commandName)
-                            <tr class="tip-row" @if($loop->first) style="border-top:3px solid var(--nis-600) !important;" @endif>
+                            @php
+                                $isOwnTipCmd = $migCommandCode !== '' && strtoupper($commandName) === $migCommandCode;
+                                $isTipRowLocked = $restrictMigToOwnCommand && ! $isOwnTipCmd;
+                            @endphp
+                            <tr class="tip-row" style="{{ $loop->first ? 'border-top:3px solid var(--nis-600) !important;' : '' }}{{ $isOwnTipCmd ? 'background:#f0fdf4;' : ($isTipRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                 @if($loop->first)
-                                <td rowspan="{{ count($zoneCommands) }}" style="vertical-align:middle;font-weight:800;background:var(--gray-50);text-align:center;border-right:1px solid var(--gray-200);">
+                                <td rowspan="{{ count($zoneCommands) }}" style="vertical-align:middle;font-weight:800;background:var(--gray-50);text-align:center;border-right:1px solid var(--gray-200);opacity:1;">
                                     {{ $zone }}
                                 </td>
                                 @endif
-                                <td><strong>{{ $commandName }}</strong></td>
+                                <td style="white-space:nowrap;{{ $isTipRowLocked ? 'color:#94a3b8;' : '' }}">
+                                    <strong>{{ $commandName }}</strong>
+                                    @if($isOwnTipCmd)
+                                        <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Command</span>
+                                    @elseif($isTipRowLocked)
+                                        <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
+                                    @endif
+                                </td>
                                 @foreach([
                                     'victims_rescued',
                                     'traffickers_arrested',
@@ -297,13 +356,15 @@
                                 <td>
                                     <input type="number" min="0" class="ni tip-field-input"
                                         name="trafficking_in_persons[{{ $commandName }}][{{ $fieldKey }}]"
-                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="0" placeholder="0" style="padding:4px 6px;font-size:0.8rem;text-align:center;">
+                                        data-command="{{ $commandName }}" data-field="{{ $fieldKey }}" value="{{ $isTipRowLocked ? '' : '0' }}" placeholder="0"
+                                        @if($isTipRowLocked) disabled readonly tabindex="-1" style="{{ $migLockedStyle }}" @else style="padding:4px 6px;font-size:0.8rem;text-align:center;" @endif>
                                 </td>
                                 @endforeach
                                 <td>
                                     <input type="number" class="ni tip-row-total"
                                         name="trafficking_in_persons[{{ $commandName }}][total]"
-                                        id="tip-total-{{ $commandName }}" value="0" readonly style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:130px;">
+                                        id="tip-total-{{ $commandName }}" value="{{ $isTipRowLocked ? '' : '0' }}" readonly
+                                        @if($isTipRowLocked) disabled tabindex="-1" style="{{ $migLockedStyle }}" @else style="background:var(--gray-50);padding:4px 6px;font-size:0.8rem;font-weight:700;text-align:center;min-width:100px;" @endif>
                                 </td>
                             </tr>
                             @endforeach

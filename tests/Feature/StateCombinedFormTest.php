@@ -195,6 +195,15 @@ class StateCombinedFormTest extends TestCase
         $this->assertStringNotContainsString('name="suspect[SHQ]', $htmlA);
         $this->assertStringNotContainsString('name="suspect[ZONE_A][OGSC]', $htmlA);
 
+        // Migration (ANTI-SOM & ANTI-TIP): only Zone A shown, no Add Zone Rows, LASC active & OGSC disabled
+        $this->assertStringNotContainsString('id="som-zone-zone_b"', $htmlA);
+        $this->assertStringNotContainsString('id="tip-zone-zone_b"', $htmlA);
+        $this->assertStringNotContainsString('data-m-action="add-som-zone"', $htmlA);
+        $this->assertDoesNotMatchRegularExpression('/name="smuggling_of_migrants\[LASC\]\[migrants_intercepted\]"[^>]*disabled/', $htmlA);
+        $this->assertMatchesRegularExpression('/name="smuggling_of_migrants\[OGSC\]\[migrants_intercepted\]"[^>]*disabled/', $htmlA);
+        $this->assertDoesNotMatchRegularExpression('/name="trafficking_in_persons\[LASC\]\[victims_rescued\]"[^>]*disabled/', $htmlA);
+        $this->assertMatchesRegularExpression('/name="trafficking_in_persons\[OGSC\]\[victims_rescued\]"[^>]*disabled/', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',
