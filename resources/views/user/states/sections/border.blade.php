@@ -5,6 +5,32 @@
      All tab ids/data-tabs are prefixed with "border-" so they stay unique when
      all ten directorate forms share one page. --}}
 
+@php
+    $borderUser = auth()->user();
+    $borderCmdCode = strtoupper(trim((string) ($borderUser?->primary_location_code ?: $borderUser?->assigned_state_code)));
+    $borderStateLookup = [
+        'LASC' => 'Lagos', 'LASPC' => 'Lagos', 'SEME' => 'Lagos', 'MMIA' => 'Lagos', 'LABPC' => 'Lagos', 'LAPC' => 'Lagos',
+        'OGSC' => 'Ogun', 'IDBC' => 'Ogun',
+        'KNSC' => 'Kano', 'MAKIA' => 'Kano', 'ITSK' => 'Kano',
+        'KDSC' => 'Kaduna', 'KTSC' => 'Katsina', 'JIBC' => 'Katsina', 'ZMSC' => 'Zamfara',
+        'SOSC' => 'Sokoto', 'ILBC' => 'Sokoto', 'ICSC' => 'Sokoto', 'JGSC' => 'Jigawa',
+        'ADSC' => 'Adamawa', 'BASC' => 'Bauchi', 'BOSC' => 'Borno', 'GMSC' => 'Gombe', 'PLSC' => 'Plateau', 'YBSC' => 'Yobe',
+        'FCTC' => 'Abuja', 'NGSC' => 'Niger', 'KBSC' => 'Kebbi', 'RMAT' => 'Kebbi', 'KWSC' => 'Kwara',
+        'IMSC' => 'Imo', 'NITSOL' => 'Imo', 'RVSC' => 'Rivers', 'RVMC' => 'Rivers', 'NITSA' => 'Rivers',
+        'CRSC' => 'Cross River', 'MFBC' => 'Cross River', 'EBSC' => 'Ebonyi', 'AKSC' => 'Akwa Ibom',
+        'OYSC' => 'Oyo', 'EKSC' => 'Ekiti', 'ODSC' => 'Ondo', 'OSSC' => 'Osun',
+        'EDSC' => 'Edo', 'ANSC' => 'Anambra', 'DTSC' => 'Delta', 'ENSC' => 'Enugu', 'BYSC' => 'Bayelsa',
+        'NASC' => 'Nasarawa', 'BNSC' => 'Benue', 'KGSC' => 'Kogi', 'TRSC' => 'Taraba',
+    ];
+    $borderOwnState = null;
+    if ($borderUser && in_array($borderUser->user_category, ['state_user', 'desk_admin'], true) && $borderCmdCode !== '') {
+        $borderOwnState = $borderStateLookup[$borderCmdCode]
+            ?? ((\App\Services\GeolocationService::stateNameFromCode($borderCmdCode) !== null)
+                ? trim(str_ireplace(' State', '', (string) \App\Services\GeolocationService::stateNameFromCode($borderCmdCode)))
+                : null);
+    }
+@endphp
+
 <style>
 .border-actions { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px 0; margin-top:10px; border-top:1px solid var(--gray-200); position:sticky; bottom:0; background:#fff; z-index:20; }
 .border-actions-center { display:flex; gap:10px; }
@@ -12,6 +38,17 @@
 .border-preview-table th, .border-preview-table td { border:1px solid var(--gray-200); padding:6px 8px; text-align:left; }
 .border-preview-table th { background:#f8fafc; font-weight:700; }
 .border-preview-section-title { font-size:.9rem; font-weight:700; margin:18px 0 8px; color:var(--nis-700); border-bottom:1px solid var(--gray-200); padding-bottom:4px; }
+/* Clean horizontal summary strips inside Border Management (no Bootstrap CSS needed) */
+[id^="tab-border-"] .row { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:10px; }
+[id^="tab-border-"] .alert { display:block; padding:10px 14px; border-radius:8px; font-size:.82rem; margin:0; border:1px solid #e2e8f0; background:#f8fafc; color:#1e293b; }
+[id^="tab-border-"] .alert.alert-success { background:#ecfdf5; border-color:#bbf7d0; color:#166534; }
+[id^="tab-border-"] .alert.alert-primary { background:#eff6ff; border-color:#bfdbfe; color:#1d4ed8; }
+[id^="tab-border-"] .alert.alert-warning { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+[id^="tab-border-"] .alert.alert-danger  { background:#fef2f2; border-color:#fecaca; color:#b91c1c; }
+[id^="tab-border-"] .alert.alert-info    { background:#f0f9ff; border-color:#bae6fd; color:#0369a1; }
+[id^="tab-border-"] .alert.alert-secondary { background:#f1f5f9; border-color:#cbd5e1; color:#334155; }
+[id^="tab-border-"] .alert .d-flex { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+[id^="tab-border-"] .redas-card.mb-4 { margin-bottom:16px; }
 </style>
 
 <!-- ==========================================================
@@ -342,6 +379,14 @@
 
         ];
 
+        if ($borderOwnState !== null) {
+            $states = array_filter(
+                $states,
+                fn ($posts, $st) => strcasecmp($st, $borderOwnState) === 0,
+                ARRAY_FILTER_USE_BOTH
+            );
+        }
+
     @endphp
 
     <div class="redas-card" style="margin-bottom:14px;">
@@ -595,7 +640,7 @@
                 <button
                     type="button"
                     id="btnAddCommand"
-                    class="btn btn-success btn-sm">
+                    class="btn-nis btn-primary-nis btn-sm">
                     <i class="fas fa-plus-circle"></i>
                     Add Border Command
                 </button>
@@ -683,103 +728,79 @@
 
     <template id="commandTemplate">
 
-        <div class="redas-card nationality-card mb-4">
+        <div class="redas-card nationality-card" style="margin-bottom:16px;">
 
-            <div class="card-head">
+            <div class="card-head" style="height:auto;padding:14px 18px;">
 
-                <div class="row w-100 align-items-end">
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:14px;align-items:end;width:100%;">
 
-                    <div class="col-md-5">
-
-                        <label class="form-label fw-bold">
-
+                    <div>
+                        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--gray-700);margin-bottom:5px;">
                             State / Command
-
                         </label>
-
-                        <select class="form-select command-state"
-                                name="border[nationality][__CMD__][state]">
-
-                            <option value="">
-
-                                Select State
-
-                            </option>
-
+                        <select class="ni ni-select command-state"
+                                name="border[nationality][__CMD__][state]" style="height:38px;">
+                            <option value="">Select State</option>
                         </select>
-
                     </div>
 
-                    <div class="col-md-5">
-
-                        <label class="form-label fw-bold">
-
+                    <div>
+                        <label style="display:block;font-size:.78rem;font-weight:700;color:var(--gray-700);margin-bottom:5px;">
                             Control Post
-
                         </label>
-
-                        <select class="form-select control-post"
-                                name="border[nationality][__CMD__][control_post]">
-
-                            <option value="">
-
-                                Select Control Post
-
-                            </option>
-
+                        <select class="ni ni-select control-post"
+                                name="border[nationality][__CMD__][control_post]" style="height:38px;">
+                            <option value="">Select Control Post</option>
                         </select>
-
                     </div>
 
-                    <div class="col-md-2 text-end">
-
+                    <div>
                         <button
                             type="button"
-                            class="btn btn-danger btn-sm btnRemoveCommand">
-
+                            class="btn-nis btn-sm btnRemoveCommand"
+                            title="Remove Border Command"
+                            style="height:38px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;">
                             <i class="fas fa-trash"></i>
-
                         </button>
-
                     </div>
 
                 </div>
 
             </div>
 
-            <div class="card-body">
+            <div class="card-body" style="padding:16px 18px;">
 
                 <div class="table-responsive">
 
-                    <table class="nis-table nationality-table">
+                    <table class="nis-table nationality-table" style="min-width:820px;">
 
                         <thead>
 
                             <tr>
 
-                                <th rowspan="2" width="60">S/N</th>
+                                <th rowspan="2" style="width:46px;text-align:center;">S/N</th>
 
-                                <th rowspan="2">Nationality</th>
+                                <th rowspan="2" style="min-width:170px;">Nationality</th>
 
-                                <th colspan="3">Arrival</th>
+                                <th colspan="3" style="text-align:center;background:#eff6ff;color:#1d4ed8;">Arrival</th>
 
-                                <th colspan="3">Departure</th>
+                                <th colspan="3" style="text-align:center;background:#f0fdf4;color:#15803d;">Departure</th>
 
-                                <th rowspan="2">Grand Total</th>
+                                <th rowspan="2" style="width:92px;text-align:center;">Grand Total</th>
 
-                                <th rowspan="2">Action</th>
+                                <th rowspan="2" style="width:60px;text-align:center;">Action</th>
 
                             </tr>
 
                             <tr>
 
-                                <th>Male</th>
-                                <th>Female</th>
-                                <th>Total</th>
+                                <th style="text-align:center;">Male</th>
+                                <th style="text-align:center;">Female</th>
+                                <th style="text-align:center;">Total</th>
 
-                                <th>Male</th>
-                                <th>Female</th>
-                                <th>Total</th>
+                                <th style="text-align:center;">Male</th>
+                                <th style="text-align:center;">Female</th>
+                                <th style="text-align:center;">Total</th>
 
                             </tr>
 
@@ -854,14 +875,10 @@
 
             <td>
 
-                <select class="form-select form-select-sm nationality-select"
+                <select class="ni ni-select nationality-select"
                         name="border[nationality][__CMD__][rows][nationality][]">
 
-                    <option value="">
-
-                        Select Nationality
-
-                    </option>
+                    <option value="">Select Nationality</option>
 
                 </select>
 
@@ -874,10 +891,11 @@
             <td><input type="number" class="ni departureFemale" name="border[nationality][__CMD__][rows][departure_female][]" value="0" min="0"></td>
             <td><input class="ni departureTotal" readonly></td>
             <td><input class="ni grandTotal" readonly></td>
-            <td class="text-center">
+            <td style="text-align:center;">
                 <button
                     type="button"
-                    class="btn btn-sm btn-outline-danger btnRemoveNationality">
+                    class="btn-nis btn-ghost btn-sm btnRemoveNationality"
+                    style="color:var(--color-danger);padding:4px 8px;">
                     <i class="fas fa-times"></i>
                 </button>
             </td>
@@ -917,6 +935,14 @@ $seaportStates = [
         'Ebughu'
     ]
 ];
+
+if ($borderOwnState !== null) {
+    $seaportStates = array_filter(
+        $seaportStates,
+        fn ($ports, $st) => strcasecmp($st, $borderOwnState) === 0,
+        ARRAY_FILTER_USE_BOTH
+    );
+}
 @endphp
 
 
@@ -1436,6 +1462,13 @@ $internationalAirports = [
     'Akanu Ibiam International Airport, Enugu' => 'Enugu'
 
 ];
+
+if ($borderOwnState !== null) {
+    $internationalAirports = array_filter(
+        $internationalAirports,
+        fn ($st) => strcasecmp($st, $borderOwnState) === 0 || ($borderOwnState === 'Abuja' && strcasecmp($st, 'FCT') === 0)
+    );
+}
 
 @endphp
 

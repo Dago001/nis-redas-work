@@ -98,7 +98,7 @@
 /* The tab buttons intentionally do NOT use the global .entry-tab class (the
    footer handler and the combined page's scoped handler both bind to it);
    mirror its styling here so the bar looks the same on both pages. */
-#migrationFormTabs [data-m-tab] { display:flex; align-items:center; gap:7px; padding:14px 18px; font-size:.78rem; font-weight:600; color:var(--gray-500); white-space:nowrap; cursor:pointer; border:none; background:none; border-bottom:3px solid transparent; transition:all .2s; position:relative; }
+#migrationFormTabs [data-m-tab] { display:flex; align-items:center; gap:6px; padding:12px 13px; font-size:.75rem; font-weight:600; color:var(--gray-500); white-space:nowrap; cursor:pointer; border:none; background:none; border-bottom:3px solid transparent; transition:all .2s; position:relative; }
 #migrationFormTabs [data-m-tab]:hover { color:var(--nis-700); background:var(--nis-50); }
 #migrationFormTabs [data-m-tab].active { color:var(--nis-700); border-bottom-color:var(--nis-600); background:var(--nis-50); }
 </style>

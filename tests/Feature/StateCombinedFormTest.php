@@ -210,6 +210,13 @@ class StateCombinedFormTest extends TestCase
         $this->assertStringNotContainsString('data-m-action="add-refugee-row"', $htmlA);
         $this->assertStringNotContainsString('data-m-action="add-asylum-row"', $htmlA);
 
+        // Border Management (Seaport & Marine, Int. Airports): Lagos officer sees ONLY Lagos, no Delta/Cross River/Kano/Enugu
+        $this->assertStringContainsString('name="border[seaport][lagos][0][passenger_arrival_male]"', $htmlA);
+        $this->assertStringNotContainsString('name="border[seaport][delta]', $htmlA);
+        $this->assertStringNotContainsString('name="border[seaport][rivers]', $htmlA);
+        $this->assertStringContainsStringIgnoringCase('Murtala Mohammed International Airport', $htmlA);
+        $this->assertStringNotContainsStringIgnoringCase('Akanu Ibiam International Airport, Enugu', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',
