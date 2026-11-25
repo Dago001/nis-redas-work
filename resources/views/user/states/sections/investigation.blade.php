@@ -181,18 +181,18 @@ $rankRows = [
                 </div>
             </div>
             <div class="card-body">
-                <div class="table-responsive">
-                    <table class="nis-table" id="investigation-breach-table">
+                <div class="table-responsive" style="overflow-x:auto;">
+                    <table class="nis-table" id="investigation-breach-table" style="width:100%;table-layout:fixed;">
                         <thead>
                             <tr>
-                                <th style="width:40px;">S/N</th>
-                                <th style="min-width:160px;">SHQ / Zones</th>
-                                <th style="min-width:100px;">Command</th>
-                                <th>Cases involving Companies</th>
-                                <th>Cases involving Expatriates</th>
-                                <th>Cases involving Officers</th>
-                                <th>Cases Involving Nigerians</th>
-                                <th style="width:100px;">Total</th>
+                                <th style="width:42px;">S/N</th>
+                                <th style="width:92px;">Zone</th>
+                                <th style="width:155px;">Command</th>
+                                <th style="white-space:normal;line-height:1.25;">Cases Involving Companies</th>
+                                <th style="white-space:normal;line-height:1.25;">Cases Involving Expatriates</th>
+                                <th style="white-space:normal;line-height:1.25;">Cases Involving Officers</th>
+                                <th style="white-space:normal;line-height:1.25;">Cases Involving Nigerians</th>
+                                <th style="width:88px;">Total</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -256,10 +256,10 @@ $rankRows = [
                                     <tr style="{{ $isOwnInvCmd ? 'background:#f0fdf4;' : ($isInvRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                         <td>{{ ++$sn }}</td>
                                         <td></td>
-                                        <td style="padding-left:22px;{{ $isInvRowLocked ? 'color:#94a3b8;' : '' }}">
+                                        <td style="padding-left:14px;white-space:nowrap;{{ $isInvRowLocked ? 'color:#94a3b8;' : '' }}">
                                             <strong>{{ $cmd }}</strong>
                                             @if($isOwnInvCmd)
-                                                <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;">Your Command</span>
+                                                <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your Command</span>
                                             @elseif($isInvRowLocked)
                                                 <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
                                             @endif
