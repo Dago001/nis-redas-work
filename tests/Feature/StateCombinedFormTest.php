@@ -204,6 +204,12 @@ class StateCombinedFormTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/name="trafficking_in_persons\[LASC\]\[victims_rescued\]"[^>]*disabled/', $htmlA);
         $this->assertMatchesRegularExpression('/name="trafficking_in_persons\[OGSC\]\[victims_rescued\]"[^>]*disabled/', $htmlA);
 
+        // Migration (Refugees & Asylum Seekers): state locked to officer's own state (Lagos), no Add State Row
+        $this->assertStringContainsString('name="refugees_asylum_seekers[refugees][0][state]" value="Lagos"', $htmlA);
+        $this->assertStringContainsString('name="refugees_asylum_seekers[asylum_seekers][0][state]" value="Lagos"', $htmlA);
+        $this->assertStringNotContainsString('data-m-action="add-refugee-row"', $htmlA);
+        $this->assertStringNotContainsString('data-m-action="add-asylum-row"', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',

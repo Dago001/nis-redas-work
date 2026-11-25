@@ -64,6 +64,25 @@
             && collect($commands)->flatten()->contains(fn ($c) => strtoupper((string) $c) === $migCommandCode);
         $migLockedStyle = 'padding:4px 6px;font-size:0.8rem;text-align:center;background:#f1f5f9;color:#94a3b8;cursor:not-allowed;pointer-events:none;';
 
+        $migStateMap = [
+            'LASC' => 'Lagos', 'LASPC' => 'Lagos', 'SEME' => 'Lagos', 'MMIA' => 'Lagos', 'LABPC' => 'Lagos', 'LAPC' => 'Lagos',
+            'OGSC' => 'Ogun', 'IDBC' => 'Ogun',
+            'KNSC' => 'Kano', 'MAKIA' => 'Kano', 'ITSK' => 'Kano',
+            'KDSC' => 'Kaduna', 'KTSC' => 'Katsina', 'JIBC' => 'Katsina', 'ZMSC' => 'Zamfara',
+            'SOSC' => 'Sokoto', 'ILBC' => 'Sokoto', 'ICSC' => 'Sokoto', 'JGSC' => 'Jigawa',
+            'ADSC' => 'Adamawa', 'BASC' => 'Bauchi', 'BOSC' => 'Borno', 'GMSC' => 'Gombe', 'PLSC' => 'Plateau', 'YBSC' => 'Yobe',
+            'FCTC' => 'FCT', 'NGSC' => 'Niger', 'KBSC' => 'Kebbi', 'RMAT' => 'Kebbi', 'KWSC' => 'Kwara',
+            'IMSC' => 'Imo', 'NITSOL' => 'Imo', 'RVSC' => 'Rivers', 'RVMC' => 'Rivers', 'NITSA' => 'Rivers',
+            'CRSC' => 'Cross River', 'MFBC' => 'Cross River', 'EBSC' => 'Ebonyi', 'AKSC' => 'Akwa Ibom',
+            'OYSC' => 'Oyo', 'EKSC' => 'Ekiti', 'ODSC' => 'Ondo', 'OSSC' => 'Osun',
+            'EDSC' => 'Edo', 'ANSC' => 'Anambra', 'DTSC' => 'Delta', 'ENSC' => 'Enugu', 'BYSC' => 'Bayelsa',
+            'NASC' => 'Nasarawa', 'BNSC' => 'Benue', 'KGSC' => 'Kogi', 'TRSC' => 'Taraba',
+        ];
+        $migOwnStateName = $migStateMap[$migCommandCode]
+            ?? ((\App\Services\GeolocationService::stateNameFromCode($migCommandCode) !== null)
+                ? trim(str_ireplace(' State', '', (string) \App\Services\GeolocationService::stateNameFromCode($migCommandCode)))
+                : $migCommandCode);
+
         $mouCountries = [
             'ecowas' => ['Benin', 'Burkina Faso', 'Cabo Verde', "Cote d'Ivoire", 'Gambia', 'Ghana', 'Guinea', 'Guinea-Bissau', 'Liberia', 'Mali', 'Niger', 'Nigeria', 'Senegal', 'Sierra Leone', 'Togo'],
             'non_ecowas' => ['Algeria', 'Angola', 'Botswana', 'Burundi', 'Cameroon', 'Cape Verde', 'Central African Republic', 'Chad', 'Comoros', 'Congo', 'Dem. Rep. Congo', 'Djibouti', 'Egypt', 'Equatorial Guinea', 'Eritrea', 'Eswatini', 'Ethiopia', 'Gabon', 'Kenya', 'Lesotho', 'Libya', 'Madagascar', 'Malawi', 'Mauritania', 'Mauritius', 'Morocco', 'Mozambique', 'Namibia', 'Rwanda', 'Sao Tome and Principe', 'Seychelles', 'Somalia', 'South Africa', 'South Sudan', 'Sudan', 'Tanzania', 'Tunisia', 'Uganda', 'Zambia', 'Zimbabwe'],
@@ -381,9 +400,11 @@
             <div class="redas-card" style="margin-bottom:16px;">
                 <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
                     <div class="card-head-title">Refugee Applications by State</div>
+                    @if(! $restrictMigToOwnCommand)
                     <button type="button" class="btn-nis btn-ghost btn-sm" data-m-action="add-refugee-row">
                         <i class="fas fa-plus"></i> Add State Row
                     </button>
+                    @endif
                 </div>
                 <div class="card-body no-pad" style="overflow-x:auto;">
                     <table class="redas-table" id="refugeesTable" style="min-width:600px;">
@@ -394,18 +415,25 @@
                                 <th style="width:160px;">Approved</th>
                                 <th style="width:160px;">Rejected</th>
                                 <th style="width:140px;">Total</th>
-                                <th style="width:60px;"></th>
+                                @if(! $restrictMigToOwnCommand)<th style="width:60px;"></th>@endif
                             </tr>
                         </thead>
                         <tbody id="refugeesBody">
-                            <tr class="refugee-row">
+                            <tr class="refugee-row" style="{{ $restrictMigToOwnCommand ? 'background:#f0fdf4;' : '' }}">
                                 <td>
-                                    <select name="refugees_asylum_seekers[refugees][0][state]" class="ni ni-select" style="padding:6px 10px;">
-                                        <option value="">Select State</option>
-                                        @foreach(['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT'] as $s)
-                                        <option value="{{ $s }}">{{ $s }}</option>
-                                        @endforeach
-                                    </select>
+                                    @if($restrictMigToOwnCommand)
+                                        <div style="display:flex;align-items:center;gap:8px;">
+                                            <input type="text" name="refugees_asylum_seekers[refugees][0][state]" value="{{ $migOwnStateName }}" class="ni" readonly style="padding:6px 10px;background:#f0fdf4;font-weight:700;color:#166534;">
+                                            <span style="padding:2px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your State</span>
+                                        </div>
+                                    @else
+                                        <select name="refugees_asylum_seekers[refugees][0][state]" class="ni ni-select" style="padding:6px 10px;">
+                                            <option value="">Select State</option>
+                                            @foreach(['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT'] as $s)
+                                            <option value="{{ $s }}">{{ $s }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                 </td>
                                 <td>
                                     <input type="number" min="0" class="ni refugee-apps" name="refugees_asylum_seekers[refugees][0][applications]" value="0" placeholder="0" style="padding:6px 10px;text-align:center;">
@@ -419,9 +447,11 @@
                                 <td>
                                     <input type="number" class="ni refugee-total" name="refugees_asylum_seekers[refugees][0][total]" value="0" readonly style="background:var(--gray-50);padding:6px 10px;text-align:center;font-weight:700;">
                                 </td>
+                                @if(! $restrictMigToOwnCommand)
                                 <td>
                                     <button type="button" class="btn-nis btn-ghost btn-sm" data-m-action="remove-row" style="color:var(--color-danger);"><i class="fas fa-trash"></i></button>
                                 </td>
+                                @endif
                             </tr>
                         </tbody>
                     </table>
@@ -432,9 +462,11 @@
             <div class="redas-card">
                 <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;">
                     <div class="card-head-title">Asylum Seekers Applications by State</div>
+                    @if(! $restrictMigToOwnCommand)
                     <button type="button" class="btn-nis btn-ghost btn-sm" data-m-action="add-asylum-row">
                         <i class="fas fa-plus"></i> Add State Row
                     </button>
+                    @endif
                 </div>
                 <div class="card-body no-pad" style="overflow-x:auto;">
                     <table class="redas-table" id="asylumTable" style="min-width:600px;">
@@ -445,18 +477,25 @@
                                 <th style="width:160px;">Approved</th>
                                 <th style="width:160px;">Rejected</th>
                                 <th style="width:140px;">Total</th>
-                                <th style="width:60px;"></th>
+                                @if(! $restrictMigToOwnCommand)<th style="width:60px;"></th>@endif
                             </tr>
                         </thead>
                         <tbody id="asylumBody">
-                            <tr class="asylum-row">
+                            <tr class="asylum-row" style="{{ $restrictMigToOwnCommand ? 'background:#f0fdf4;' : '' }}">
                                 <td>
-                                    <select name="refugees_asylum_seekers[asylum_seekers][0][state]" class="ni ni-select" style="padding:6px 10px;">
-                                        <option value="">Select State</option>
-                                        @foreach(['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT'] as $s)
-                                        <option value="{{ $s }}">{{ $s }}</option>
-                                        @endforeach
-                                    </select>
+                                    @if($restrictMigToOwnCommand)
+                                        <div style="display:flex;align-items:center;gap:8px;">
+                                            <input type="text" name="refugees_asylum_seekers[asylum_seekers][0][state]" value="{{ $migOwnStateName }}" class="ni" readonly style="padding:6px 10px;background:#f0fdf4;font-weight:700;color:#166534;">
+                                            <span style="padding:2px 8px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;white-space:nowrap;">Your State</span>
+                                        </div>
+                                    @else
+                                        <select name="refugees_asylum_seekers[asylum_seekers][0][state]" class="ni ni-select" style="padding:6px 10px;">
+                                            <option value="">Select State</option>
+                                            @foreach(['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT'] as $s)
+                                            <option value="{{ $s }}">{{ $s }}</option>
+                                            @endforeach
+                                        </select>
+                                    @endif
                                 </td>
                                 <td>
                                     <input type="number" min="0" class="ni asylum-apps" name="refugees_asylum_seekers[asylum_seekers][0][applications]" value="0" placeholder="0" style="padding:6px 10px;text-align:center;">
@@ -470,9 +509,11 @@
                                 <td>
                                     <input type="number" class="ni asylum-total" name="refugees_asylum_seekers[asylum_seekers][0][total]" value="0" readonly style="background:var(--gray-50);padding:6px 10px;text-align:center;font-weight:700;">
                                 </td>
+                                @if(! $restrictMigToOwnCommand)
                                 <td>
                                     <button type="button" class="btn-nis btn-ghost btn-sm" data-m-action="remove-row" style="color:var(--color-danger);"><i class="fas fa-trash"></i></button>
                                 </td>
+                                @endif
                             </tr>
                         </tbody>
                     </table>
