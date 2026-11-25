@@ -13,15 +13,16 @@
     <style>
         :root { --dir-green: #006633; --dir-green-dark: #004d26; --dir-gold: #c5922a; }
         .directory-page { background: #f8fafc; min-height: 100vh; }
-        .dir-nav { background: linear-gradient(135deg, #002d14, #006633); position: sticky; top: 0; z-index: 1030; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .dir-nav .nav-container { max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+        .dir-nav { background: #003418; position: sticky; top: 0; z-index: 1030; box-shadow: 0 4px 12px rgba(0,0,0,0.14); border-bottom: 1px solid rgba(255,255,255,0.08); }
+        .dir-nav .nav-container { max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; }
         .dir-nav .nav-brand { display: flex; align-items: center; gap: 10px; color: white; text-decoration: none; font-weight: 700; font-size: 1.1rem; }
-        .dir-nav .nav-brand img { height: 36px; }
-        .dir-nav .nav-links { display: flex; align-items: center; gap: 24px; }
-        .dir-nav .nav-link-item { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 0.88rem; font-weight: 500; transition: color .2s; }
-        .dir-nav .nav-link-item:hover { color: white; }
-        .dir-nav .nav-cta { background: var(--dir-gold); color: #1a1a1a; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.85rem; transition: transform .2s; }
-        .dir-nav .nav-cta:hover { transform: translateY(-1px); }
+        .dir-nav .nav-brand img { height: 38px; width: auto; }
+        .dir-nav .nav-links { display: flex; align-items: center; gap: 26px; }
+        .dir-nav .nav-link-item { color: rgba(255,255,255,0.88); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color .2s; }
+        .dir-nav .nav-link-item:hover,
+        .dir-nav .nav-link-item.active { color: #ffffff; font-weight: 600; }
+        .dir-nav .nav-cta { background: linear-gradient(135deg, #d4a13c, #c5922a); color: #ffffff; padding: 10px 18px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(197,146,42,0.3); transition: transform .2s, box-shadow .2s; }
+        .dir-nav .nav-cta:hover { transform: translateY(-1px); color: #ffffff; box-shadow: 0 6px 18px rgba(197,146,42,0.4); }
         .dir-hero { background: linear-gradient(135deg, #002d14, #006633); color: white; padding: 56px 24px 40px; text-align: center; }
         .dir-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; margin-bottom: 10px; }
         .dir-hero p { color: rgba(255,255,255,0.8); font-size: 1rem; max-width: 680px; margin: 0 auto 24px; }
@@ -88,11 +89,13 @@
     <div class="nav-container">
         <a href="{{ url('/') }}" class="nav-brand">
             <img src="{{ asset('assets/images/nis-logo.png') }}" alt="NIS Logo">
-            <span>NIS&nbsp;REDAS</span>
         </a>
         <div class="nav-links" id="dirNavLinks">
-            <a href="{{ url('/') }}" class="nav-link-item">Home</a>
-            <a href="{{ route('directory') }}" class="nav-link-item">Directory</a>
+            <a href="{{ url('/#home') }}" class="nav-link-item">Home</a>
+            <a href="{{ url('/#features') }}" class="nav-link-item">Features</a>
+            <a href="{{ url('/#workflow') }}" class="nav-link-item">Workflow</a>
+            <a href="{{ url('/#roles') }}" class="nav-link-item">Access Levels</a>
+            <a href="{{ route('directory') }}" class="nav-link-item active">Directory</a>
             <a href="{{ route('login') }}" class="nav-cta"><i class="fas fa-sign-in-alt"></i> Access Portal</a>
         </div>
         <button class="dir-mobile-toggle" id="dirMobileToggle" aria-label="Toggle navigation"><i class="fas fa-bars"></i></button>
