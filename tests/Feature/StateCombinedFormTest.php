@@ -172,6 +172,12 @@ class StateCombinedFormTest extends TestCase
         $this->assertDoesNotMatchRegularExpression('/name="hrm\[zones\]\[a\]\[lasc\]\[comptroller\]"[^>]*disabled/', $htmlA);
         $this->assertMatchesRegularExpression('/name="hrm\[zones\]\[a\]\[ogsc\]\[comptroller\]"[^>]*disabled/', $htmlA);
 
+        // Dynamic rank tables (APU, Recruitment, Career, Upgrading/Conversion, Pension) use official NIS rank dropdowns with duplicate prevention
+        foreach (['apu', 'recruitment', 'career', 'upgrading_conversion', 'pension'] as $tableKey) {
+            $this->assertStringContainsString("name=\"hrm[{$tableKey}][0][rank]\" class=\"ni ni-select hrm-rank-select\"", $htmlA);
+        }
+        $this->assertStringContainsString('syncUniqueRankDropdowns', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',

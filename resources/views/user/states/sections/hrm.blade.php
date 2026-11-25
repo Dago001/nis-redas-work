@@ -5,6 +5,8 @@
      (its panel, #tab-preview, is provided by user.directorates._layout). --}}
 
 @php
+$nisRankDropdown = \App\Http\Controllers\Admin\UserManagementController::NIS_RANKS;
+
 $rankRows = [
     ['dcg','Deputy Comptroller General (DCG)'],
     ['acg','Assistant Comptroller General (ACG)'],
@@ -638,7 +640,14 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                         <tbody id="hrmApuBody">
                             <tr class="data-row">
                                 <td>1</td>
-                                <td><input type="text" name="hrm[apu][0][rank]" class="ni" placeholder="Rank"></td>
+                                <td>
+                                    <select name="hrm[apu][0][rank]" class="ni ni-select hrm-rank-select">
+                                        <option value="">Select Rank</option>
+                                        @foreach($nisRankDropdown as $rCode => $rLabel)
+                                            <option value="{{ $rCode }}" {{ old('hrm.apu.0.rank') === $rCode ? 'selected' : '' }}>{{ $rLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td><input type="number" name="hrm[apu][0][total]" class="ni hrm-apu-total" min="0" placeholder="0" value="{{ old('hrm.apu.0.total') }}"></td>
                                 <td><button type="button" class="btn-nis btn-ghost btn-sm hrm-remove-row" style="color:var(--color-danger);padding:2px 6px;"><i class="fas fa-times"></i></button></td>
                             </tr>
@@ -680,7 +689,14 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                         <tbody id="hrmRecruitmentBody">
                             <tr class="data-row">
                                 <td>1</td>
-                                <td><input type="text" name="hrm[recruitment][0][rank]" class="ni" placeholder="Rank"></td>
+                                <td>
+                                    <select name="hrm[recruitment][0][rank]" class="ni ni-select hrm-rank-select">
+                                        <option value="">Select Rank</option>
+                                        @foreach($nisRankDropdown as $rCode => $rLabel)
+                                            <option value="{{ $rCode }}" {{ old('hrm.recruitment.0.rank') === $rCode ? 'selected' : '' }}>{{ $rLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td><input type="number" name="hrm[recruitment][0][total]" class="ni hrm-recruitment-total" min="0" placeholder="0" value="{{ old('hrm.recruitment.0.total') }}"></td>
                                 <td><button type="button" class="btn-nis btn-ghost btn-sm hrm-remove-row" style="color:var(--color-danger);padding:2px 6px;"><i class="fas fa-times"></i></button></td>
                             </tr>
@@ -722,7 +738,14 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                         <tbody id="hrmCareerBody">
                             <tr class="data-row">
                                 <td>1</td>
-                                <td><input type="text" name="hrm[career][0][rank]" class="ni" placeholder="Rank"></td>
+                                <td>
+                                    <select name="hrm[career][0][rank]" class="ni ni-select hrm-rank-select">
+                                        <option value="">Select Rank</option>
+                                        @foreach($nisRankDropdown as $rCode => $rLabel)
+                                            <option value="{{ $rCode }}" {{ old('hrm.career.0.rank') === $rCode ? 'selected' : '' }}>{{ $rLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td><input type="number" name="hrm[career][0][total]" class="ni hrm-career-total" min="0" placeholder="0" value="{{ old('hrm.career.0.total') }}"></td>
                                 <td><button type="button" class="btn-nis btn-ghost btn-sm hrm-remove-row" style="color:var(--color-danger);padding:2px 6px;"><i class="fas fa-times"></i></button></td>
                             </tr>
@@ -806,7 +829,14 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                         <tbody id="hrmUpgradingConversionBody">
                             <tr class="data-row">
                                 <td>1</td>
-                                <td><input type="text" name="hrm[upgrading_conversion][0][rank]" class="ni" placeholder="Rank"></td>
+                                <td>
+                                    <select name="hrm[upgrading_conversion][0][rank]" class="ni ni-select hrm-rank-select">
+                                        <option value="">Select Rank</option>
+                                        @foreach($nisRankDropdown as $rCode => $rLabel)
+                                            <option value="{{ $rCode }}" {{ old('hrm.upgrading_conversion.0.rank') === $rCode ? 'selected' : '' }}>{{ $rLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td><input type="number" name="hrm[upgrading_conversion][0][total]" class="ni hrm-upgrading-conversion-total" min="0" placeholder="0" value="{{ old('hrm.upgrading_conversion.0.total') }}"></td>
                                 <td><button type="button" class="btn-nis btn-ghost btn-sm hrm-remove-row" style="color:var(--color-danger);padding:2px 6px;"><i class="fas fa-times"></i></button></td>
                             </tr>
@@ -971,7 +1001,14 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                         <tbody id="hrmPensionBody">
                             <tr class="data-row">
                                 <td>1</td>
-                                <td><input type="text" name="hrm[pension][0][rank]" class="ni" placeholder="Rank"></td>
+                                <td>
+                                    <select name="hrm[pension][0][rank]" class="ni ni-select hrm-rank-select">
+                                        <option value="">Select Rank</option>
+                                        @foreach($nisRankDropdown as $rCode => $rLabel)
+                                            <option value="{{ $rCode }}" {{ old('hrm.pension.0.rank') === $rCode ? 'selected' : '' }}>{{ $rLabel }}</option>
+                                        @endforeach
+                                    </select>
+                                </td>
                                 <td><input type="number" name="hrm[pension][0][death]" class="ni hrm-pension-col" data-col="death" min="0" placeholder="0" value="{{ old('hrm.pension.0.death') }}"></td>
                                 <td><input type="number" name="hrm[pension][0][mandatory_retirement]" class="ni hrm-pension-col" data-col="mandatory_retirement" min="0" placeholder="0" value="{{ old('hrm.pension.0.mandatory_retirement') }}"></td>
                                 <td><input type="number" name="hrm[pension][0][voluntary_retirement]" class="ni hrm-pension-col" data-col="voluntary_retirement" min="0" placeholder="0" value="{{ old('hrm.pension.0.voluntary_retirement') }}"></td>
@@ -1263,6 +1300,36 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         set(grandId, total);
     }
 
+    /* Official NIS Ranks dropdown & duplicate-rank prevention per table */
+    const NIS_RANKS_LIST = @json($nisRankDropdown);
+
+    function buildRankSelectHtml(name) {
+        let opts = '<option value="">Select Rank</option>';
+        Object.entries(NIS_RANKS_LIST).forEach(([code, label]) => {
+            opts += `<option value="${code}">${label}</option>`;
+        });
+        return `<select name="${name}" class="ni ni-select hrm-rank-select">${opts}</select>`;
+    }
+
+    function syncUniqueRankDropdowns(tbody) {
+        if (!tbody) return;
+        const selects = Array.from(tbody.querySelectorAll('select.hrm-rank-select'));
+        if (!selects.length) return;
+        const taken = new Set(selects.map(s => s.value).filter(Boolean));
+        selects.forEach(sel => {
+            Array.from(sel.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.disabled = taken.has(opt.value) && opt.value !== sel.value;
+            });
+        });
+    }
+
+    function syncAllRankDropdowns() {
+        ['hrmApuBody', 'hrmRecruitmentBody', 'hrmCareerBody', 'hrmUpgradingConversionBody', 'hrmPensionBody'].forEach(id => {
+            syncUniqueRankDropdowns(document.getElementById(id));
+        });
+    }
+
     /* Sections 10-12: APU / Recruitment / Career */
     function recomputeDynamicTotal(inputClass, grandId) {
         let total = 0;
@@ -1276,7 +1343,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         const tr = document.createElement('tr'); tr.className = 'data-row';
         let html = `<td></td>`;
         cols.forEach(c => {
-            if (c === 'rank') html += `<td><input type="text" name="${prefix}[${idx}][rank]" class="ni" placeholder="Rank"></td>`;
+            if (c === 'rank') html += `<td>${buildRankSelectHtml(`${prefix}[${idx}][rank]`)}</td>`;
             else if (c === 'total') html += `<td><input type="number" name="${prefix}[${idx}][total]" class="ni ${totalClass}" min="0" placeholder="0"></td>`;
         });
         html += `<td><button type="button" class="btn-nis btn-ghost btn-sm hrm-remove-row" style="color:var(--color-danger);padding:2px 6px;"><i class="fas fa-times"></i></button></td>`;
@@ -1323,7 +1390,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         const tr = document.createElement('tr'); tr.className = 'data-row';
         tr.innerHTML = `
             <td></td>
-            <td><input type="text" name="hrm[pension][${idx}][rank]" class="ni" placeholder="Rank"></td>
+            <td>${buildRankSelectHtml(`hrm[pension][${idx}][rank]`)}</td>
             <td><input type="number" name="hrm[pension][${idx}][death]" class="ni hrm-pension-col" data-col="death" min="0" placeholder="0"></td>
             <td><input type="number" name="hrm[pension][${idx}][mandatory_retirement]" class="ni hrm-pension-col" data-col="mandatory_retirement" min="0" placeholder="0"></td>
             <td><input type="number" name="hrm[pension][${idx}][voluntary_retirement]" class="ni hrm-pension-col" data-col="voluntary_retirement" min="0" placeholder="0"></td>
@@ -1409,6 +1476,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         recomputePromotion('.hrm-promotion-eligibility-input', 'hrm-promotion-eligibility-grand-total');
         recomputePension();
         recomputeDiscipline();
+        syncAllRankDropdowns();
         buildPreview();
     }
 
@@ -1559,8 +1627,8 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
         function dynamicRows(bodySelector, cols) {
             let rows = [];
             document.querySelectorAll(bodySelector).forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                const vals = Array.from(inputs).map(i => i.value || '-');
+                const fields = row.querySelectorAll('select, input');
+                const vals = Array.from(fields).map(i => i.value || '-');
                 if (vals.some(v => v !== '-')) rows.push(vals);
             });
             return rows;
