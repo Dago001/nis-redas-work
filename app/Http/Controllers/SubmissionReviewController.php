@@ -38,10 +38,31 @@ class SubmissionReviewController extends Controller
             ->get();
 
         $approverStage = SubmissionWorkflow::stageForApprover($user);
+        $stagesPastApprover = match ($approverStage) {
+            SubmissionWorkflow::STAGE_DESK_REVIEW => [
+                SubmissionWorkflow::STAGE_ZONAL_REVIEW,
+                SubmissionWorkflow::STAGE_HQ_REVIEW,
+                SubmissionWorkflow::STAGE_APPROVED,
+            ],
+            SubmissionWorkflow::STAGE_ZONAL_REVIEW,
+            SubmissionWorkflow::STAGE_DIRECTORATE_REVIEW,
+            SubmissionWorkflow::STAGE_CGIS_DESK_REVIEW => [
+                SubmissionWorkflow::STAGE_HQ_REVIEW,
+                SubmissionWorkflow::STAGE_APPROVED,
+            ],
+            SubmissionWorkflow::STAGE_HQ_REVIEW => [
+                SubmissionWorkflow::STAGE_APPROVED,
+            ],
+            default => [SubmissionWorkflow::STAGE_APPROVED],
+        };
 
         $approvedBaseQuery = ReportAccess::applyApproverScope(
-            Application::query()->where(function ($q) use ($approverStage, $user) {
+            Application::query()->where(function ($q) use ($approverStage, $stagesPastApprover, $user) {
                 $q->where('status', 'approved')
+                    ->orWhere(function ($sub) use ($stagesPastApprover) {
+                        $sub->where('status', '!=', 'returned')
+                            ->whereIn('workflow_stage', $stagesPastApprover);
+                    })
                     ->orWhere(function ($sub) use ($approverStage, $user) {
                         $sub->where('status', '!=', 'returned')
                             ->whereHas('reviewComments', function ($c) use ($approverStage, $user) {
