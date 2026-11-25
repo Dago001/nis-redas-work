@@ -144,4 +144,39 @@ class StateCombinedFormTest extends TestCase
         $otherUser = $this->stateUser();
         $this->actingAs($otherUser)->get(route('user.returns.edit', $application))->assertForbidden();
     }
+
+    public function test_hrm_zones_table_shows_only_the_officers_own_zone(): void
+    {
+        $this->disableAbac();
+
+        // Zone A officer (LASC) should only see ZONE A, never ZONE B..H
+        $zoneAUser = $this->stateUser([
+            'primary_location_code' => 'LASC',
+            'assigned_state_code' => 'LASC',
+            'assigned_zonal_command_code' => 'ZONE-A',
+        ]);
+
+        $resA = $this->actingAs($zoneAUser)->get(route('user.returns.create'));
+        $resA->assertOk();
+        $resA->assertSee('ZONE A TOTAL');
+        $resA->assertSee('Your Command');
+        $resA->assertDontSee('ZONE B TOTAL');
+        $resA->assertDontSee('ZONE C TOTAL');
+        $resA->assertDontSee('ZONE D TOTAL');
+        $resA->assertDontSee('ZONE H TOTAL');
+
+        // Zone D officer (FCTC) should only see ZONE D, never ZONE A
+        $zoneDUser = $this->stateUser([
+            'primary_location_code' => 'FCTC',
+            'assigned_state_code' => 'FCTC',
+            'assigned_zonal_command_code' => 'ZONE-D',
+        ]);
+
+        $resD = $this->actingAs($zoneDUser)->get(route('user.returns.create'));
+        $resD->assertOk();
+        $resD->assertSee('ZONE D TOTAL');
+        $resD->assertSee('RMAT');
+        $resD->assertDontSee('ZONE A TOTAL');
+        $resD->assertDontSee('ZONE B TOTAL');
+    }
 }

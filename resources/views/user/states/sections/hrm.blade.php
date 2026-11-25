@@ -61,16 +61,44 @@ $disciplineRows = [
 
 $disciplineRankCols = ['acg','cis','dci','aci','csi','si','dsi','asi1','asi2','ii','aii','cia','sia','ia1','ia2','ia3'];
 
-$zoneCommands = [
-    'A' => ['LASC','SEME BC','IDBC','LSPMC','LAPC','MMIA','OGSC'],
-    'B' => ['KDSC','KNSC','ITSK','MAKIA','KTSC','JSBC','SOSC','ICSC','ILLELA BC','ZMSC','JGSC'],
-    'C' => ['BASC','YBSC','BOSC','ADSC','GMSC','PLSC'],
-    'D' => ['FCTC','NAIA','KWSC'],
-    'E' => ['NGSC','KBSC','ABSC','AKSC','CRSC','MFUM BC','EBSC','IMSC','NITSOL','RVSC','PHIA','NITSA','RVMC'],
-    'F' => ['OYSC','OSSC','ODSC','EKSC'],
-    'G' => ['ANSC','BYSC','DTSC','ENSC','AIIA','EDSC'],
-    'H' => ['BNSC','KGSC','TRSC','NASC'],
-];
+$hierarchyZones = (array) config('nis_hierarchy.zones', []);
+$allZoneCommands = [];
+foreach ($hierarchyZones as $zCode => $zInfo) {
+    $letter = strtoupper(str_replace('ZONE-', '', (string) $zCode));
+    $allZoneCommands[$letter] = array_keys((array) ($zInfo['commands'] ?? []));
+}
+
+$hrmUser = auth()->user();
+$userCommandCode = strtoupper(trim((string) ($hrmUser?->primary_location_code ?: $hrmUser?->assigned_state_code)));
+$userZoneLetter = null;
+
+if ($hrmUser && in_array($hrmUser->user_category, ['state_user', 'desk_admin', 'zonal_commander'], true)) {
+    $rawZone = strtoupper(trim((string) ($hrmUser->assigned_zonal_command_code ?: ($hrmUser->user_category === 'zonal_commander' ? $hrmUser->primary_location_code : ''))));
+    if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
+        $userZoneLetter = $zm[1];
+    }
+
+    if ($userZoneLetter === null && $userCommandCode !== '') {
+        foreach ($allZoneCommands as $letter => $cmds) {
+            if (in_array($userCommandCode, $cmds, true)) {
+                $userZoneLetter = $letter;
+                break;
+            }
+        }
+    }
+
+    if ($userZoneLetter === null && $userCommandCode !== '') {
+        $stateToZone = (array) config('nis_hierarchy.state_to_zone', []);
+        $mappedZone = strtoupper((string) ($stateToZone[$userCommandCode] ?? ''));
+        if (preg_match('/^ZONE-?([A-H])$/', $mappedZone, $zm)) {
+            $userZoneLetter = $zm[1];
+        }
+    }
+}
+
+$zoneCommands = ($userZoneLetter !== null && isset($allZoneCommands[$userZoneLetter]))
+    ? [$userZoneLetter => $allZoneCommands[$userZoneLetter]]
+    : $allZoneCommands;
 
 $states = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno','Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','Gombe','Imo','Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger','Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara','FCT'];
 $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt','Seme Border Command','Idiroko Border Command','Lagos Passport Command','NIS HQ Abuja'];
@@ -234,12 +262,20 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
                         <tbody>
                             @foreach($zoneCommands as $zone => $commands)
                                 @foreach($commands as $cIndex => $command)
-                                @php $cmdKey = strtolower(str_replace(' ','_', $command)); @endphp
-                                <tr>
+                                @php
+                                    $cmdKey = strtolower(str_replace(' ','_', $command));
+                                    $isOwnCommand = $userCommandCode !== '' && strtoupper($command) === $userCommandCode;
+                                @endphp
+                                <tr style="{{ $isOwnCommand ? 'background:#f0fdf4;' : '' }}">
                                     @if($cIndex === 0)
-                                    <td rowspan="{{ count($commands) + 1 }}" style="font-weight:700;vertical-align:middle;">ZONE {{ $zone }}</td>
+                                    <td rowspan="{{ count($commands) + 1 }}" style="font-weight:700;vertical-align:middle;background:#fff;">ZONE {{ $zone }}</td>
                                     @endif
-                                    <td>{{ $command }}</td>
+                                    <td>
+                                        <strong>{{ $command }}</strong>
+                                        @if($isOwnCommand)
+                                            <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;">Your Command</span>
+                                        @endif
+                                    </td>
                                     <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][comptroller]" class="ni hrm-zone-comptroller" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.comptroller') }}"></td>
                                     <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][superintendent]" class="ni hrm-zone-superintendent" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.superintendent') }}"></td>
                                     <td><input type="number" name="hrm[zones][{{ strtolower($zone) }}][{{ $cmdKey }}][inspectorate]" class="ni hrm-zone-inspectorate" data-zone="{{ $zone }}" data-command="{{ $cmdKey }}" min="0" placeholder="0" value="{{ old('hrm.zones.'.strtolower($zone).'.'.$cmdKey.'.inspectorate') }}"></td>
@@ -1120,7 +1156,7 @@ $specialCommands = ['MMIA Lagos','NAIA Abuja','MAKIA Kano','PHIA Port Harcourt',
     /* Section 3: Zones */
     function recomputeZones() {
         const cols = ['comptroller','superintendent','inspectorate','assistant'];
-        const zones = ['A','B','C','D','E','F','G','H'];
+        const zones = @json(array_keys($zoneCommands));
         let grand = {};
         cols.forEach(c => grand[c] = 0);
         let grandTotal = 0;
