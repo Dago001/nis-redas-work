@@ -6,7 +6,7 @@
         <div class="page-header">
             <div>
                 <!-- Dynamic name of State by fetching from the authenticated user's state -->
-                <h1 class="page-title"> {{ auth()->user()->state ?? 'State' }} Officer Dashboard</h1>
+                <h1 class="page-title">{{ auth()->user()?->user_category === 'zonal_officer' ? (auth()->user()->primary_location_code ?? 'Zonal') . ' Officer Dashboard' : (auth()->user()->state ?? 'State') . ' Officer Dashboard' }}</h1>
                 <p class="page-subtitle">
                     Welcome back, <strong>{{ auth()->user()->name ?? 'Officer' }}</strong> -
                     {{ now()->format('l, d F Y') }}

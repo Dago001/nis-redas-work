@@ -52,12 +52,15 @@ class SubmissionWorkflow
 
         $category = self::categoryForUser($user);
         $scopeCode = self::scopeCodeForUser($user);
+        $zonalCode = $user->user_category === 'zonal_officer'
+            ? ($user->assigned_zonal_command_code ?: $user->primary_location_code ?: null)
+            : ($user->assigned_zonal_command_code ?: null);
         $reportPeriod = self::extractReportPeriod($returnData);
         $sectionCode = $category === self::CATEGORY_DIRECTORATE
             ? ($user->assigned_section_code ?: null)
             : null;
 
-        return DB::transaction(function () use ($user, $returnData, $category, $scopeCode, $reportPeriod, $sectionCode, $key): Application {
+        return DB::transaction(function () use ($user, $returnData, $category, $scopeCode, $zonalCode, $reportPeriod, $sectionCode, $key): Application {
             $application = Application::create([
                 'user_id' => $user->id,
                 'status' => 'pending',
@@ -73,6 +76,7 @@ class SubmissionWorkflow
                 'report_type' => 'original',
                 'report_period' => $reportPeriod,
                 'scope_code' => $scopeCode,
+                'zonal_code' => $zonalCode,
                 'section_code' => $sectionCode,
                 'return_data' => $returnData,
                 'current_version' => 0,
@@ -124,6 +128,10 @@ class SubmissionWorkflow
      */
     public static function initialStageForUser(User $user): string
     {
+        if ($user->user_category === 'zonal_officer') {
+            return self::STAGE_ZONAL_REVIEW;
+        }
+
         return match (self::categoryForUser($user)) {
             self::CATEGORY_DIRECTORATE => self::STAGE_DIRECTORATE_REVIEW,
             self::CATEGORY_CGIS => self::STAGE_CGIS_DESK_REVIEW,
@@ -156,6 +164,10 @@ class SubmissionWorkflow
 
         if ($user->user_category === 'cgis_unit_user') {
             return $user->cgisUnitSlug();
+        }
+
+        if ($user->user_category === 'zonal_officer') {
+            return $user->primary_location_code ?: $user->assigned_zonal_command_code ?: null;
         }
 
         return $user->primary_location_code ?: $user->assigned_state_code ?: null;

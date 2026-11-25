@@ -242,7 +242,7 @@
         };
         const catToScope = {
             state_user: 'state', desk_admin: 'state',
-            zonal_commander: 'zone',
+            zonal_officer: 'zone', zonal_commander: 'zone',
             directorate_user: 'directorate', directorate_admin: 'directorate',
             cgis_unit_user: 'cgis', cgis_desk_admin: 'cgis',
             hq_admin: 'hq', admin: 'hq', super_admin: 'hq',

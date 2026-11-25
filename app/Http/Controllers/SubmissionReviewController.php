@@ -392,7 +392,7 @@ class SubmissionReviewController extends Controller
             'desk_admin' => 'Desk Admin Review',
             'directorate_admin' => 'Directorate Admin Review',
             'cgis_desk_admin' => 'CGIS Desk Review',
-            'zonal_commander' => 'Zonal Command Review',
+            'zonal_commander' => 'Zonal Admin Review',
             'hq_admin' => 'HQ Admin Review',
             default => 'Review Queue',
         };
@@ -417,7 +417,7 @@ class SubmissionReviewController extends Controller
             'desk_admin' => 'Desk Admin Dashboard',
             'directorate_admin' => 'Directorate Admin Dashboard',
             'cgis_desk_admin' => 'CGIS Desk Admin Dashboard',
-            'zonal_commander' => 'Zonal Command Dashboard',
+            'zonal_commander' => 'Zonal Admin Dashboard',
             'hq_admin' => 'HQ Admin Review Dashboard',
             default => 'Review Dashboard',
         };

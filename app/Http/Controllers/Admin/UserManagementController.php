@@ -138,7 +138,8 @@ class UserManagementController extends Controller
             'desk_admin' => 'Formation Desk Admin',
             'directorate_user' => 'Directorate Officer',
             'directorate_admin' => 'Directorate Admin',
-            'zonal_commander' => 'Zonal Commander',
+            'zonal_officer' => 'Zonal Officer',
+            'zonal_commander' => 'Zonal Admin',
             'cgis_unit_user' => 'CGIS Unit Officer',
             'cgis_desk_admin' => 'CGIS Unit Desk Admin',
             'hq_admin' => 'HQ Admin (Approver)',
@@ -317,7 +318,7 @@ class UserManagementController extends Controller
             'name' => 'nullable|string|max:255|required_without_all:surname,first_name',
             'rank' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::NIS_RANKS))],
             'service_number' => ['required', 'string', 'regex:/^[0-9]{4,5}$/', 'unique:users'],
-            'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
+            'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_officer,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
             'role' => 'nullable|in:admin,super_admin,zonal,state,officer,directorate,unit_officer,unit_admin',
             'primary_location_type' => 'nullable|in:state,directorate,zonal,unit,headquarters',
             'primary_location_code' => 'nullable|string|max:50',
@@ -435,7 +436,7 @@ class UserManagementController extends Controller
             'name' => 'nullable|string|max:255|required_without_all:surname,first_name',
             'rank' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::NIS_RANKS))],
             'service_number' => ['required', 'string', 'regex:/^[0-9]{4,5}$/', 'unique:users,service_number,'.$user->id],
-            'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
+            'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_officer,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
             'role' => 'nullable|in:admin,super_admin,zonal,state,officer,directorate,unit_officer,unit_admin',
             'primary_location_type' => 'nullable|in:state,directorate,zonal,unit,headquarters',
             'primary_location_code' => 'nullable|string|max:50',
@@ -597,7 +598,7 @@ class UserManagementController extends Controller
             ];
         }
 
-        if ($category === 'zonal_commander') {
+        if (in_array($category, ['zonal_officer', 'zonal_commander'], true)) {
             $resolvedZone = $zoneCode ?? ($primaryCode ? strtoupper($primaryCode) : null);
 
             return [
@@ -672,6 +673,12 @@ class UserManagementController extends Controller
                 'location' => 'directorate',
                 'level' => 3,
                 'canonical_role' => 'admin',
+            ],
+            'zonal_officer' => [
+                'role' => ['officer', 'zonal', 'user'],
+                'location' => 'zonal',
+                'level' => 0,
+                'canonical_role' => 'officer',
             ],
             'zonal_commander' => [
                 'role' => ['zonal', 'admin'],

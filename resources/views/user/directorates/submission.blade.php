@@ -233,12 +233,12 @@
 
     $viewerCategory = auth()->user()?->user_category;
     $dashboardRoute = match ($viewerCategory) {
-        'state_user' => 'user.submissions',
+        'state_user', 'zonal_officer' => 'user.submissions',
         'cgis_unit_user' => 'user.cgis-units.dashboard',
         default => 'user.directorates.dashboard',
     };
     $documentRoute = match ($viewerCategory) {
-        'state_user' => 'user.returns.document',
+        'state_user', 'zonal_officer' => 'user.returns.document',
         'cgis_unit_user' => 'user.cgis-units.submissions.document',
         default => 'user.directorates.submissions.document',
     };

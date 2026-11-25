@@ -96,6 +96,7 @@ class User extends Authenticatable
         'desk_admin',
         'directorate_user',
         'directorate_admin',
+        'zonal_officer',
         'zonal_commander',
         'cgis_unit_user',
         'cgis_desk_admin',

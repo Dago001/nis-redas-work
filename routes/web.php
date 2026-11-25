@@ -67,8 +67,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/password/reset/{token}', [AuthTokenController::class, 'resetPassword'])->middleware('throttle:10,1')->name('password.reset');
 });
 
-// State user (officer) routes - restricted to state_user accounts
-Route::middleware([Authenticate::class, 'access:category=state_user,location=state,role=user|officer|minLevel=0', 'abac.geo'])->group(function () {
+// State & Zonal officer routes - restricted to state_user and zonal_officer accounts
+Route::middleware([Authenticate::class, 'access:category=state_user|zonal_officer,location=state|zonal,role=user|officer|zonal|minLevel=0', 'abac.geo'])->group(function () {
     Route::get('/user/dashboard', [DashboardController::class, 'stateDashboard'])->name('user.dashboard');
 
     Route::get('/user/returns/create', [DashboardController::class, 'createStateReturn'])->name('user.returns.create');

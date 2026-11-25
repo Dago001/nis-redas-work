@@ -213,7 +213,7 @@
                     <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'U', 0, 2)) }}</div>
                     <div class="topbar-user-info">
                         <div class="topbar-user-name">{{ auth()->user()->name ?? 'Officer' }}</div>
-                        <div class="topbar-user-role">{{ auth()->user()?->role === 'directorate' ? 'Directorate User' : 'State User' }}</div>
+                        <div class="topbar-user-role">{{ auth()->user()?->user_category === 'zonal_officer' ? 'Zonal Officer' : (auth()->user()?->role === 'directorate' ? 'Directorate User' : 'State User') }}</div>
                     </div>
                     <i class="fas fa-chevron-down" style="font-size:.7rem;color:var(--gray-400);margin-left:4px;"></i>
                 </button>

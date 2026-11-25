@@ -22,19 +22,19 @@
     $isZonal = $deskCat === 'zonal_commander';
     $homeRoute = $deskUser ? $deskUser->dashboardUrl() : route('user.desk.home');
     $portalSub = match ($deskCat) {
-        'zonal_commander' => 'Zonal Command Portal',
+        'zonal_commander' => 'Zonal Admin Portal',
         'directorate_admin' => 'Directorate Admin Portal',
         'cgis_desk_admin' => 'CGIS Desk Admin Portal',
         default => 'Desk Admin Portal',
     };
     $menuLabel = match ($deskCat) {
-        'zonal_commander' => 'Zonal Command Menu',
+        'zonal_commander' => 'Zonal Admin Menu',
         'directorate_admin' => 'Directorate Admin Menu',
         'cgis_desk_admin' => 'CGIS Desk Menu',
         default => 'Desk Admin Menu',
     };
     $breadcrumbTitle = match ($deskCat) {
-        'zonal_commander' => 'Zonal Command Dashboard',
+        'zonal_commander' => 'Zonal Admin Dashboard',
         'directorate_admin' => 'Directorate Admin Dashboard',
         'cgis_desk_admin' => 'CGIS Desk Admin Dashboard',
         default => 'Desk Admin Dashboard',
@@ -100,7 +100,7 @@
                     <div class="topbar-user-info">
                         <div class="topbar-user-name">{{ auth()->user()->name ?? 'Desk Admin' }}</div>
                         <div class="topbar-user-role">{{ match ($deskCat) {
-                            'zonal_commander' => 'Zonal Commander',
+                            'zonal_commander' => 'Zonal Admin',
                             'directorate_admin' => 'Directorate Admin',
                             'cgis_desk_admin' => 'CGIS Desk Admin',
                             'hq_admin' => 'HQ Admin',

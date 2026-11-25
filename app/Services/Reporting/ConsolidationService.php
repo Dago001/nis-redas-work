@@ -438,6 +438,32 @@ class ConsolidationService
                 'approved_revision_no' => $locked->current_revision_no,
             ]);
 
+            /* Cascade HQ final approval to all included underlying returns that are still pending,
+               so they immediately reflect as Approved across HQ / PRS / Super Admin reporting & officer dashboards. */
+            $approvedOriginals = collect();
+            $latestRevision = $locked->latestRevision()->with('sources.application.user')->first();
+            if ($latestRevision) {
+                foreach ($latestRevision->sources as $source) {
+                    $orig = $source->application;
+                    if (! $source->included || ! $orig || in_array(strtolower((string) $orig->status), ['approved', 'returned'], true)) {
+                        continue;
+                    }
+                    $path = is_array($orig->workflow_path) ? $orig->workflow_path : [];
+                    $path[] = [
+                        'stage' => SubmissionWorkflow::STAGE_APPROVED,
+                        'by' => $hqActor->id,
+                        'at' => now()->toDateTimeString(),
+                        'consolidated_report_id' => $locked->id,
+                    ];
+                    $orig->update([
+                        'status' => 'approved',
+                        'workflow_stage' => SubmissionWorkflow::STAGE_APPROVED,
+                        'workflow_path' => $path,
+                    ]);
+                    $approvedOriginals->push($orig);
+                }
+            }
+
             AuditLogger::log(
                 user: $hqActor,
                 action: 'consolidated.approved',
@@ -447,10 +473,11 @@ class ConsolidationService
                 details: [
                     'reference' => $locked->reference,
                     'approved_revision_no' => $locked->current_revision_no,
+                    'approved_originals_count' => $approvedOriginals->count(),
                 ]
             );
 
-            DB::afterCommit(function () use ($locked): void {
+            DB::afterCommit(function () use ($locked, $approvedOriginals): void {
                 UserNotification::create([
                     'user_id' => $locked->created_by,
                     'type' => 'workflow',
@@ -460,6 +487,15 @@ class ConsolidationService
                     'action_url' => route('consolidated.show', $locked),
                     'payload_json' => ['consolidated_report_id' => $locked->id],
                 ]);
+
+                foreach ($approvedOriginals as $orig) {
+                    $ref = 'RET-' . str_pad((string) $orig->id, 5, '0', STR_PAD_LEFT);
+                    SubmissionWorkflow::notifySubmitter(
+                        $orig,
+                        "Return Approved by HQ ({$ref})",
+                        "Your return {$ref} was approved by HQ as part of consolidated report {$locked->reference}."
+                    );
+                }
             });
 
             return $locked->fresh();

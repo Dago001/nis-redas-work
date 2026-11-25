@@ -264,7 +264,7 @@
                             <option value="{{ $code }}" {{ old('assigned_zonal_command_code') === $code ? 'selected' : '' }}>{{ $label }}</option>
                         @endforeach
                     </select>
-                    <span class="iam-hint" id="zoneFieldHint">Determines which Zonal Commander reviews &amp; consolidates this formation's returns.</span>
+                    <span class="iam-hint" id="zoneFieldHint">Determines which Zonal Admin reviews &amp; consolidates this zone's returns.</span>
                 </div>
 
                 {{-- Dynamic Scope Selector: Directorate --}}
@@ -420,9 +420,10 @@
         };
 
         const catConfig = {
-            state_user:        { show: ['state', 'zone'], req: ['state'], wf: 'Formation Officer submits original return → Formation Desk Admin reviews → Zonal Commander reviews & consolidates → HQ Admin final approval (visible to PRS & Super Admin).' },
-            desk_admin:        { show: ['state', 'zone'], req: ['state'], wf: 'Reviews & approves/returns submissions for their assigned Formation before forwarding to the Zonal Commander.' },
-            zonal_commander:   { show: ['zone'], req: ['zone'], wf: 'Reviews approved Formation returns in their Zone and prepares separate Zonal Consolidated Reports for HQ Admin & PRS.' },
+            state_user:        { show: ['state', 'zone'], req: ['state'], wf: 'Formation Officer submits original return → Formation Desk Admin reviews → Zonal Admin reviews & consolidates → HQ Admin final approval (visible to PRS & Super Admin).' },
+            desk_admin:        { show: ['state', 'zone'], req: ['state'], wf: 'Reviews & approves/returns submissions for their assigned Formation before forwarding to the Zonal Admin.' },
+            zonal_officer:     { show: ['zone'], req: ['zone'], wf: 'Zonal Officer submits the Zonal HQ operational return → Zonal Admin reviews & consolidates with all Command returns in the Zone → HQ Admin final approval.' },
+            zonal_commander:   { show: ['zone'], req: ['zone'], wf: 'Zonal Admin reviews approved Command & Zonal Officer returns in their Zone, consolidates all reports, and forwards to HQ Admin (Approver).' },
             directorate_user:  { show: ['directorate', 'section'], req: ['directorate'], wf: 'Directorate Section Officer submits original section return → Directorate Admin reviews & consolidates → HQ Admin final approval (visible to PRS).' },
             directorate_admin: { show: ['directorate'], req: ['directorate'], wf: 'Reviews section returns in their Directorate and prepares separate Directorate Consolidated Reports for HQ Admin & PRS (PRS Admin also views national dashboard).' },
             cgis_unit_user:    { show: ['cgis'], req: ['cgis'], wf: 'CGIS Unit Officer submits unit return → CGIS Desk Admin reviews → HQ Admin final approval.' },
@@ -440,7 +441,7 @@
                 if (p.input) p.input.required = cfg.req.includes(key);
             });
             if (zoneLabel) {
-                zoneLabel.innerHTML = catSel?.value === 'zonal_commander'
+                zoneLabel.innerHTML = (catSel?.value === 'zonal_commander' || catSel?.value === 'zonal_officer')
                     ? 'Assigned Zonal Command <span style="color:#dc2626;">*</span>'
                     : 'Reporting Zonal Command (Auto-linked)';
             }
