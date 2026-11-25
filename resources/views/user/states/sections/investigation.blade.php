@@ -4,17 +4,55 @@
      prefixed with `investigation-` so they stay unique on the combined page. --}}
 
 @php
-    $zoneMap = [
-        'SHQ'    => ['label' => 'SHQ', 'commands' => []],
-        'ZONE_A' => ['label' => 'Zone A', 'commands' => ['LASC', 'SEME', 'IDIROKO', 'LSPMC', 'LAPC', 'MMIA', 'OGSC']],
-        'ZONE_B' => ['label' => 'Zone B', 'commands' => ['KDSC', 'KNSC', 'ITSK', 'MAKIA', 'KTSC', 'JIBIYA', 'SOSC', 'ICSC', 'ILLELA', 'ZMSC', 'JGSC']],
-        'ZONE_C' => ['label' => 'Zone C', 'commands' => ['BASC', 'YBSC', 'BOSC', 'ADSC', 'GOSC', 'PLSC']],
-        'ZONE_D' => ['label' => 'Zone D', 'commands' => ['FCT', 'NAIA', 'KWSC', 'NGSC', 'KBSC']],
-        'ZONE_E' => ['label' => 'Zone E', 'commands' => ['ABSC', 'AKSC', 'CRSC', 'MFUM', 'EBSC', 'IMSC', 'NITSOL', 'RVSC', 'NITSA', 'RVMC']],
-        'ZONE_F' => ['label' => 'Zone F', 'commands' => ['OYSC', 'OSSC', 'ONSC', 'EKSC']],
-        'ZONE_G' => ['label' => 'Zone G', 'commands' => ['ANSC', 'BYSC', 'DLSC', 'ENSC', 'EDSC']],
-        'ZONE_H' => ['label' => 'Zone H', 'commands' => ['BNSC', 'KGSC', 'TRSC', 'PLSC', 'NASC']],
+    $hierarchyZones = (array) config('nis_hierarchy.zones', []);
+    $allZoneMap = [
+        'SHQ' => ['label' => 'SHQ', 'commands' => []],
     ];
+    foreach ($hierarchyZones as $zCode => $zInfo) {
+        $letter = strtoupper(str_replace('ZONE-', '', (string) $zCode));
+        $allZoneMap['ZONE_'.$letter] = [
+            'label' => 'Zone '.$letter,
+            'commands' => array_keys((array) ($zInfo['commands'] ?? [])),
+        ];
+    }
+
+    $invUser = auth()->user();
+    $invCommandCode = strtoupper(trim((string) ($invUser?->primary_location_code ?: $invUser?->assigned_state_code)));
+    $invZoneKey = null;
+
+    if ($invUser && in_array($invUser->user_category, ['state_user', 'desk_admin', 'zonal_commander'], true)) {
+        $rawZone = strtoupper(trim((string) ($invUser->assigned_zonal_command_code ?: ($invUser->user_category === 'zonal_commander' ? $invUser->primary_location_code : ''))));
+        if (preg_match('/^ZONE-?([A-H])$/', $rawZone, $zm)) {
+            $invZoneKey = 'ZONE_'.$zm[1];
+        }
+
+        if ($invZoneKey === null && $invCommandCode !== '') {
+            foreach ($allZoneMap as $zk => $zInfo) {
+                if ($zk !== 'SHQ' && in_array($invCommandCode, $zInfo['commands'], true)) {
+                    $invZoneKey = $zk;
+                    break;
+                }
+            }
+        }
+
+        if ($invZoneKey === null && $invCommandCode !== '') {
+            $stateToZone = (array) config('nis_hierarchy.state_to_zone', []);
+            $mappedZone = strtoupper((string) ($stateToZone[$invCommandCode] ?? ''));
+            if (preg_match('/^ZONE-?([A-H])$/', $mappedZone, $zm)) {
+                $invZoneKey = 'ZONE_'.$zm[1];
+            }
+        }
+    }
+
+    $showShqRow = $invZoneKey === null;
+    $zoneMap = ($invZoneKey !== null && isset($allZoneMap[$invZoneKey]))
+        ? [$invZoneKey => $allZoneMap[$invZoneKey]]
+        : $allZoneMap;
+
+    $restrictInvToOwnCommand = $invUser
+        && in_array($invUser->user_category, ['state_user', 'desk_admin'], true)
+        && $invCommandCode !== ''
+        && collect($zoneMap)->pluck('commands')->flatten()->contains(fn ($c) => strtoupper((string) $c) === $invCommandCode);
 
 $rankRows = [
     ['dcg','Deputy Comptroller General (DCG)'],
@@ -158,7 +196,11 @@ $rankRows = [
                             </tr>
                         </thead>
                         <tbody>
-                            @php $sn = 0; @endphp
+                            @php
+                                $sn = 0;
+                                $invLockedStyle = 'background:#f1f5f9;color:#94a3b8;cursor:not-allowed;pointer-events:none;';
+                            @endphp
+                            @if($showShqRow)
                             {{-- SHQ row --}}
                             <tr class="zone-row">
                                 <td>{{ ++$sn }}</td>
@@ -177,41 +219,66 @@ $rankRows = [
                                            value="{{ old('breach.SHQ._shq.total') }}" placeholder="0">
                                 </td>
                             </tr>
+                            @endif
                             @foreach($zoneMap as $zoneKey => $zone)
                                 @continue($zoneKey === 'SHQ')
-                                <tr class="zone-row">
+                                <tr class="zone-row" style="{{ $restrictInvToOwnCommand ? 'background:#f8fafc;opacity:.55;' : '' }}">
                                     <td>{{ ++$sn }}</td>
-                                    <td><strong>{{ $zone['label'] }}</strong></td>
+                                    <td style="{{ $restrictInvToOwnCommand ? 'color:#64748b;' : '' }}">
+                                        <strong>{{ $zone['label'] }}</strong>
+                                        @if($restrictInvToOwnCommand)
+                                            <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
+                                        @endif
+                                    </td>
                                     <td></td>
                                     @foreach(['companies', 'expatriates', 'officers', 'nigerians'] as $col)
                                         <td>
                                             <input type="number" min="0" class="ni qty-input"
                                                    name="breach[{{ $zoneKey }}][_zone][{{ $col }}]"
-                                                   value="{{ old('breach.'.$zoneKey.'._zone.'.$col) }}" placeholder="0">
+                                                   value="{{ $restrictInvToOwnCommand ? '' : old('breach.'.$zoneKey.'._zone.'.$col) }}"
+                                                   placeholder="0"
+                                                   @if($restrictInvToOwnCommand) disabled readonly tabindex="-1" style="{{ $invLockedStyle }}" @endif>
                                         </td>
                                     @endforeach
                                     <td>
                                         <input type="number" min="0" class="ni row-total" readonly tabindex="-1"
                                                name="breach[{{ $zoneKey }}][_zone][total]"
-                                               value="{{ old('breach.'.$zoneKey.'._zone.total') }}" placeholder="0">
+                                               value="{{ $restrictInvToOwnCommand ? '' : old('breach.'.$zoneKey.'._zone.total') }}"
+                                               placeholder="0"
+                                               @if($restrictInvToOwnCommand) disabled style="{{ $invLockedStyle }}" @endif>
                                     </td>
                                 </tr>
                                 @foreach($zone['commands'] as $cmd)
-                                    <tr>
+                                    @php
+                                        $isOwnInvCmd = $invCommandCode !== '' && strtoupper($cmd) === $invCommandCode;
+                                        $isInvRowLocked = $restrictInvToOwnCommand && ! $isOwnInvCmd;
+                                    @endphp
+                                    <tr style="{{ $isOwnInvCmd ? 'background:#f0fdf4;' : ($isInvRowLocked ? 'background:#f8fafc;opacity:.55;' : '') }}">
                                         <td>{{ ++$sn }}</td>
                                         <td></td>
-                                        <td style="padding-left:22px;">{{ $cmd }}</td>
+                                        <td style="padding-left:22px;{{ $isInvRowLocked ? 'color:#94a3b8;' : '' }}">
+                                            <strong>{{ $cmd }}</strong>
+                                            @if($isOwnInvCmd)
+                                                <span style="display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;background:#dcfce7;color:#166534;font-size:.68rem;font-weight:700;">Your Command</span>
+                                            @elseif($isInvRowLocked)
+                                                <span style="display:inline-block;margin-left:6px;font-size:.68rem;color:#94a3b8;"><i class="fas fa-lock"></i></span>
+                                            @endif
+                                        </td>
                                         @foreach(['companies', 'expatriates', 'officers', 'nigerians'] as $col)
                                             <td>
                                                 <input type="number" min="0" class="ni qty-input"
                                                        name="breach[{{ $zoneKey }}][{{ $cmd }}][{{ $col }}]"
-                                                       value="{{ old('breach.'.$zoneKey.'.'.$cmd.'.'.$col) }}" placeholder="0">
+                                                       value="{{ $isInvRowLocked ? '' : old('breach.'.$zoneKey.'.'.$cmd.'.'.$col) }}"
+                                                       placeholder="0"
+                                                       @if($isInvRowLocked) disabled readonly tabindex="-1" style="{{ $invLockedStyle }}" @endif>
                                             </td>
                                         @endforeach
                                         <td>
                                             <input type="number" min="0" class="ni row-total" readonly tabindex="-1"
                                                    name="breach[{{ $zoneKey }}][{{ $cmd }}][total]"
-                                                   value="{{ old('breach.'.$zoneKey.'.'.$cmd.'.total') }}" placeholder="0">
+                                                   value="{{ $isInvRowLocked ? '' : old('breach.'.$zoneKey.'.'.$cmd.'.total') }}"
+                                                   placeholder="0"
+                                                   @if($isInvRowLocked) disabled style="{{ $invLockedStyle }}" @endif>
                                         </td>
                                     </tr>
                                 @endforeach

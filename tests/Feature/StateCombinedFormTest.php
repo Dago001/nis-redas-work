@@ -178,6 +178,14 @@ class StateCombinedFormTest extends TestCase
         }
         $this->assertStringContainsString('syncUniqueRankDropdowns', $htmlA);
 
+        // Investigation & Compliance (2. Breach of Immigration Law): only Zone A shown, SHQ & Zone B..H hidden, LASC active & OGSC disabled
+        $this->assertStringNotContainsString('name="breach[SHQ]', $htmlA);
+        $this->assertStringNotContainsString('name="breach[ZONE_B]', $htmlA);
+        $this->assertMatchesRegularExpression('/name="breach\[ZONE_A\]\[LASC\]\[companies\]"[^>]*>/', $htmlA);
+        $this->assertDoesNotMatchRegularExpression('/name="breach\[ZONE_A\]\[LASC\]\[companies\]"[^>]*disabled/', $htmlA);
+        $this->assertMatchesRegularExpression('/name="breach\[ZONE_A\]\[OGSC\]\[companies\]"[^>]*disabled/', $htmlA);
+        $this->assertMatchesRegularExpression('/name="breach\[ZONE_A\]\[_zone\]\[companies\]"[^>]*disabled/', $htmlA);
+
         // Zone D officer (FCTC) should only see ZONE D, never ZONE A
         $zoneDUser = $this->stateUser([
             'primary_location_code' => 'FCTC',
