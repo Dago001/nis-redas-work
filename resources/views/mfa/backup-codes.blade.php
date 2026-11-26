@@ -92,9 +92,7 @@
             .mfa-side { width: 100%; border-right: none; border-bottom: 1px solid rgba(255, 255, 255, 0.14); padding: 20px 18px; gap: 14px; }
             .mfa-side-brand { flex-direction: row; align-items: center; gap: 12px; }
             .mfa-side-brand img { width: 40px; height: 40px; margin-bottom: 0; }
-            .mfa-side-bar, .mfa-side-foot { display: none; }
-            .mfa-features { gap: 10px; }
-            .mfa-feature-icon { width: 32px; height: 32px; font-size: .85rem; }
+            .mfa-side-bar, .mfa-side-foot, .mfa-features { display: none !important; }
             .mfa-main { padding: 16px 12px 24px; }
             .mfa-card { border-radius: 16px; padding: 22px 16px; }
         }
