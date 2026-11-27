@@ -63,5 +63,9 @@
             <span class="link-text">Settings</span>
         </a>
         @endif
+        <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+            <span class="link-icon"><i class="fas fa-bell"></i></span>
+            <span class="link-text">Notifications</span>
+        </a>
     </nav>
 </aside>

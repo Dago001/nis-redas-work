@@ -16,18 +16,10 @@
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-@if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
-    @include('super-admin.sidebar-aside')
-@else
-    @include('admin.headquarters.sidebar-aside')
-@endif
+@include('partials.role-sidebar')
 
 <div class="redas-main" id="redasMain">
-    @if(auth()->check() && (auth()->user()->user_category === 'super_admin' || auth()->user()->role === 'super_admin'))
-        @include('super-admin.topbar')
-    @else
-        @include('admin.headquarters.topbar')
-    @endif
+    @include('partials.role-topbar')
 
     @yield('content')
 

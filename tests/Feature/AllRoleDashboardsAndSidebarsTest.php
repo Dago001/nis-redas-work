@@ -35,6 +35,16 @@ class AllRoleDashboardsAndSidebarsTest extends TestCase
                 'assigned_zonal_command_code' => 'ZONE-A',
                 'access_level' => 0,
             ],
+            'zonal_officer' => [
+                'service_number' => '70010',
+                'email' => 'zonal.officer@nis.gov.ng',
+                'role' => 'officer',
+                'user_category' => 'zonal_officer',
+                'primary_location_type' => 'zonal',
+                'primary_location_code' => 'ZONE-A',
+                'assigned_zonal_command_code' => 'ZONE-A',
+                'access_level' => 0,
+            ],
             'desk_admin' => [
                 'service_number' => '70002',
                 'email' => 'desk.admin@nis.gov.ng',
@@ -136,6 +146,24 @@ class AllRoleDashboardsAndSidebarsTest extends TestCase
         )));
     }
 
+    private function extractTopbarBreadcrumb(string $html): string
+    {
+        if (! preg_match('/<div[^>]*class="topbar-breadcrumb"[^>]*>(.*?)<\/div>/si', $html, $m)) {
+            return '';
+        }
+
+        return trim(preg_replace('/\s+/', ' ', strip_tags($m[1])) ?? '');
+    }
+
+    private function extractSidebarBrandSub(string $html): string
+    {
+        if (! preg_match('/<span[^>]*class="sidebar-brand-sub"[^>]*>(.*?)<\/span>/si', $html, $m)) {
+            return '';
+        }
+
+        return trim(preg_replace('/\s+/', ' ', strip_tags($m[1])) ?? '');
+    }
+
     public function test_every_role_dashboard_profile_and_every_sidebar_link_loads_without_403_or_404(): void
     {
         foreach ($this->roleProfiles() as $label => $attrs) {
@@ -159,7 +187,11 @@ class AllRoleDashboardsAndSidebarsTest extends TestCase
             $this->assertStringNotContainsString('class="link-badge', $dashHtml, "Hardcoded sidebar badge found on {$label} dashboard");
 
             $sidebarLinks = $this->extractSidebarLinks($dashHtml);
+            $expectedBreadcrumb = $this->extractTopbarBreadcrumb($dashHtml);
+            $expectedBrandSub = $this->extractSidebarBrandSub($dashHtml);
             $this->assertNotEmpty($sidebarLinks, "No sidebar links found on {$label} dashboard");
+            $this->assertNotSame('', $expectedBreadcrumb, "No topbar breadcrumb found on {$label} dashboard");
+            $this->assertNotSame('', $expectedBrandSub, "No sidebar brand sub found on {$label} dashboard");
 
             foreach ($sidebarLinks as $href) {
                 $path = parse_url($href, PHP_URL_PATH) ?: $href;
@@ -168,22 +200,35 @@ class AllRoleDashboardsAndSidebarsTest extends TestCase
                     in_array($res->getStatusCode(), [200, 302], true),
                     "Role [{$label}] sidebar link [{$path}] returned HTTP {$res->getStatusCode()}"
                 );
+
+                if ($res->getStatusCode() === 200) {
+                    $pageHtml = $res->getContent();
+                    $this->assertSame(
+                        $sidebarLinks,
+                        $this->extractSidebarLinks($pageHtml),
+                        "Role [{$label}] sidebar links changed on [{$path}]"
+                    );
+                    $this->assertSame(
+                        $expectedBrandSub,
+                        $this->extractSidebarBrandSub($pageHtml),
+                        "Role [{$label}] sidebar brand changed on [{$path}]"
+                    );
+                    $this->assertSame(
+                        $expectedBreadcrumb,
+                        $this->extractTopbarBreadcrumb($pageHtml),
+                        "Role [{$label}] topbar breadcrumb changed on [{$path}]"
+                    );
+                }
             }
 
-            // 2. Profile page must load 200, link back to $dashUrl, and every sidebar link on profile must be authorized
+            // 2. Profile page must load 200, keep identical sidebar/topbar, and link back to $dashUrl
             $profileResponse = $this->actingAs($user)->get(route('user.profile'));
             $profileResponse->assertOk();
             $profileHtml = $profileResponse->getContent();
             $this->assertStringContainsString($dashUrl, $profileHtml, "Profile page for [{$label}] does not link to {$dashUrl}");
-
-            foreach ($this->extractSidebarLinks($profileHtml) as $href) {
-                $path = parse_url($href, PHP_URL_PATH) ?: $href;
-                $res = $this->actingAs($user)->get($path);
-                $this->assertTrue(
-                    in_array($res->getStatusCode(), [200, 302], true),
-                    "Role [{$label}] profile sidebar link [{$path}] returned HTTP {$res->getStatusCode()}"
-                );
-            }
+            $this->assertSame($sidebarLinks, $this->extractSidebarLinks($profileHtml), "Role [{$label}] sidebar changed on profile page");
+            $this->assertSame($expectedBrandSub, $this->extractSidebarBrandSub($profileHtml), "Role [{$label}] sidebar brand changed on profile page");
+            $this->assertSame($expectedBreadcrumb, $this->extractTopbarBreadcrumb($profileHtml), "Role [{$label}] topbar breadcrumb changed on profile page");
         }
     }
 

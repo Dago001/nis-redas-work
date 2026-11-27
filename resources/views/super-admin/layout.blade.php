@@ -16,10 +16,10 @@
 
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-@include('super-admin.sidebar-aside')
+@include('partials.role-sidebar')
 
 <div class="redas-main" id="redasMain">
-    @include('super-admin.topbar')
+    @include('partials.role-topbar')
 
     @yield('content')
 
