@@ -20,21 +20,6 @@
         </div>
         @endif
 
-        <!-- Data Protection Notice -->
-        <div class="redas-card" style="margin-bottom:20px;border-left:4px solid #1d4ed8;">
-            <div class="card-body" style="font-size:.82rem;color:var(--gray-600);">
-                <div style="display:flex;align-items:flex-start;gap:12px;">
-                    <i class="fas fa-shield-alt" style="color:#1d4ed8;font-size:1.1rem;margin-top:2px;"></i>
-                    <div>
-                        <strong style="color:#1e3a8a;display:block;margin-bottom:4px;">Data Protection Notice</strong>
-                        Archived documents may contain personal or sensitive operational data. Upload only documents required for official NIS business.
-                        Stored documents are retained in line with NIS archival policy and applicable data-protection law.
-                        <a href="{{ route('privacy') }}" target="_blank" style="color:#1d4ed8;text-decoration:underline;">Read the Privacy Policy</a>.
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Upload Card -->
         <div class="redas-card animate-fade-up" style="margin-bottom:24px;">
             <div class="card-head">

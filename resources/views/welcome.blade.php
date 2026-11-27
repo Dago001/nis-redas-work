@@ -261,7 +261,7 @@
             Service Headquarters, Airport Road, Sauka, Abuja - FCT
         </div>
         <div style="text-align:center;">
-            <div style="display:flex;gap:16px;justify-content:center;margin-bottom:8px;">
+            <div style="display:flex;gap:16px;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:8px;">
                 <a href="https://www.immigration.gov.ng" target="_blank" rel="noopener" style="color:rgba(255,255,255,0.5);font-size:.78rem;text-decoration:none;" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">
                     <i class="fas fa-globe me-1"></i>immigration.gov.ng
                 </a>
@@ -270,12 +270,16 @@
                     <i class="fas fa-address-book me-1"></i>Directory
                 </a>
                 <span style="color:rgba(255,255,255,0.2);">|</span>
+                <a href="{{ route('privacy') }}" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,0.25);background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.88);font-size:.76rem;font-weight:600;text-decoration:none;transition:.2s;" onmouseover="this.style.background='rgba(255,255,255,0.18)';this.style.color='#ffffff'" onmouseout="this.style.background='rgba(255,255,255,0.08)';this.style.color='rgba(255,255,255,0.88)'">
+                    <i class="fas fa-shield-alt"></i> Privacy Policy
+                </a>
+                <span style="color:rgba(255,255,255,0.2);">|</span>
                 <span style="color:rgba(255,255,255,0.5);font-size:.78rem;"><i class="fas fa-lock me-1"></i>RESTRICTED - Internal Use</span>
             </div>
         </div>
         <div class="footer-copy">
             &copy; {{ date('Y') }} Nigeria Immigration Service. All rights reserved.<br>
-            NIS-REDAS v2.0 - ICT Directorate
+            NIS-REDAS - ICT Directorate
         </div>
     </div>
 </footer>

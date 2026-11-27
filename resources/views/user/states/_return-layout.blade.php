@@ -61,22 +61,6 @@
         </div>
     @endif
 
-    {{-- GDPR / NDPR data protection notice --}}
-    <div class="redas-card" style="margin-bottom:16px;border-left:4px solid #1d4ed8;">
-        <div class="card-body" style="font-size:.82rem;color:var(--gray-600);">
-            <div style="display:flex;align-items:flex-start;gap:12px;">
-                <i class="fas fa-shield-alt" style="color:#1d4ed8;font-size:1.1rem;margin-top:2px;"></i>
-                <div>
-                    <strong style="color:#1e3a8a;display:block;margin-bottom:4px;">Data Protection Notice</strong>
-                    The information submitted on this form is processed for official records for the Service.
-                    Only data that is adequate, relevant, and limited to what is necessary should be entered.
-                    Personal data will be retained in accordance with NIS archival policy and applicable data-protection law.
-                    <a href="{{ url('/privacy') }}" target="_blank" style="color:#1d4ed8;text-decoration:underline;">Read the Privacy Policy</a>.
-                </div>
-            </div>
-        </div>
-    </div>
-
     @php
         $stateDirectorates = \App\Http\Controllers\Web\DashboardController::directorates();
         $editData = isset($editing) && is_array($editing->return_data) ? $editing->return_data : [];

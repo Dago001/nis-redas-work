@@ -67,22 +67,6 @@
         </div>
     @endif
 
-    {{-- GDPR / NDPR data protection notice --}}
-    <div class="redas-card" style="margin-bottom:16px;border-left:4px solid #1d4ed8;">
-        <div class="card-body" style="font-size:.82rem;color:var(--gray-600);">
-            <div style="display:flex;align-items:flex-start;gap:12px;">
-                <i class="fas fa-shield-alt" style="color:#1d4ed8;font-size:1.1rem;margin-top:2px;"></i>
-                <div>
-                    <strong style="color:#1e3a8a;display:block;margin-bottom:4px;">Data Protection Notice</strong>
-                    The information submitted on this form is processed for official records for the Service.
-                    Only data that is adequate, relevant, and confirmed true should be inputted.
-                    All data will be retained digitally in accordance with data retention policy and applicable data-protection law.
-                    <a href="{{ url('/privacy') }}" target="_blank" style="color:#1d4ed8;text-decoration:underline;">Read the Privacy Policy</a>.
-                </div>
-            </div>
-        </div>
-    </div>
-
     {{-- Tab bar: directorate views with their own tab system declare
          @section('directorate-tabs', '1'); all other forms get a simple Form / Preview bar. --}}
     @hasSection('directorate-tabs')
