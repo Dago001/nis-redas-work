@@ -139,12 +139,12 @@
 </style>
 
 <main class="redas-content">
-    <div class="page-header" style="margin-bottom:18px;">
-        <div>
+    <div class="page-header" style="margin-bottom:18px;display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+        <div style="flex:1 1 380px;min-width:260px;">
             <h1 class="page-title">National Analytics &amp; Performance Command Center</h1>
             <p class="page-subtitle">Live operational intelligence across all 8 Zonal Commands, State Commands, 10 Directorates, CGIS Units, and Consolidated Approvals.</p>
         </div>
-        <div class="hq-no-print" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+        <div class="hq-no-print" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end;margin-left:auto;">
             <a href="{{ route('admin.hq.analytics.export', $exportParams) }}" class="btn-nis btn-outline-nis btn-sm">
                 <i class="fas fa-file-csv"></i> Export CSV
             </a>
