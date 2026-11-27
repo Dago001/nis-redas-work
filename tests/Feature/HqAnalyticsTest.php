@@ -153,5 +153,28 @@ class HqAnalyticsTest extends TestCase
         // Non-HQ user cannot access HQ analytics or export
         $this->actingAs($stateOfficer)->get(route('admin.hq.analytics'))->assertForbidden();
         $this->actingAs($stateOfficer)->get(route('admin.hq.analytics.export'))->assertForbidden();
+
+        // Super Admin dashboard renders all 6 live page-managed charts (trend, status, category, directorate, zone, state)
+        $superAdmin = $this->createUser([
+            'name' => 'Super Admin',
+            'service_number' => '81099',
+            'email' => 'super81099@nis.gov.ng',
+            'role' => 'admin',
+            'user_category' => 'super_admin',
+            'primary_location_type' => 'headquarters',
+            'primary_location_code' => 'HQ',
+            'access_level' => 6,
+        ]);
+
+        $saRes = $this->actingAs($superAdmin)->get(route('superadmin.dashboard'));
+        $saRes->assertOk()
+            ->assertSee('id="trendChart" data-chart-managed="page"', false)
+            ->assertSee('id="statusChart" data-chart-managed="page"', false)
+            ->assertSee('id="categoryChart" data-chart-managed="page"', false)
+            ->assertSee('id="directorateChart" data-chart-managed="page"', false)
+            ->assertSee('id="zoneChart" data-chart-managed="page"', false)
+            ->assertSee('id="stateChart" data-chart-managed="page"', false)
+            ->assertSee('ZONE-A')
+            ->assertSee('LASC');
     }
 }

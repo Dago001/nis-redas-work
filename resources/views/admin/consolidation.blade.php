@@ -262,39 +262,42 @@
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (!window.Chart) return;
     const trendData = @json($trendChart);
+    const trendEl = document.getElementById('trendChart');
+    if (!trendEl) return;
 
-    if (window.Chart) {
-        new Chart(document.getElementById('trendChart'), {
-            type: 'line',
-            data: {
-                labels: trendData.labels,
-                datasets: [
-                    {
-                        label: 'Submissions',
-                        data: trendData.submissions,
-                        borderColor: '#1a5632',
-                        backgroundColor: 'rgba(26, 86, 50, 0.08)',
-                        fill: true,
-                        tension: 0.35,
-                    },
-                    {
-                        label: 'Approvals',
-                        data: trendData.approvals,
-                        borderColor: '#b45309',
-                        backgroundColor: 'rgba(180, 83, 9, 0.08)',
-                        fill: true,
-                        tension: 0.35,
-                    },
-                ],
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-            },
-        });
-    }
+    new Chart(trendEl, {
+        type: 'line',
+        data: {
+            labels: trendData.labels,
+            datasets: [
+                {
+                    label: 'Submissions',
+                    data: trendData.submissions,
+                    borderColor: '#1a5632',
+                    backgroundColor: 'rgba(26, 86, 50, 0.08)',
+                    fill: true,
+                    tension: 0.35,
+                },
+                {
+                    label: 'Approvals',
+                    data: trendData.approvals,
+                    borderColor: '#b45309',
+                    backgroundColor: 'rgba(180, 83, 9, 0.08)',
+                    fill: true,
+                    tension: 0.35,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+        },
+    });
+});
 </script>
 @endpush
 

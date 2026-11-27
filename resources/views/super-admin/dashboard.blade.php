@@ -293,7 +293,9 @@
             </div>
         </div>
         <div class="card-body">
-            <canvas id="trendChart" height="80"></canvas>
+            <div style="position:relative;height:250px;width:100%;">
+                <canvas id="trendChart" data-chart-managed="page"></canvas>
+            </div>
         </div>
     </div>
 
@@ -308,7 +310,16 @@
                 </div>
             </div>
             <div class="card-body">
-                <canvas id="statusChart" height="240"></canvas>
+                @if(array_sum($statusChart['data']) > 0)
+                    <div style="position:relative;height:250px;width:100%;">
+                        <canvas id="statusChart" data-chart-managed="page"></canvas>
+                    </div>
+                @else
+                    <div style="height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;gap:8px;">
+                        <i class="fas fa-chart-pie" style="font-size:2rem;opacity:.45;"></i>
+                        <span style="font-size:.84rem;">No return status data recorded yet.</span>
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -322,7 +333,16 @@
                 </div>
             </div>
             <div class="card-body">
-                <canvas id="categoryChart" height="240"></canvas>
+                @if(array_sum($categoryChart['data']) > 0)
+                    <div style="position:relative;height:250px;width:100%;">
+                        <canvas id="categoryChart" data-chart-managed="page"></canvas>
+                    </div>
+                @else
+                    <div style="height:250px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;gap:8px;">
+                        <i class="fas fa-layer-group" style="font-size:2rem;opacity:.45;"></i>
+                        <span style="font-size:.84rem;">No category submissions recorded yet.</span>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -338,7 +358,9 @@
                 </div>
             </div>
             <div class="card-body">
-                <canvas id="directorateChart" height="260"></canvas>
+                <div style="position:relative;height:260px;width:100%;">
+                    <canvas id="directorateChart" data-chart-managed="page"></canvas>
+                </div>
             </div>
         </div>
 
@@ -352,7 +374,9 @@
                 </div>
             </div>
             <div class="card-body">
-                <canvas id="zoneChart" height="260"></canvas>
+                <div style="position:relative;height:260px;width:100%;">
+                    <canvas id="zoneChart" data-chart-managed="page"></canvas>
+                </div>
             </div>
         </div>
 
@@ -366,7 +390,16 @@
                 </div>
             </div>
             <div class="card-body">
-                <canvas id="stateChart" height="260"></canvas>
+                @if(count($stateChart['labels']) > 0)
+                    <div style="position:relative;height:260px;width:100%;">
+                        <canvas id="stateChart" data-chart-managed="page"></canvas>
+                    </div>
+                @else
+                    <div style="height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;gap:8px;">
+                        <i class="fas fa-location-dot" style="font-size:2rem;opacity:.45;"></i>
+                        <span style="font-size:.84rem;">No state command returns submitted yet.</span>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -400,7 +433,7 @@
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
                                 <td>{{ $return->user->name ?? '-' }}</td>
                                 <td style="text-transform:capitalize;">{{ $return->category }}</td>
-                                <td>{{ $return->return_data['report_period'] ?? '-' }}</td>
+                                <td>{{ $return->report_period ?? ($return->return_data['report_period'] ?? ($return->return_data['period'] ?? '-')) }}</td>
                                 <td>{{ optional($return->updated_at)->format('d M Y') }}</td>
                                 <td style="text-align:right;">
                                     <a href="{{ route('superadmin.returns.show', $return) }}" class="btn-nis btn-ghost" style="padding:6px 12px;font-size:.75rem;">View</a>
@@ -418,6 +451,9 @@
 
 @push('scripts')
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (!window.Chart) return;
+
     const statusData = @json($statusChart);
     const categoryData = @json($categoryChart);
     const directorateData = @json($directorateChart);
@@ -425,8 +461,21 @@
     const stateData = @json($stateChart);
     const trendData = @json($trendChart);
 
-    if (window.Chart) {
-        new Chart(document.getElementById('trendChart'), {
+    const baseOpts = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            tooltip: {
+                backgroundColor: '#0f172a',
+                padding: 10,
+                cornerRadius: 8,
+            },
+        },
+    };
+
+    const trendEl = document.getElementById('trendChart');
+    if (trendEl) {
+        new Chart(trendEl, {
             type: 'line',
             data: {
                 labels: trendData.labels,
@@ -435,9 +484,10 @@
                         label: 'Submissions',
                         data: trendData.submissions,
                         borderColor: '#1a5632',
-                        backgroundColor: 'rgba(26, 86, 50, 0.08)',
+                        backgroundColor: 'rgba(26, 86, 50, 0.10)',
                         fill: true,
                         tension: 0.35,
+                        pointRadius: 3,
                     },
                     {
                         label: 'Approvals',
@@ -446,47 +496,68 @@
                         backgroundColor: 'rgba(180, 83, 9, 0.08)',
                         fill: true,
                         tension: 0.35,
+                        pointRadius: 3,
                     },
                 ],
             },
             options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom' } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                ...baseOpts,
+                plugins: { ...baseOpts.plugins, legend: { position: 'bottom' } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(15,23,42,0.05)' } },
+                    x: { grid: { display: false } },
+                },
             },
         });
+    }
 
-        new Chart(document.getElementById('statusChart'), {
+    const statusEl = document.getElementById('statusChart');
+    if (statusEl) {
+        new Chart(statusEl, {
             type: 'doughnut',
             data: {
                 labels: statusData.labels,
                 datasets: [{
                     data: statusData.data,
-                    backgroundColor: ['#eab308', '#16a34a', '#dc2626'],
+                    backgroundColor: ['#d97706', '#16a34a', '#dc2626'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6,
                 }],
             },
             options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom' } },
+                ...baseOpts,
+                cutout: '64%',
+                plugins: { ...baseOpts.plugins, legend: { position: 'bottom' } },
             },
         });
+    }
 
-        new Chart(document.getElementById('categoryChart'), {
-            type: 'pie',
+    const catEl = document.getElementById('categoryChart');
+    if (catEl) {
+        new Chart(catEl, {
+            type: 'doughnut',
             data: {
                 labels: categoryData.labels,
                 datasets: [{
                     data: categoryData.data,
                     backgroundColor: ['#0369a1', '#1a5632', '#6d28d9'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff',
+                    hoverOffset: 6,
                 }],
             },
             options: {
-                responsive: true,
-                plugins: { legend: { position: 'bottom' } },
+                ...baseOpts,
+                cutout: '56%',
+                plugins: { ...baseOpts.plugins, legend: { position: 'bottom' } },
             },
         });
+    }
 
-        new Chart(document.getElementById('directorateChart'), {
+    const dirEl = document.getElementById('directorateChart');
+    if (dirEl) {
+        new Chart(dirEl, {
             type: 'bar',
             data: {
                 labels: directorateData.labels,
@@ -498,13 +569,20 @@
                 }],
             },
             options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                ...baseOpts,
+                indexAxis: 'y',
+                plugins: { ...baseOpts.plugins, legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(15,23,42,0.05)' } },
+                    y: { grid: { display: false } },
+                },
             },
         });
+    }
 
-        new Chart(document.getElementById('zoneChart'), {
+    const zoneEl = document.getElementById('zoneChart');
+    if (zoneEl) {
+        new Chart(zoneEl, {
             type: 'bar',
             data: {
                 labels: zoneData.labels,
@@ -516,13 +594,19 @@
                 }],
             },
             options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+                ...baseOpts,
+                plugins: { ...baseOpts.plugins, legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(15,23,42,0.05)' } },
+                    x: { grid: { display: false } },
+                },
             },
         });
+    }
 
-        new Chart(document.getElementById('stateChart'), {
+    const stateEl = document.getElementById('stateChart');
+    if (stateEl) {
+        new Chart(stateEl, {
             type: 'bar',
             data: {
                 labels: stateData.labels,
@@ -534,13 +618,17 @@
                 }],
             },
             options: {
+                ...baseOpts,
                 indexAxis: 'y',
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { x: { beginAtZero: true, ticks: { precision: 0 } } },
+                plugins: { ...baseOpts.plugins, legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: 'rgba(15,23,42,0.05)' } },
+                    y: { grid: { display: false } },
+                },
             },
         });
     }
+});
 </script>
 @endpush
 

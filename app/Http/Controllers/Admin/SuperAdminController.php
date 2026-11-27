@@ -92,17 +92,21 @@ class SuperAdminController extends Controller
                 ->all(),
         ];
 
-        $zoneCounts = Application::query()
-            ->selectRaw('zonal_code, count(*) as aggregate')
-            ->whereNotNull('zonal_code')
-            ->where('zonal_code', '!=', '')
-            ->groupBy('zonal_code')
-            ->orderBy('zonal_code')
-            ->pluck('aggregate', 'zonal_code');
+        $allZones = ['ZONE-A', 'ZONE-B', 'ZONE-C', 'ZONE-D', 'ZONE-E', 'ZONE-F', 'ZONE-G', 'ZONE-H'];
+        $zoneTotals = array_fill_keys($allZones, 0);
+        foreach (Application::query()->with('user:id,assigned_zonal_command_code')->get(['id', 'zonal_code', 'scope_code', 'user_id']) as $app) {
+            $z = strtoupper((string) ($app->zonal_code ?: $app->user?->assigned_zonal_command_code ?: ''));
+            $s = strtoupper((string) ($app->scope_code ?? ''));
+            if (isset($zoneTotals[$z])) {
+                $zoneTotals[$z]++;
+            } elseif (isset($zoneTotals[$s])) {
+                $zoneTotals[$s]++;
+            }
+        }
 
         $zoneChart = [
-            'labels' => $zoneCounts->keys()->all(),
-            'data' => $zoneCounts->map(fn ($count) => (int) $count)->values()->all(),
+            'labels' => array_keys($zoneTotals),
+            'data' => array_values($zoneTotals),
         ];
 
         $stateCounts = Application::query()
@@ -116,7 +120,12 @@ class SuperAdminController extends Controller
             ->pluck('aggregate', 'scope_code');
 
         $stateChart = [
-            'labels' => $stateCounts->keys()->all(),
+            'labels' => $stateCounts->keys()->map(function (string $code) {
+                $upper = strtoupper($code);
+                $name = \App\Services\GeolocationService::stateNameFromCode($upper);
+
+                return $name ? "{$name} ({$upper})" : $upper;
+            })->all(),
             'data' => $stateCounts->map(fn ($count) => (int) $count)->values()->all(),
         ];
 
