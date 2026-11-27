@@ -15,56 +15,56 @@
 <style>
     .hq-analytics-grid-kpi {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(195px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 12px;
         margin-bottom: 20px;
     }
     .hq-kpi-card {
         background: #fff;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px 18px;
+        border-radius: 10px;
+        padding: 13px 15px;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
-        gap: 8px;
+        gap: 6px;
         box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
     }
     .hq-kpi-top {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 10px;
+        gap: 8px;
     }
     .hq-kpi-label {
-        font-size: .72rem;
+        font-size: .68rem;
         font-weight: 700;
-        letter-spacing: .05em;
+        letter-spacing: .04em;
         text-transform: uppercase;
         color: #64748b;
     }
     .hq-kpi-icon {
-        width: 34px;
-        height: 34px;
-        border-radius: 9px;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: .88rem;
+        font-size: .78rem;
         flex-shrink: 0;
     }
     .hq-kpi-val {
-        font-size: 1.65rem;
-        font-weight: 800;
+        font-size: 1.25rem;
+        font-weight: 700;
         color: #0f172a;
-        line-height: 1.1;
+        line-height: 1.2;
     }
     .hq-kpi-sub {
-        font-size: .75rem;
+        font-size: .72rem;
         color: #64748b;
         display: flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         flex-wrap: wrap;
     }
     .hq-filter-bar {
