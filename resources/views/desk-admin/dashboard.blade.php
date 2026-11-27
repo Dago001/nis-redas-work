@@ -107,42 +107,60 @@
             </div>
         </div>
         <div class="card-body no-pad">
-            <div style="overflow:auto;">
-                <table style="width:100%;border-collapse:collapse;min-width:760px;">
+            <div class="table-responsive">
+                <table class="nis-table" style="width:100%;border-collapse:collapse;min-width:860px;">
                     <thead>
                         <tr style="background:#f8fafc;">
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">ID</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Officer</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Status</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Date</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
+                            <th style="width:76px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">ID</th>
+                            <th style="width:155px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Command / Scope</th>
+                            <th style="width:165px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Officer</th>
+                            <th style="width:125px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Report Period</th>
+                            <th style="width:100px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Status</th>
+                            <th style="width:135px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Submitted</th>
+                            <th style="text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($pendingSubmissions as $submission)
+                            @php
+                                $pPeriod = $submission->report_period
+                                    ?? ($submission->return_data['report_period'] ?? ($submission->return_data['period'] ?? '-'));
+                                if (is_string($pPeriod) && preg_match('/^\d{4}-\d{2}$/', $pPeriod)) {
+                                    try {
+                                        $pPeriod = \Carbon\Carbon::createFromFormat('Y-m', $pPeriod)->format('F Y');
+                                    } catch (\Throwable $e) {}
+                                }
+                                $pScope = strtoupper((string) ($submission->scope_code ?? ''));
+                                $pScopeName = $pScope !== ''
+                                    ? (\App\Services\GeolocationService::stateNameFromCode($pScope) ?? $pScope)
+                                    : ($submission->return_data['command_name'] ?? '-');
+                                $pScopeDisplay = ($pScopeName !== $pScope && $pScope !== '') ? "{$pScopeName} ({$pScope})" : $pScopeName;
+                            @endphp
                             <tr>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">#{{ $submission->id }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->user)->name ?? 'N/A' }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
-                                    <span style="display:inline-flex;padding:3px 8px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:700;">
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-weight:700;">#{{ $submission->id }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#0f172a;">{{ $pScopeDisplay }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->user)->name ?? 'N/A' }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">{{ $pPeriod }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">
+                                    <span style="display:inline-flex;padding:3px 9px;border-radius:999px;background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:700;">
                                         {{ ucfirst($submission->status) }}
                                     </span>
                                 </td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->created_at)->format('d M Y, H:i') }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
-                                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
-                                        <a href="{{ route('desk.admin.submissions.show', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;">Preview</a>
-                                        <form method="POST" action="{{ route($approveRoute, $submission) }}" style="display:flex;gap:8px;flex-wrap:wrap;min-width:240px;">
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;white-space:nowrap;">{{ optional($submission->created_at)->format('d M Y, H:i') }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                                        <a href="{{ route('desk.admin.submissions.show', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;"><i class="fas fa-eye"></i> Preview</a>
+                                        <form method="POST" action="{{ route($approveRoute, $submission) }}" style="display:flex;gap:6px;flex-wrap:wrap;min-width:220px;margin:0;">
                                             @csrf
                                             @method('PATCH')
-                                            <input type="text" name="note" maxlength="1000" placeholder="Approval note (optional)" style="padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:.75rem;flex:1;min-width:140px;">
+                                            <input type="text" name="note" maxlength="1000" placeholder="Approval note (optional)" style="padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:.75rem;flex:1;min-width:130px;">
                                             <button type="submit" class="btn-nis btn-sm btn-primary-nis">Approve</button>
                                         </form>
 
-                                        <form method="POST" action="{{ route($rejectRoute, $submission) }}" style="display:flex;gap:8px;flex-wrap:wrap;min-width:260px;">
+                                        <form method="POST" action="{{ route($rejectRoute, $submission) }}" style="display:flex;gap:6px;flex-wrap:wrap;min-width:240px;margin:0;">
                                             @csrf
                                             @method('PATCH')
-                                            <input type="text" name="comment" maxlength="1000" required placeholder="Rejection reason (required)" style="padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:.75rem;flex:1;min-width:140px;">
+                                            <input type="text" name="comment" maxlength="1000" required placeholder="Rejection reason (required)" style="padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;font-size:.75rem;flex:1;min-width:130px;">
                                             <button type="submit" class="btn-nis btn-sm" style="background:#b91c1c;color:#fff;">Reject</button>
                                         </form>
                                     </div>
@@ -150,7 +168,10 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" style="padding:16px;text-align:center;color:#64748b;">No pending submissions in your provisioned scope.</td>
+                                <td colspan="7" style="padding:20px 16px;text-align:center;color:#64748b;font-size:.84rem;">
+                                    <i class="fas fa-check-circle" style="color:#16a34a;margin-right:6px;"></i>
+                                    All caught up - no pending submissions awaiting your action.
+                                </td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -167,21 +188,29 @@
                 </div>
                 Approved Submissions
             </div>
-            <a href="{{ route('desk.admin.reports', ['status' => 'approved']) }}" class="btn-nis btn-ghost btn-sm">
-                <i class="fas fa-file-export"></i> Export Report
-            </a>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                @if(in_array($user?->user_category, ['zonal_commander', 'directorate_admin'], true))
+                    <a href="{{ route('consolidated.create') }}" class="btn-nis btn-primary-nis btn-sm">
+                        <i class="fas fa-layer-group"></i> Consolidate &amp; Forward to HQ
+                    </a>
+                @endif
+                <a href="{{ route('desk.admin.reports', ['status' => 'approved']) }}" class="btn-nis btn-ghost btn-sm">
+                    <i class="fas fa-file-export"></i> Export Report
+                </a>
+            </div>
         </div>
         <div class="card-body no-pad">
-            <div style="overflow:auto;">
-                <table style="width:100%;border-collapse:collapse;min-width:720px;">
+            <div class="table-responsive">
+                <table class="nis-table" style="width:100%;border-collapse:collapse;min-width:820px;">
                     <thead>
                         <tr style="background:#f8fafc;">
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">ID</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Officer</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Report Period</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Status</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Approved</th>
-                            <th style="text-align:left;padding:10px;font-size:.75rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
+                            <th style="width:76px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">ID</th>
+                            <th style="width:155px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Command / Scope</th>
+                            <th style="width:165px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Officer</th>
+                            <th style="width:125px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Report Period</th>
+                            <th style="width:170px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Status</th>
+                            <th style="width:135px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Approved</th>
+                            <th style="text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -196,6 +225,11 @@
                                         // keep raw string
                                     }
                                 }
+                                $aScope = strtoupper((string) ($submission->scope_code ?? ''));
+                                $aScopeName = $aScope !== ''
+                                    ? (\App\Services\GeolocationService::stateNameFromCode($aScope) ?? $aScope)
+                                    : ($submission->return_data['command_name'] ?? '-');
+                                $aScopeDisplay = ($aScopeName !== $aScope && $aScope !== '') ? "{$aScopeName} ({$aScope})" : $aScopeName;
                                 $isFinalApproved = strtolower((string) $submission->status) === 'approved';
                                 $stageLabel = ucwords(str_replace('_', ' ', (string) ($submission->workflow_stage ?? 'next stage')));
                                 $statusPillText = $isFinalApproved ? 'Approved' : "Approved · {$stageLabel}";
@@ -204,16 +238,17 @@
                                     : 'background:#eff6ff;color:#1d4ed8;';
                             @endphp
                             <tr>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">#{{ $submission->id }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->user)->name ?? 'N/A' }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ $subPeriod }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-weight:700;">#{{ $submission->id }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;font-weight:600;color:#0f172a;">{{ $aScopeDisplay }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->user)->name ?? 'N/A' }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">{{ $subPeriod }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">
                                     <span style="display:inline-flex;padding:3px 9px;border-radius:999px;font-size:.72rem;font-weight:700;{{ $statusPillStyle }}">
                                         {{ $statusPillText }}
                                     </span>
                                 </td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">{{ optional($submission->updated_at)->format('d M Y, H:i') }}</td>
-                                <td style="padding:10px;border-bottom:1px solid #f1f5f9;">
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;white-space:nowrap;">{{ optional($submission->updated_at)->format('d M Y, H:i') }}</td>
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">
                                     <div style="display:flex;gap:8px;flex-wrap:wrap;">
                                         <a href="{{ route('desk.admin.submissions.show', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;">
                                             <i class="fas fa-eye"></i> View
@@ -229,7 +264,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" style="padding:16px;text-align:center;color:#64748b;">No approved submissions in your provisioned scope yet.</td>
+                                <td colspan="7" style="padding:20px 16px;text-align:center;color:#64748b;font-size:.84rem;">No approved submissions in your provisioned scope yet.</td>
                             </tr>
                         @endforelse
                     </tbody>
