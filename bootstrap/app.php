@@ -28,6 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 | Request::HEADER_X_FORWARDED_PROTO
         );
 
+        $middleware->redirectUsersTo(fn (Request $request) => $request->user()?->dashboardUrl() ?? '/');
+
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
             'access' => \App\Http\Middleware\CheckAccess::class,
@@ -66,8 +68,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 419);
             }
 
-            return redirect()->back()
-                ->with('error', 'Your session expired due to inactivity. Please log in again — any in-progress draft was saved automatically in your browser.');
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                \Illuminate\Support\Facades\Auth::logout();
+            }
+            if ($request->hasSession()) {
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
+
+            return redirect()->route('login')
+                ->with('error', 'Your session expired due to inactivity. Please log in again - any in-progress draft was saved automatically in your browser.');
         });
 
         // Log every unhandled exception on API routes with request context,

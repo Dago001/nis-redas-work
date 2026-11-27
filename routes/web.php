@@ -44,6 +44,21 @@ Route::middleware(Authenticate::class)->post('/session/keep-alive', function () 
     return response()->noContent();
 })->name('session.keep-alive');
 
+// Safe "Log In Again" link from 419 Session Expired page: ensures any stale
+// session is fully terminated before landing on the fresh login screen.
+Route::get('/session/expired-login', function (\Illuminate\Http\Request $request) {
+    if (Auth::check()) {
+        Auth::logout();
+    }
+    if ($request->hasSession()) {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+    }
+
+    return redirect()->route('login')
+        ->with('status', 'Your previous session was cleared. Please sign in again.');
+})->name('session.expired.login');
+
 // Authentication Routes (guests only)
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {

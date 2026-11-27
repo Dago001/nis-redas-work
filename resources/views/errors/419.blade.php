@@ -86,7 +86,7 @@
         <div class="note">If you were filling out a return form, your draft was saved automatically in this browser and will reload once you reopen the form.</div>
         <div class="actions">
             <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
-            <a href="{{ route('login') }}" class="btn btn-primary">Log In Again</a>
+            <a href="{{ route('session.expired.login') }}" class="btn btn-primary">Log In Again</a>
         </div>
     </div>
 </body>
