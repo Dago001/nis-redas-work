@@ -22,13 +22,21 @@ use Illuminate\Support\Facades\Route;
 
 $homeView = 'welcome';
 
-Route::get('/', fn () => view()->exists($homeView)
-    ? view($homeView)
-    : redirect('/login'))->name('home');
+Route::get('/', function () use ($homeView) {
+    if (Auth::check()) {
+        return redirect()->to(Auth::user()->dashboardUrl());
+    }
 
-Route::get('/home', fn () => view()->exists($homeView)
-    ? view($homeView)
-    : redirect('/login'));
+    return view()->exists($homeView) ? view($homeView) : redirect('/login');
+})->name('home');
+
+Route::get('/home', function () use ($homeView) {
+    if (Auth::check()) {
+        return redirect()->to(Auth::user()->dashboardUrl());
+    }
+
+    return view()->exists($homeView) ? view($homeView) : redirect('/login');
+});
 
 Route::get('/terms-and-conditions', fn () => view()->exists('legal.terms')
     ? view('legal.terms')

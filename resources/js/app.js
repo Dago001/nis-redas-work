@@ -949,5 +949,12 @@ document.addEventListener('click', (e) => {
     });
 })();
 
+/* Prevent stale bfcache snapshots when using browser Back/Forward across auth boundaries */
+window.addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+        window.location.reload();
+    }
+});
+
 /* Export for inline scripts */
 window.REDAS = { showToast, animateCounter };

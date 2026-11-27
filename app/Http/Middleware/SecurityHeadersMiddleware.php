@@ -70,16 +70,21 @@ class SecurityHeadersMiddleware
             );
         }
 
-        // Never allow shared proxies or browsers to cache authenticated/API/auth responses
+        // Never allow shared proxies or browsers to cache authenticated/API/auth/landing responses
+        // so browser Back/Forward arrows never expose stale logged-in dashboards or bounce logged-in
+        // users back to a cached public landing page.
         $isSensitive = $request->user() !== null
+            || $request->is('/')
+            || $request->is('home')
             || $request->is('api/*')
             || $request->is('login')
             || $request->is('mfa/*')
             || $request->is('password/*');
 
         if ($isSensitive && ! $response->headers->has('Content-Disposition')) {
-            $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0, private');
             $response->headers->set('Pragma', 'no-cache');
+            $response->headers->set('Expires', '0');
         }
 
         return $response;
