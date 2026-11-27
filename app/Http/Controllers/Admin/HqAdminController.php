@@ -7,12 +7,14 @@ use App\Models\Application;
 use App\Models\AuditLog;
 use App\Models\User;
 use App\Services\ExcelReportService;
+use App\Services\HqAnalyticsService;
 use App\Services\SubmissionWorkflow;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class HqAdminController extends Controller
 {
@@ -216,73 +218,85 @@ class HqAdminController extends Controller
         ]);
     }
 
-    public function analytics(): View
+    public function analytics(Request $request, HqAnalyticsService $analyticsService): View
     {
-        $perDirectorate = Application::query()
-            ->selectRaw('scope_code, count(*) as aggregate')
-            ->where('category', SubmissionWorkflow::CATEGORY_DIRECTORATE)
-            ->groupBy('scope_code')
-            ->pluck('aggregate', 'scope_code');
+        $payload = $analyticsService->build($request->only(['range', 'period', 'category', 'zone', 'status']));
 
-        $directorateChart = [
-            'labels' => array_values(self::DIRECTORATES),
-            'data' => collect(array_keys(self::DIRECTORATES))
-                ->map(fn (string $slug) => (int) ($perDirectorate[$slug] ?? 0))
-                ->all(),
-        ];
+        return view('admin.headquarters.analytics', $payload);
+    }
 
-        $statusCounts = Application::query()
-            ->selectRaw('status, count(*) as aggregate')
-            ->groupBy('status')
-            ->pluck('aggregate', 'status');
+    public function exportAnalyticsCsv(Request $request, HqAnalyticsService $analyticsService): StreamedResponse
+    {
+        $payload = $analyticsService->build($request->only(['range', 'period', 'category', 'zone', 'status']));
+        $filename = 'nis-redas-hq-analytics-' . now()->format('Y-m-d-His') . '.csv';
 
-        $statusChart = [
-            'labels' => ['Pending', 'Approved', 'Returned'],
-            'data' => [
-                (int) ($statusCounts['pending'] ?? 0),
-                (int) ($statusCounts['approved'] ?? 0),
-                (int) ($statusCounts['returned'] ?? 0),
-            ],
-        ];
-
-        $trendLabels = [];
-        $trendData = [];
-
-        for ($i = 11; $i >= 0; $i--) {
-            $month = now()->subMonths($i);
-            $trendLabels[] = $month->format('M Y');
-            $trendData[] = Application::query()
-                ->whereYear('created_at', $month->year)
-                ->whereMonth('created_at', $month->month)
-                ->count();
-        }
-
-        $stageTurnaround = [];
-        foreach (Application::query()->whereNotNull('workflow_path')->cursor() as $application) {
-            $entries = collect($application->workflow_path ?? []);
-            for ($i = 1; $i < $entries->count(); $i++) {
-                $from = $entries[$i - 1]['at'] ?? null;
-                $to = $entries[$i]['at'] ?? null;
-                $stage = $entries[$i]['stage'] ?? null;
-                if ($from && $to && $stage) {
-                    $hours = (strtotime((string) $to) - strtotime((string) $from)) / 3600;
-                    if ($hours >= 0) {
-                        $stageTurnaround[$stage][] = $hours;
-                    }
-                }
+        return response()->streamDownload(function () use ($payload): void {
+            $out = fopen('php://output', 'w');
+            if ($out === false) {
+                return;
             }
-        }
 
-        $turnaround = collect($stageTurnaround)->map(fn (array $hours, string $stage) => [
-            'stage' => self::STAGE_LABELS[$stage] ?? ucwords(str_replace('_', ' ', $stage)),
-            'avg_hours' => round(array_sum($hours) / count($hours), 1),
-        ])->sortBy('stage')->values();
+            fputcsv($out, ['NIS-REDAS HQ Analytics Export', 'Generated At', now()->toDateTimeString()]);
+            fputcsv($out, []);
 
-        return view('admin.headquarters.analytics', [
-            'directorateChart' => $directorateChart,
-            'statusChart' => $statusChart,
-            'trendChart' => ['labels' => $trendLabels, 'data' => $trendData],
-            'turnaround' => $turnaround,
+            fputcsv($out, ['EXECUTIVE KPI SUMMARY']);
+            fputcsv($out, ['Metric', 'Value']);
+            foreach ($payload['kpis'] as $metric => $value) {
+                fputcsv($out, [ucwords(str_replace('_', ' ', (string) $metric)), $value ?? 'N/A']);
+            }
+            fputcsv($out, []);
+
+            fputcsv($out, ['ZONAL COMMAND MATRIX']);
+            fputcsv($out, ['Zone Code', 'Zone Name', 'Total Returns', 'Approved', 'Pending', 'Returned', 'Reporting Units', 'Approval Rate (%)', 'Consolidated Status']);
+            foreach ($payload['zonalMatrix'] as $row) {
+                fputcsv($out, [
+                    $row['code'],
+                    $row['name'],
+                    $row['total'],
+                    $row['approved'],
+                    $row['pending'],
+                    $row['returned'],
+                    $row['reporting_units'],
+                    $row['approval_rate'],
+                    $row['consolidated_status'] ?? 'None',
+                ]);
+            }
+            fputcsv($out, []);
+
+            fputcsv($out, ['FORMATION LEADERBOARD']);
+            fputcsv($out, ['Scope Code', 'Formation Name', 'Category', 'Zone', 'Total', 'Approved', 'Pending', 'Returned', 'Approval Rate (%)', 'Last Submitted']);
+            foreach ($payload['formationLeaderboard'] as $row) {
+                fputcsv($out, [
+                    $row['scope_code'],
+                    $row['name'],
+                    $row['category'],
+                    $row['zone'],
+                    $row['total'],
+                    $row['approved'],
+                    $row['pending'],
+                    $row['returned'],
+                    $row['approval_rate'],
+                    $row['last_submitted'],
+                ]);
+            }
+            fputcsv($out, []);
+
+            fputcsv($out, ['WORKFLOW STAGE TURNAROUND']);
+            fputcsv($out, ['Stage', 'Samples', 'Avg Hours', 'Min Hours', 'Max Hours', 'Health']);
+            foreach ($payload['turnaround'] as $row) {
+                fputcsv($out, [
+                    $row['stage'],
+                    $row['samples'],
+                    $row['avg_hours'],
+                    $row['min_hours'],
+                    $row['max_hours'],
+                    $row['health'],
+                ]);
+            }
+
+            fclose($out);
+        }, $filename, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
         ]);
     }
 

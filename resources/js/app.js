@@ -2,6 +2,8 @@ import 'bootstrap';
 import Chart from 'chart.js/auto';
 import '@fortawesome/fontawesome-free/css/all.css';
 
+window.Chart = Chart;
+
 /* ============================================================
    NIS REDAS - Main Application JS v2.0
    ============================================================ */
@@ -476,7 +478,7 @@ function initCharts() {
 
     /* Status doughnut */
     const doughCtx = document.getElementById('statusChart');
-    if (doughCtx) {
+    if (doughCtx && doughCtx.dataset.chartManaged !== 'page') {
         new Chart(doughCtx, {
             type: 'doughnut',
             data: {
@@ -526,7 +528,7 @@ function initCharts() {
 
     /* Monthly returns by directorate (bar) */
     const dirCtx = document.getElementById('directorateChart');
-    if (dirCtx) {
+    if (dirCtx && dirCtx.dataset.chartManaged !== 'page') {
         new Chart(dirCtx, {
             type: 'bar',
             data: {

@@ -325,6 +325,7 @@ Route::middleware([Authenticate::class, 'access:category=hq_admin|admin|super_ad
     Route::get('/admin/hq/returns/{application}/documents/{collection}/{index}', [SubmissionReviewController::class, 'document'])->name('admin.hq.returns.document');
     Route::get('/admin/hq/archive', [HqAdminController::class, 'archive'])->name('admin.hq.archive');
     Route::get('/admin/hq/analytics', [HqAdminController::class, 'analytics'])->name('admin.hq.analytics');
+    Route::get('/admin/hq/analytics/export', [HqAdminController::class, 'exportAnalyticsCsv'])->name('admin.hq.analytics.export');
     Route::get('/admin/hq/reports', [HqAdminController::class, 'reports'])->name('admin.hq.reports');
     Route::post('/admin/hq/reports/generate', [HqAdminController::class, 'generateReport'])->middleware('throttle:database')->name('admin.hq.reports.generate');
 
