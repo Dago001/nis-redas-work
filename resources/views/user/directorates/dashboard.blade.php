@@ -12,11 +12,6 @@
                 {{ now()->format('l, d F Y') }}
             </p>
         </div>
-        @if($directorate && $slug)
-        <a href="{{ route('user.directorates.show', ['slug' => $slug]) }}" class="btn-nis btn-primary-nis">
-            <i class="fas fa-plus"></i> Submit {{ $directorate['name'] }} Return
-        </a>
-        @endif
     </div>
 
     @if (session('status'))
