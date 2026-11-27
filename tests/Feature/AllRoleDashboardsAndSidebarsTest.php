@@ -229,8 +229,20 @@ class AllRoleDashboardsAndSidebarsTest extends TestCase
         $this->actingAs($zonalCommander)->get(route('desk.admin.reports'))->assertOk();
         $this->actingAs($zonalCommander)->patch(route('zonal.submissions.approve', $application))->assertRedirect();
 
-        // HQ Admin and Super Admin can also preview the submission without 403
-        $this->actingAs($hqAdmin)->get(route('desk.admin.submissions.show', $application))->assertOk();
-        $this->actingAs($superAdmin)->get(route('desk.admin.submissions.show', $application))->assertOk();
+        // HQ Admin and Super Admin keep their own full sidebars on Review Queue and Submission Preview
+        $this->actingAs($hqAdmin)->get(route('admin.submissions'))
+            ->assertOk()
+            ->assertSee('Headquarters Menu')
+            ->assertSee('Consolidated Approvals')
+            ->assertSee('User Management')
+            ->assertDontSee('Desk Admin Menu');
+        $this->actingAs($hqAdmin)->get(route('desk.admin.submissions.show', $application))
+            ->assertOk()
+            ->assertSee('Headquarters Menu')
+            ->assertDontSee('Desk Admin Menu');
+        $this->actingAs($superAdmin)->get(route('desk.admin.submissions.show', $application))
+            ->assertOk()
+            ->assertSee('Super Admin')
+            ->assertDontSee('Desk Admin Menu');
     }
 }

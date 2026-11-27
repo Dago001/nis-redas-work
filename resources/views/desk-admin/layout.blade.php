@@ -4,7 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Desk Admin Dashboard | NIS-REDAS</title>
+    <title>@php
+        $tabTitle = match (auth()->user()?->user_category) {
+            'zonal_commander' => 'Zonal Admin Dashboard',
+            'directorate_admin' => 'Directorate Admin Dashboard',
+            'cgis_desk_admin' => 'CGIS Desk Admin Dashboard',
+            'hq_admin' => 'HQ Admin Review Queue',
+            'super_admin' => 'Super Admin Review Queue',
+            default => 'Desk Admin Dashboard',
+        };
+    @endphp{{ $tabTitle }} | NIS-REDAS</title>
     <link rel="icon" type="image/png" href="{{ asset('assets/images/nis.png') }}">
     @include('partials.head-meta')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -19,12 +28,16 @@
 @php
     $deskUser = auth()->user();
     $deskCat = $deskUser?->user_category;
+    $isSuperAdmin = $deskUser && ($deskCat === 'super_admin' || $deskUser->role === 'super_admin');
+    $isHqAdmin = $deskUser && ! $isSuperAdmin && (in_array($deskCat, ['hq_admin', 'admin'], true) || in_array($deskUser->role, ['hq_admin', 'admin'], true));
     $isZonal = $deskCat === 'zonal_commander';
     $homeRoute = $deskUser ? $deskUser->dashboardUrl() : route('user.desk.home');
     $portalSub = match ($deskCat) {
         'zonal_commander' => 'Zonal Admin Portal',
         'directorate_admin' => 'Directorate Admin Portal',
         'cgis_desk_admin' => 'CGIS Desk Admin Portal',
+        'hq_admin' => 'HQ Admin Portal',
+        'super_admin' => 'Super Admin Console',
         default => 'Desk Admin Portal',
     };
     $menuLabel = match ($deskCat) {
@@ -37,11 +50,18 @@
         'zonal_commander' => 'Zonal Admin Dashboard',
         'directorate_admin' => 'Directorate Admin Dashboard',
         'cgis_desk_admin' => 'CGIS Desk Admin Dashboard',
+        'hq_admin' => 'HQ Admin',
+        'super_admin' => 'Super Admin',
         default => 'Desk Admin Dashboard',
     };
     $reportsRoute = $isZonal ? route('user.reports') : route('desk.admin.reports');
     $reportsActive = $isZonal ? request()->routeIs('user.reports*') : request()->routeIs('desk.admin.reports');
 @endphp
+@if($isSuperAdmin)
+    @include('super-admin.sidebar-aside')
+@elseif($isHqAdmin)
+    @include('admin.headquarters.sidebar-aside')
+@else
 <aside class="redas-sidebar" id="redasSidebar">
     <a href="{{ $homeRoute }}" class="sidebar-brand">
         <img src="{{ asset('assets/images/nis.png') }}" alt="NIS" class="sidebar-brand-logo">
@@ -83,8 +103,14 @@
         </a>
     </nav>
 </aside>
+@endif
 
 <div class="redas-main" id="redasMain">
+    @if($isSuperAdmin)
+        @include('super-admin.topbar')
+    @elseif($isHqAdmin)
+        @include('admin.headquarters.topbar')
+    @else
     <header class="redas-topbar">
         <button class="topbar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
         <div class="topbar-breadcrumb">
@@ -125,6 +151,7 @@
             </div>
         </div>
     </header>
+    @endif
 
     @yield('content')
 

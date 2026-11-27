@@ -32,10 +32,17 @@
             <p class="page-subtitle">Welcome, <strong>{{ $user->name ?? 'Officer' }}</strong> - {{ $stageName }}</p>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-            <a href="{{ ($user?->user_category === 'zonal_commander') ? route('user.reports') : route('desk.admin.reports') }}" class="btn-nis btn-outline-nis">
+            @php
+                $isHqOrSuper = in_array($user?->user_category, ['hq_admin', 'admin', 'super_admin'], true) || in_array($user?->role, ['hq_admin', 'admin', 'super_admin'], true);
+                $headerReportsUrl = $isHqOrSuper
+                    ? route('admin.hq.reports')
+                    : (($user?->user_category === 'zonal_commander') ? route('user.reports') : route('desk.admin.reports'));
+                $headerArchiveUrl = $isHqOrSuper ? route('admin.hq.archive') : route('user.archive');
+            @endphp
+            <a href="{{ $headerReportsUrl }}" class="btn-nis btn-outline-nis">
                 <i class="fas fa-file-export"></i> Generate Reports
             </a>
-            <a href="{{ route('user.archive') }}" class="btn-nis btn-ghost">
+            <a href="{{ $headerArchiveUrl }}" class="btn-nis btn-ghost">
                 <i class="fas fa-archive"></i> Archived Documents
             </a>
         </div>
