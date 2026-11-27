@@ -428,12 +428,11 @@ class SubmissionWorkflow
                 break;
             case self::STAGE_ZONAL_REVIEW:
                 $zone = $application->zonal_code ?: null;
-                if ($zone === null) {
-                    return;
-                }
-                $query->where('user_category', 'zonal_commander')
-                    ->where(fn ($q) => $q->where('primary_location_code', $zone)
+                $query->where('user_category', 'zonal_commander');
+                if ($zone !== null) {
+                    $query->where(fn ($q) => $q->where('primary_location_code', $zone)
                         ->orWhere('assigned_zonal_command_code', $zone));
+                }
                 break;
             case self::STAGE_DIRECTORATE_REVIEW:
                 $query->where('user_category', 'directorate_admin');
@@ -455,8 +454,19 @@ class SubmissionWorkflow
         $scopeName = $scopeCode !== ''
             ? (GeolocationService::stateNameFromCode($scopeCode) ?? $scopeCode)
             : 'Command';
+        $stageLabel = match ($stage) {
+            self::STAGE_DESK_REVIEW => 'Desk Admin Review',
+            self::STAGE_ZONAL_REVIEW => 'Zonal Admin Review',
+            self::STAGE_DIRECTORATE_REVIEW => 'Directorate Admin Review',
+            self::STAGE_CGIS_DESK_REVIEW => 'CGIS Desk Admin Review',
+            self::STAGE_HQ_REVIEW => 'HQ Admin Review',
+            default => ucwords(str_replace('_', ' ', $stage)),
+        };
 
         foreach ($query->get() as $approver) {
+            if ($approver->id === $application->user_id) {
+                continue;
+            }
             if (! ReportAccess::matchesApproverScope($application, $approver)) {
                 continue;
             }
@@ -464,11 +474,12 @@ class SubmissionWorkflow
             UserNotification::create([
                 'user_id' => $approver->id,
                 'type' => 'workflow',
-                'title' => "New Return Submitted ({$ref})",
-                'description' => "Submitted by {$submitterName} ({$scopeName}) - awaiting " . str_replace('_', ' ', $stage) . '.',
+                'title' => "Action Required: {$ref}",
+                'description' => "Submitted by {$submitterName} ({$scopeName}) — awaiting {$stageLabel}. Click to approve or reject.",
                 'tag' => 'review',
                 'action_url' => self::reviewUrlForApprover($approver, $application),
                 'payload_json' => ['application_id' => $application->id, 'stage' => $stage],
+                'is_read' => false,
             ]);
         }
     }
@@ -501,8 +512,7 @@ class SubmissionWorkflow
     {
         try {
             return match ($approver->user_category) {
-                'desk_admin', 'zonal_commander', 'directorate_admin', 'cgis_desk_admin' => route('desk.admin.submissions.show', $application),
-                'hq_admin' => route('admin.submissions'),
+                'desk_admin', 'zonal_commander', 'directorate_admin', 'cgis_desk_admin', 'hq_admin' => route('desk.admin.submissions.show', $application),
                 default => null,
             };
         } catch (\Throwable) {
