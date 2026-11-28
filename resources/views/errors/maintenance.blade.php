@@ -30,10 +30,11 @@
             border: 1px solid rgba(255, 255, 255, .5);
         }
         .crest {
+            display: block;
             width: 68px;
             height: 68px;
             object-fit: contain;
-            margin-bottom: 14px;
+            margin: 0 auto 14px;
         }
         .pill {
             display: inline-block;
@@ -97,8 +98,6 @@
         @if(! empty($maintenanceEta))
             <div class="eta">Estimated Return: {{ $maintenanceEta }}</div>
         @endif
-
-        <a href="{{ route('login') }}" class="btn">Administrator Sign In</a>
 
         <div class="foot">Nigeria Immigration Service &bull; ICT Directorate</div>
     </div>
