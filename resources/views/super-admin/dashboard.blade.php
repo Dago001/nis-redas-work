@@ -432,7 +432,7 @@
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
                                 <td>{{ $return->user->name ?? '-' }}</td>
-                                <td style="text-transform:capitalize;">{{ $return->category }}</td>
+                                <td>{{ $return->displayCategory() }}</td>
                                 <td>{{ $return->report_period ?? ($return->return_data['report_period'] ?? ($return->return_data['period'] ?? '-')) }}</td>
                                 <td>{{ optional($return->updated_at)->format('d M Y') }}</td>
                                 <td style="text-align:right;">
@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 labels: categoryData.labels,
                 datasets: [{
                     data: categoryData.data,
-                    backgroundColor: ['#0369a1', '#1a5632', '#6d28d9'],
+                    backgroundColor: ['#0369a1', '#b45309', '#1a5632', '#6d28d9'],
                     borderWidth: 2,
                     borderColor: '#ffffff',
                     hoverOffset: 6,

@@ -20,6 +20,7 @@
                     <select name="category" style="width:100%;padding:8px 10px;border:1px solid var(--gray-200);border-radius:8px;font-size:.85rem;">
                         <option value="">All categories</option>
                         <option value="state" @selected(($filters['category'] ?? '') === 'state')>State Commands</option>
+                        <option value="zone" @selected(($filters['category'] ?? '') === 'zone')>Zonal Commands</option>
                         <option value="directorate" @selected(($filters['category'] ?? '') === 'directorate')>Directorates</option>
                         <option value="cgis" @selected(($filters['category'] ?? '') === 'cgis')>CGIS Units</option>
                     </select>
@@ -97,7 +98,7 @@
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
                                 <td>{{ $data['command_name'] ?? $return->scope_code ?? '-' }}</td>
-                                <td style="text-transform:capitalize;">{{ $return->category }}</td>
+                                <td>{{ $return->displayCategory() }}</td>
                                 <td>
                                     {{ $data['reporting_officer'] ?? $return->user->name ?? '-' }}
                                     @if($return->user?->service_number)

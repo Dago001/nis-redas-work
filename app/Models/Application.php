@@ -78,6 +78,22 @@ class Application extends Model
         return $this->hasMany(ConsolidatedReportSource::class);
     }
 
+    public function displayCategory(): string
+    {
+        $cat = strtolower((string) ($this->category ?? ''));
+        $scope = strtoupper((string) ($this->scope_code ?? ''));
+
+        if ($cat === 'zone' || $this->user?->user_category === 'zonal_officer' || str_starts_with($scope, 'ZONE-')) {
+            return 'Zone';
+        }
+
+        return match ($cat) {
+            'directorate' => 'Directorate',
+            'cgis', 'cgis_unit' => 'CGIS Unit',
+            default => 'State',
+        };
+    }
+
     /**
      * Scope submissions that are awaiting review at the given workflow stage.
      */

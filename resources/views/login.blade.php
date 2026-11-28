@@ -203,7 +203,7 @@
 
             <div class="auth-form-group">
                 <label class="form-label-nis" for="username">
-                    <i class="fas fa-id-badge me-1 text-nis"></i> Username (Service Number)
+                    <i class="fas fa-id-badge me-1 text-nis"></i> Username
                 </label>
                 <div class="auth-input-wrap">
                     <input type="text"

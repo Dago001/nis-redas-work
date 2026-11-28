@@ -133,7 +133,7 @@
     $sections = \App\Services\PreviewRenderer::buildSections($data, [
         'skipKeys' => $skipKeys,
         'directorateNames' => $directorateNames,
-        'groupByDirectorate' => $application->category === 'state',
+        'groupByDirectorate' => in_array($application->category, ['state', 'zone'], true),
     ]);
 @endphp
 
@@ -310,7 +310,7 @@
                         </div>
                         <div style="border:1px solid var(--gray-200);border-radius:10px;padding:10px 12px;">
                             <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--gray-500);margin-bottom:2px;">{{ $application->category === 'cgis' ? 'CGIS Unit' : 'Category' }}</div>
-                            <div style="font-weight:700;font-size:.86rem;color:var(--gray-900);text-transform:capitalize;">{{ $application->category === 'cgis' ? ($application->user->assigned_cgis_unit_code ?? '-') : $application->category }}</div>
+                            <div style="font-weight:700;font-size:.86rem;color:var(--gray-900);">{{ $application->category === 'cgis' ? ($application->user->assigned_cgis_unit_code ?? '-') : $application->displayCategory() }}</div>
                         </div>
                     </div>
                 </div>

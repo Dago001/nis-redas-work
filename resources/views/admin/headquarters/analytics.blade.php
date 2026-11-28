@@ -193,7 +193,8 @@
                 <label for="f-category">Formation Category</label>
                 <select id="f-category" name="category">
                     <option value="">All Categories</option>
-                    <option value="state" {{ ($filters['category'] ?? '') === 'state' ? 'selected' : '' }}>State &amp; Zonal Commands</option>
+                    <option value="state" {{ ($filters['category'] ?? '') === 'state' ? 'selected' : '' }}>State Commands</option>
+                    <option value="zone" {{ ($filters['category'] ?? '') === 'zone' ? 'selected' : '' }}>Zonal Commands</option>
                     <option value="directorate" {{ ($filters['category'] ?? '') === 'directorate' ? 'selected' : '' }}>Directorates</option>
                     <option value="cgis_unit" {{ ($filters['category'] ?? '') === 'cgis_unit' ? 'selected' : '' }}>CGIS Units</option>
                 </select>
@@ -846,7 +847,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 labels: categoryData.labels,
                 datasets: [{
                     data: categoryData.data,
-                    backgroundColor: ['#006838', '#0284c7', '#7c3aed'],
+                    backgroundColor: ['#006838', '#d97706', '#0284c7', '#7c3aed'],
                     borderWidth: 2,
                     borderColor: '#ffffff',
                     hoverOffset: 6,

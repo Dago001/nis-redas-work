@@ -68,7 +68,7 @@
     $sections = \App\Services\PreviewRenderer::buildSections($data, [
         'skipKeys' => $skipKeys,
         'directorateNames' => $directorateNames,
-        'groupByDirectorate' => $application->category === 'state',
+        'groupByDirectorate' => in_array($application->category, ['state', 'zone'], true),
     ]);
 @endphp
 

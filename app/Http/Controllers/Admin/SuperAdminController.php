@@ -71,9 +71,10 @@ class SuperAdminController extends Controller
             ->pluck('aggregate', 'category');
 
         $categoryChart = [
-            'labels' => ['State Commands', 'Directorates', 'CGIS Units'],
+            'labels' => ['State Commands', 'Zonal Commands', 'Directorates', 'CGIS Units'],
             'data' => [
                 (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_STATE] ?? 0),
+                (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_ZONE] ?? 0),
                 (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_DIRECTORATE] ?? 0),
                 (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_CGIS] ?? 0),
             ],

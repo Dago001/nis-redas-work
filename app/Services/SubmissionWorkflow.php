@@ -16,6 +16,7 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 class SubmissionWorkflow
 {
     public const CATEGORY_STATE = 'state';
+    public const CATEGORY_ZONE = 'zone';
     public const CATEGORY_DIRECTORATE = 'directorate';
     public const CATEGORY_CGIS = 'cgis';
 
@@ -145,6 +146,7 @@ class SubmissionWorkflow
     public static function categoryForUser(User $user): string
     {
         return match ($user->user_category) {
+            'zonal_officer' => self::CATEGORY_ZONE,
             'directorate_user' => self::CATEGORY_DIRECTORATE,
             'cgis_unit_user' => self::CATEGORY_CGIS,
             default => self::CATEGORY_STATE,

@@ -34,7 +34,7 @@ class ConsolidationService
         if ($level === ConsolidatedReport::LEVEL_ZONAL) {
             $formationCodes = ReportAccess::formationCodesForZone($scopeCode);
 
-            $query->where('category', SubmissionWorkflow::CATEGORY_STATE)
+            $query->whereIn('category', [SubmissionWorkflow::CATEGORY_STATE, SubmissionWorkflow::CATEGORY_ZONE])
                 ->where(function ($q) use ($scopeCode, $formationCodes): void {
                     $q->where('zonal_code', $scopeCode)
                         ->orWhere(function ($inner) use ($scopeCode): void {

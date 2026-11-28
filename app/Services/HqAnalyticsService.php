@@ -77,7 +77,7 @@ class HqAnalyticsService
         $cleanFilters = [
             'range' => in_array($rawRange, ['all', 'current_month', '3m', '6m', '12m'], true) ? $rawRange : 'all',
             'period' => preg_match('/^\d{4}-\d{2}$/', $rawPeriod) ? $rawPeriod : '',
-            'category' => in_array($rawCategory, ['state', 'directorate', 'cgis_unit'], true) ? $rawCategory : '',
+            'category' => in_array($rawCategory, ['state', 'zone', 'directorate', 'cgis_unit'], true) ? $rawCategory : '',
             'zone' => array_key_exists($rawZone, self::ZONES) ? $rawZone : '',
             'status' => in_array($rawStatus, ['pending', 'approved', 'returned'], true) ? $rawStatus : '',
         ];
@@ -185,12 +185,13 @@ class HqAnalyticsService
 
         // Category Mix
         $stateCatCount = $apps->where('category', SubmissionWorkflow::CATEGORY_STATE)->count();
+        $zoneCatCount = $apps->where('category', SubmissionWorkflow::CATEGORY_ZONE)->count();
         $dirCatCount = $apps->where('category', SubmissionWorkflow::CATEGORY_DIRECTORATE)->count();
-        $cgisCatCount = $apps->filter(fn (Application $a) => $a->category === 'cgis_unit'
+        $cgisCatCount = $apps->filter(fn (Application $a) => in_array($a->category, ['cgis', 'cgis_unit'], true)
             || ! empty($a->user?->assigned_cgis_unit_code))->count();
         $categoryChart = [
-            'labels' => ['State & Zonal Commands', 'Directorates', 'CGIS Units'],
-            'data' => [$stateCatCount, $dirCatCount, $cgisCatCount],
+            'labels' => ['State Commands', 'Zonal Commands', 'Directorates', 'CGIS Units'],
+            'data' => [$stateCatCount, $zoneCatCount, $dirCatCount, $cgisCatCount],
         ];
 
         // Directorate Coverage (Direct Directorate returns + State/Zonal returns containing data for that directorate)
@@ -206,7 +207,7 @@ class HqAnalyticsService
                 if (isset($dirDirectCounts[$slug])) {
                     $dirDirectCounts[$slug]++;
                 }
-            } elseif ($app->category === SubmissionWorkflow::CATEGORY_STATE && is_array($app->return_data)) {
+            } elseif (in_array($app->category, [SubmissionWorkflow::CATEGORY_STATE, SubmissionWorkflow::CATEGORY_ZONE], true) && is_array($app->return_data)) {
                 $keys = array_keys(array_filter(
                     $app->return_data,
                     fn ($v) => $v !== null && $v !== '' && $v !== [] && $v !== '0' && $v !== 0
@@ -289,7 +290,7 @@ class HqAnalyticsService
                 return [
                     'scope_code' => $scopeCode,
                     'name' => $resolvedName,
-                    'category' => ucfirst((string) ($first->category ?? 'state')),
+                    'category' => $first ? $first->displayCategory() : 'State',
                     'zone' => strtoupper((string) ($first->zonal_code ?? $first->user?->assigned_zonal_command_code ?? '-')),
                     'total' => $gTotal,
                     'approved' => $gApproved,
