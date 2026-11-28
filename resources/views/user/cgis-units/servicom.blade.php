@@ -1,6 +1,7 @@
 @extends('user.directorates._layout')
 
 @section('directorate-tabs', '1')
+@section('directorate-preview', '1')
 
 @section('directorate-sections')
 

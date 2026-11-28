@@ -1,6 +1,7 @@
 @extends('user.directorates._layout')
 
 @section('directorate-tabs', '1')
+@section('directorate-preview', '1')
 
 @section('directorate-sections')
 
@@ -14,7 +15,7 @@
                 ['activities','fas fa-tasks','4. Activities Carried Out'],
                 ['attachments','fas fa-paperclip','5. Supporting Documents'],
                 ['general-report','fas fa-file-alt','6. General Report'],
-                ['preview','fas fa-eye','8. Preview'],
+                ['preview','fas fa-eye','7. Preview'],
             ]; @endphp
             @foreach($tabs as $i => [$id,$icon,$label])
             <button type="button" class="entry-tab {{ $i === 0 ? 'active' : '' }}" data-tab="{{ $id }}">
@@ -410,13 +411,13 @@
         </div>
     </div>
 
-    {{-- TAB 8: Preview --}}
+    {{-- TAB 7: Preview --}}
     <div class="tab-panel" id="tab-preview">
         <div class="redas-card" style="margin-bottom:14px;">
             <div class="card-head">
                 <div class="card-head-title">
                     <div class="card-head-icon" style="background:#eff6ff;color:#1d4ed8;"><i class="fas fa-eye"></i></div>
-                    8. Review and Submit
+                    7. Review and Submit
                 </div>
             </div>
             <div class="card-body">

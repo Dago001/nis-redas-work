@@ -323,28 +323,173 @@
                 return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
             });
         }
+        function readCellValue(td) {
+            if (!td) return '';
+            var select = td.querySelector('select');
+            if (select) {
+                var val = select.value;
+                if (!val) return '';
+                var opt = select.options[select.selectedIndex];
+                var label = opt ? opt.textContent.trim() : val;
+                if (val === 'Other' || val === 'Others') {
+                    var otherInput = td.querySelector('input[type="text"]:not(:disabled)');
+                    if (otherInput && otherInput.value.trim() !== '') {
+                        return 'Other: ' + otherInput.value.trim();
+                    }
+                }
+                return label;
+            }
+            var input = td.querySelector('input:not([type="hidden"]), textarea');
+            if (input) {
+                if (input.type === 'checkbox' || input.type === 'radio') return input.checked ? 'Yes' : 'No';
+                if (input.type === 'file') {
+                    var fs = Array.from(input.files || []);
+                    return fs.length ? fs.map(function (f) { return f.name; }).join(', ') : '';
+                }
+                return input.value !== undefined ? String(input.value).trim() : '';
+            }
+            return td.textContent.replace(/\s+/g, ' ').trim();
+        }
+
         function buildGenericPreview() {
-            var container = document.getElementById('hrmPreviewBody');
+            var container = document.getElementById('formPreviewContent') || document.getElementById('hrmPreviewBody');
             if (!container || !form) return;
             var html = '';
+
             form.querySelectorAll('.redas-card').forEach(function (card) {
-                var rows = [];
-                card.querySelectorAll('label').forEach(function (label) {
-                    var field = label.parentElement.querySelector('input, textarea, select');
-                    if (!field || !field.name || field.type === 'hidden') return;
-                    var value;
-                    if (field.type === 'checkbox' || field.type === 'radio') value = field.checked ? 'Yes' : 'No';
-                    else value = field.value !== '' ? field.value : '-';
-                    rows.push([label.textContent.trim(), value]);
+                if (card.closest('#tab-preview')) return;
+
+                var cardHtml = '';
+                var seenFields = new Set();
+
+                // 1. Render every table inside the card (preserving subsection headings & totals)
+                card.querySelectorAll('table.nis-table').forEach(function (table) {
+                    var sub = table.closest('.nis-subsection');
+                    var subTitle = sub ? sub.querySelector('.nis-subsection-title') : null;
+                    if (subTitle) {
+                        cardHtml += '<div style="font-size:.82rem;font-weight:700;color:var(--gray-700);margin:12px 0 6px;">' + esc(subTitle.textContent.trim()) + '</div>';
+                    }
+
+                    var headCells = Array.from(table.querySelectorAll('thead tr:last-child th'));
+                    var skipIdx = new Set();
+                    var headers = [];
+                    headCells.forEach(function (th, i) {
+                        var t = th.textContent.replace(/\s+/g, ' ').trim();
+                        if (/^action(s)?$/i.test(t)) {
+                            skipIdx.add(i);
+                        } else {
+                            headers.push(t || ('Col ' + (i + 1)));
+                        }
+                    });
+
+                    var bodyRows = [];
+                    table.querySelectorAll('tbody tr').forEach(function (tr) {
+                        var cells = Array.from(tr.children);
+                        if (!cells.length) return;
+                        var rowVals = [];
+                        var hasUserValue = false;
+                        cells.forEach(function (td, i) {
+                            if (skipIdx.has(i)) return;
+                            var hasControl = !!td.querySelector('input:not([type="hidden"]), select, textarea');
+                            var v = readCellValue(td);
+                            if (hasControl && v !== '' && v !== '0') hasUserValue = true;
+                            if (hasControl && v === '0') hasUserValue = true;
+                            rowVals.push(v !== '' ? v : '—');
+                        });
+                        if (hasUserValue) {
+                            bodyRows.push(rowVals);
+                        }
+                    });
+
+                    var footRows = [];
+                    table.querySelectorAll('tfoot tr').forEach(function (tr) {
+                        var tds = Array.from(tr.children);
+                        if (!tds.length) return;
+                        var footCellsHtml = '';
+                        var colPos = 0;
+                        tds.forEach(function (td) {
+                            var span = parseInt(td.getAttribute('colspan') || '1', 10) || 1;
+                            if (span === 1 && skipIdx.has(colPos)) {
+                                colPos += span;
+                                return;
+                            }
+                            var v = readCellValue(td);
+                            footCellsHtml += '<td' + (span > 1 ? ' colspan="' + span + '"' : '') + ' style="font-weight:700;background:#f8fafc;">' + esc(v) + '</td>';
+                            colPos += span;
+                        });
+                        if (footCellsHtml) footRows.push('<tr>' + footCellsHtml + '</tr>');
+                    });
+
+                    if (bodyRows.length) {
+                        cardHtml += '<table class="hrm-preview-table"><thead><tr>' +
+                            headers.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') +
+                            '</tr></thead><tbody>' +
+                            bodyRows.map(function (r) {
+                                return '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>';
+                            }).join('') +
+                            '</tbody>' +
+                            (footRows.length ? '<tfoot>' + footRows.join('') + '</tfoot>' : '') +
+                            '</table>';
+                    } else {
+                        cardHtml += '<p style="font-size:.8rem;color:var(--gray-400);margin:4px 0 12px;font-style:italic;">No entries recorded in this table.</p>';
+                    }
                 });
-                if (!rows.length) return;
+
+                // 2. Render labeled fields & file uploads outside tables
+                var fieldRows = [];
+                card.querySelectorAll('label').forEach(function (label) {
+                    if (label.closest('table.nis-table')) return;
+                    var field = label.parentElement ? label.parentElement.querySelector('input, textarea, select') : null;
+                    if (!field || field.type === 'hidden' || seenFields.has(field)) return;
+                    seenFields.add(field);
+                    var labelText = label.textContent.replace(/\s+/g, ' ').trim();
+                    var valueHtml = '';
+                    if (field.type === 'file') {
+                        var files = Array.from(field.files || []);
+                        valueHtml = files.length
+                            ? files.map(function (f) {
+                                var kb = Math.max(1, Math.round((f.size || 0) / 1024));
+                                return '<span style="display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:999px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:.76rem;">' + esc(f.name) + ' (' + kb + 'KB)</span>';
+                            }).join('')
+                            : '<span style="color:var(--gray-400);font-style:italic;">No documents attached</span>';
+                    } else if (field.type === 'checkbox' || field.type === 'radio') {
+                        valueHtml = esc(field.checked ? 'Yes' : 'No');
+                    } else if (field.tagName === 'SELECT') {
+                        var opt = field.options[field.selectedIndex];
+                        valueHtml = esc(field.value !== '' ? (opt ? opt.textContent.trim() : field.value) : '—');
+                    } else {
+                        var txt = String(field.value || '').trim();
+                        valueHtml = txt !== '' ? esc(txt).replace(/\n/g, '<br>') : '<span style="color:var(--gray-400);">—</span>';
+                    }
+                    fieldRows.push([labelText, valueHtml]);
+                });
+
+                // Also catch standalone file inputs inside cards (e.g. dynamic supporting_documents[] without per-row <label>)
+                card.querySelectorAll('input[type="file"]').forEach(function (fileInput) {
+                    if (fileInput.closest('table.nis-table') || seenFields.has(fileInput)) return;
+                    seenFields.add(fileInput);
+                    var files = Array.from(fileInput.files || []);
+                    if (!files.length) return;
+                    var valueHtml = files.map(function (f) {
+                        var kb = Math.max(1, Math.round((f.size || 0) / 1024));
+                        return '<span style="display:inline-block;margin:2px 6px 2px 0;padding:2px 8px;border-radius:999px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-size:.76rem;">' + esc(f.name) + ' (' + kb + 'KB)</span>';
+                    }).join('');
+                    fieldRows.push(['Attached Document', valueHtml]);
+                });
+
+                if (fieldRows.length) {
+                    cardHtml += '<table class="hrm-preview-table"><thead><tr><th style="width:32%;">Field</th><th>Value</th></tr></thead><tbody>' +
+                        fieldRows.map(function (r) { return '<tr><td><strong>' + esc(r[0]) + '</strong></td><td>' + r[1] + '</td></tr>'; }).join('') +
+                        '</tbody></table>';
+                }
+
+                if (!cardHtml) return;
                 var title = card.querySelector('.card-head-title');
-                html += '<div class="hrm-preview-section-title">' + esc(title ? title.textContent.trim() : 'Section') + '</div>';
-                html += '<table class="hrm-preview-table"><thead><tr><th>Item</th><th>Value</th></tr></thead><tbody>' +
-                    rows.map(function (r) { return '<tr><td>' + esc(r[0]) + '</td><td>' + esc(r[1]) + '</td></tr>'; }).join('') +
-                    '</tbody></table>';
+                html += '<div class="hrm-preview-section-title">' + esc(title ? title.textContent.replace(/\s+/g, ' ').trim() : 'Section') + '</div>';
+                html += cardHtml;
             });
-            container.innerHTML = html || '<p style="color:var(--gray-500);">No data entered yet.</p>';
+
+            container.innerHTML = html || '<p style="color:var(--gray-500);">No data entered yet. Fill in the sections above to preview your return.</p>';
         }
 
         /* (Re)build the preview every time the Preview tab is opened */
