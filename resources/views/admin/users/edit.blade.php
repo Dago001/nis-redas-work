@@ -182,6 +182,7 @@
                     <span>Activate geolocation verification for this officer's sign-in and active sessions</span>
                 </label>
                 <span class="iam-hint" style="margin-top:6px;">When activated, the officer must authenticate from their assigned location. Uncheck to exempt this account from geolocation checks.</span>
+                @include('admin.users.partials.geofence-map', ['geoActive' => $geoActive, 'user' => $user])
             </div>
         </div>
 

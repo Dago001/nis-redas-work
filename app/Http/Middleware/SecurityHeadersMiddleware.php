@@ -35,20 +35,19 @@ class SecurityHeadersMiddleware
         $response->headers->set('Cross-Origin-Resource-Policy', 'same-origin', false);
         $response->headers->set(
             'Permissions-Policy',
-            'accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
+            'accelerometer=(), autoplay=(), camera=(), display-capture=(), geolocation=(self), gyroscope=(), magnetometer=(), microphone=(), payment=(), usb=()',
             false
         );
 
         // Self-hosted CSP: no third-party scripts, fonts, or framing allowed.
-        // Inline styles/scripts remain permitted only for existing Blade views;
-        // external script/object/base/form exfiltration is strictly blocked.
+        // OpenStreetMap tile images are permitted for the live Geofencing Map.
         $csp = implode('; ', [
             "default-src 'self'",
             "base-uri 'self'",
             "object-src 'none'",
             "frame-ancestors 'none'",
             "form-action 'self'",
-            "img-src 'self' data: blob:",
+            "img-src 'self' data: blob: https://*.tile.openstreetmap.org",
             "font-src 'self' data:",
             "style-src 'self' 'unsafe-inline'",
             "script-src 'self' 'unsafe-inline'",

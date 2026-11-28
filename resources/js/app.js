@@ -1,8 +1,11 @@
 import 'bootstrap';
 import Chart from 'chart.js/auto';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 window.Chart = Chart;
+window.L = L;
 
 /* ============================================================
    NIS REDAS - Main Application JS v2.0
