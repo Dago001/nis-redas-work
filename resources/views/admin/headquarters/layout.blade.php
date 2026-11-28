@@ -27,5 +27,6 @@
 </div>
 
 @stack('scripts')
+@include('partials.month-picker-script')
 </body>
 </html>

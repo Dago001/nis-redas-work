@@ -47,5 +47,6 @@
         REDAS.showToast('Report returned to officer with your comments.', 'danger');
     }
 </script>
+@include('partials.month-picker-script')
 </body>
 </html>

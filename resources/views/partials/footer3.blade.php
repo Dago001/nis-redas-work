@@ -47,5 +47,6 @@
         });
     });
 </script>
+@include('partials.month-picker-script')
 </body>
 </html>

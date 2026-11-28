@@ -1499,6 +1499,7 @@
 
 </script>
 @include('partials.draft-files-script')
+@include('partials.month-picker-script')
 </body>
 
 </html>
