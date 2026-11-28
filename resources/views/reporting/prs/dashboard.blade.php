@@ -57,41 +57,61 @@
     </div>
 </div>
 
-@php $t = $summary['totals']; @endphp
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;">
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Expected Originals</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['expected_originals'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Received Originals</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['received_originals'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Received Consolidated</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['received_consolidated'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Total PRS Records</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['prs_records_total'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Outstanding</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['outstanding'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Returned</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['returned'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Approved</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['approved'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Pending Approval</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['pending_approval'] }}</div></div></div>
-    <div class="redas-card"><div class="card-body"><div style="font-size:.76rem;color:var(--gray-500);">Completion %</div><div style="font-size:1.5rem;font-weight:700;">{{ $t['completion_pct'] !== null ? $t['completion_pct'].'%' : 'N/A' }}</div></div></div>
+@php
+    $t = $summary['totals'];
+    $prsCards = [
+        ['label' => 'Expected Originals',    'val' => number_format((int) $t['expected_originals']),    'icon' => 'fas fa-bullseye',         'bg' => '#f1f5f9', 'fg' => '#475569', 'valColor' => '#0f172a'],
+        ['label' => 'Received Originals',    'val' => number_format((int) $t['received_originals']),    'icon' => 'fas fa-file-lines',       'bg' => '#e0f2fe', 'fg' => '#0369a1', 'valColor' => '#0f172a'],
+        ['label' => 'Received Consolidated', 'val' => number_format((int) $t['received_consolidated']), 'icon' => 'fas fa-layer-group',      'bg' => '#ede9fe', 'fg' => '#6d28d9', 'valColor' => '#0f172a'],
+        ['label' => 'Total PRS Records',     'val' => number_format((int) $t['prs_records_total']),     'icon' => 'fas fa-database',         'bg' => '#ccfbf1', 'fg' => '#0f766e', 'valColor' => '#0f172a'],
+        ['label' => 'Outstanding',           'val' => number_format((int) $t['outstanding']),           'icon' => 'fas fa-hourglass-half',   'bg' => '#fef3c7', 'fg' => '#b45309', 'valColor' => '#b45309'],
+        ['label' => 'Returned',              'val' => number_format((int) $t['returned']),              'icon' => 'fas fa-rotate-left',      'bg' => '#fee2e2', 'fg' => '#b91c1c', 'valColor' => '#b91c1c'],
+        ['label' => 'Approved',              'val' => number_format((int) $t['approved']),              'icon' => 'fas fa-circle-check',     'bg' => '#dcfce7', 'fg' => '#15803d', 'valColor' => '#15803d'],
+        ['label' => 'Pending Approval',      'val' => number_format((int) $t['pending_approval']),      'icon' => 'fas fa-clock',            'bg' => '#ffedd5', 'fg' => '#c2410c', 'valColor' => '#c2410c'],
+        ['label' => 'Completion Rate',       'val' => $t['completion_pct'] !== null ? $t['completion_pct'].'%' : 'N/A', 'icon' => 'fas fa-chart-pie', 'bg' => '#ecfdf5', 'fg' => '#006838', 'valColor' => '#006838'],
+    ];
+@endphp
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin-bottom:20px;">
+    @foreach($prsCards as $card)
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:13px 15px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;box-shadow:0 1px 2px rgba(15,23,42,.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <span style="font-size:.68rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#64748b;">{{ $card['label'] }}</span>
+                <span style="width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:.78rem;flex-shrink:0;background:{{ $card['bg'] }};color:{{ $card['fg'] }};">
+                    <i class="{{ $card['icon'] }}"></i>
+                </span>
+            </div>
+            <div style="font-size:1.25rem;font-weight:700;color:{{ $card['valColor'] }};line-height:1.2;">{{ $card['val'] }}</div>
+        </div>
+    @endforeach
 </div>
 
 <div class="redas-card" style="margin-bottom:20px;">
-    <div class="card-head"><div class="card-head-title">PRS Received Records - Originals &amp; Consolidated ({{ $records->total() }})</div></div>
-    <div class="card-body">
+    <div class="card-head">
+        <div class="card-head-title">
+            <div class="card-head-icon" style="background:#ede9fe;color:#6d28d9;"><i class="fas fa-table-list"></i></div>
+            PRS Received Records - Originals &amp; Consolidated ({{ $records->total() }})
+        </div>
+    </div>
+    <div class="card-body no-pad">
         <div class="table-responsive">
-            <table class="nis-table">
+            <table class="nis-table" style="min-width:760px;">
                 <thead>
-                    <tr><th>Type</th><th>Reference</th><th>Category</th><th>Scope</th><th>Author</th><th>Status</th><th>Version</th><th>Action</th></tr>
+                    <tr><th>Type</th><th>Reference</th><th>Category</th><th>Scope</th><th>Author</th><th>Status</th><th>Version</th><th style="text-align:right;">Action</th></tr>
                 </thead>
                 <tbody>
                     @forelse($records as $rec)
                     <tr>
                         <td><strong>{{ ucfirst($rec['record_type']) }}</strong>@if($rec['is_stale']) (Stale)@endif</td>
-                        <td>{{ $rec['reference'] }}</td>
+                        <td style="font-weight:600;">{{ $rec['reference'] }}</td>
                         <td>{{ $rec['category'] }}</td>
-                        <td>{{ $rec['scope_code'] }}</td>
+                        <td style="font-weight:600;text-transform:uppercase;">{{ strtoupper((string) $rec['scope_code']) }}</td>
                         <td>{{ $rec['author'] }}</td>
                         <td>{{ ucfirst((string) $rec['status']) }}</td>
                         <td>{{ $rec['version'] }}</td>
-                        <td><a href="{{ $rec['url'] }}" class="btn-nis btn-outline-nis btn-sm">Inspect</a></td>
+                        <td style="text-align:right;"><a href="{{ $rec['url'] }}" class="btn-nis btn-outline-nis btn-sm">Inspect</a></td>
                     </tr>
                     @empty
-                    <tr><td colspan="8">No reports matched the selected filters for {{ $period }}.</td></tr>
+                    <tr><td colspan="8" style="text-align:center;color:#64748b;padding:20px;">No reports matched the selected filters for {{ $period }}.</td></tr>
                     @endforelse
                 </tbody>
             </table>
