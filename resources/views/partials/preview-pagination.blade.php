@@ -132,7 +132,7 @@
         }
 
         buildTabs();
-        render();
+        render(false);
     });
     }
 
