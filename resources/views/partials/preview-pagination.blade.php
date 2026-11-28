@@ -56,7 +56,7 @@
         var allBtn = root.querySelector('.preview-all-btn');
         var counter = root.querySelector('.preview-counter');
 
-        function render() {
+        function render(shouldScroll) {
             if (showAll) {
                 root.classList.add('preview-show-all');
                 sections.forEach(function (s) { s.classList.add('active'); });
@@ -84,13 +84,15 @@
             if (allBtn) { allBtn.textContent = 'Show all'; allBtn.classList.remove('active'); }
             if (counter) counter.textContent = 'Section ' + (current + 1) + ' of ' + sections.length;
             var activeSection = sections[current];
-            if (activeSection && !showAll) activeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (shouldScroll && activeSection && !showAll) {
+                activeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         function goTo(idx) {
             showAll = false;
             current = Math.max(0, Math.min(sections.length - 1, idx));
-            render();
+            render(true);
         }
 
         function buildTabs() {
