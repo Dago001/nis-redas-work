@@ -925,46 +925,62 @@
         return row;
     }
 
-    function renderStaffStrengthTable() {
-        const unitNames = getProvostUnitNames();
+    let lastProvostUnitValues = [];
+
+    function renderStaffStrengthTable(options) {
+        const opts = options || {};
+        const unitInputs = Array.from(document.querySelectorAll(".provost-unit-name"));
+        const currentUnitValues = unitInputs.map(el => el.value.trim());
         const existingRows = Array.from(strengthBody.querySelectorAll("tr"));
 
         if (existingRows.length === 0) {
-            const seedUnits = unitNames.length ? unitNames : [''];
-            seedUnits.forEach((u, idx) => {
-                strengthBody.appendChild(createStaffStrengthRow(idx, { unit: u }));
-            });
+            const seedCount = Math.max(1, currentUnitValues.length);
+            for (let idx = 0; idx < seedCount; idx++) {
+                const row = createStaffStrengthRow(idx, { unit: currentUnitValues[idx] || '' });
+                row.dataset.sourceUnitIdx = String(idx);
+                strengthBody.appendChild(row);
+            }
         } else {
-            // Keep all existing rows & user entries intact, just refresh the Sub Unit dropdown options
-            existingRows.forEach((row, idx) => {
-                const select = row.querySelector(".staff-unit-select");
-                if (!select) return;
-                const currentVal = select.value;
-                const fallbackVal = (!currentVal && unitNames[idx]) ? unitNames[idx] : currentVal;
-                select.innerHTML = buildUnitOptionsHtml(fallbackVal);
-            });
-            // If user added a new Sub Unit in 1a that isn't represented yet, append a row for it
-            const represented = new Set(Array.from(strengthBody.querySelectorAll(".staff-unit-select")).map(s => s.value).filter(Boolean));
-            unitNames.forEach(u => {
-                if (!represented.has(u)) {
-                    const emptyRow = Array.from(strengthBody.querySelectorAll("tr")).find(r => {
-                        const s = r.querySelector(".staff-unit-select");
-                        const m = r.querySelector(".staff-male-input");
-                        const f = r.querySelector(".staff-female-input");
-                        return s && !s.value && !m?.value && !f?.value;
-                    });
-                    if (emptyRow) {
-                        const s = emptyRow.querySelector(".staff-unit-select");
-                        s.innerHTML = buildUnitOptionsHtml(u);
-                        s.value = u;
-                    } else {
-                        strengthBody.appendChild(createStaffStrengthRow(strengthBody.querySelectorAll("tr").length, { unit: u }));
-                    }
-                    represented.add(u);
+            // Map any renamed 1a unit (oldValue -> newValue) so linked rows update smoothly in-place
+            const renameMap = {};
+            currentUnitValues.forEach((newVal, idx) => {
+                const oldVal = lastProvostUnitValues[idx] || '';
+                if (oldVal && oldVal !== newVal) {
+                    renameMap[oldVal] = newVal;
                 }
             });
+
+            existingRows.forEach((row) => {
+                const select = row.querySelector(".staff-unit-select");
+                if (!select) return;
+                let nextVal = select.value;
+                const srcIdx = row.dataset.sourceUnitIdx !== undefined ? Number(row.dataset.sourceUnitIdx) : -1;
+
+                if (srcIdx >= 0 && srcIdx < currentUnitValues.length) {
+                    const prevSrcVal = lastProvostUnitValues[srcIdx] || '';
+                    if (!nextVal || nextVal === prevSrcVal) {
+                        nextVal = currentUnitValues[srcIdx];
+                    }
+                } else if (nextVal && Object.prototype.hasOwnProperty.call(renameMap, nextVal)) {
+                    nextVal = renameMap[nextVal];
+                }
+
+                select.innerHTML = buildUnitOptionsHtml(nextVal);
+                select.value = nextVal;
+            });
+
+            // Only append a new row in 1b when the user explicitly clicked "+ Add Sub Unit" in 1a
+            if (typeof opts.addedUnitIdx === 'number') {
+                const newRow = createStaffStrengthRow(
+                    strengthBody.querySelectorAll("tr").length,
+                    { unit: currentUnitValues[opts.addedUnitIdx] || '' }
+                );
+                newRow.dataset.sourceUnitIdx = String(opts.addedUnitIdx);
+                strengthBody.appendChild(newRow);
+            }
         }
 
+        lastProvostUnitValues = currentUnitValues;
         calculateStaffStrengthTotal();
     }
 
@@ -1038,7 +1054,7 @@
 
             unitsBody.appendChild(row);
 
-            renderStaffStrengthTable();
+            renderStaffStrengthTable({ addedUnitIdx: index });
 
         });
 
