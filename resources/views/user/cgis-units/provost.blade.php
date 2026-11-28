@@ -80,27 +80,60 @@
                 </div>
             </div>
             <div class="card-body">
+                @php
+                $nisRanks = [
+                    'Comptroller General of Immigration (CGIS)',
+                    'Deputy Comptroller General (DCG)',
+                    'Assistant Comptroller General (ACG)',
+                    'Comptroller of Immigration (CIS)',
+                    'Deputy Comptroller of Immigration (DCI)',
+                    'Assistant Comptroller of Immigration (ACI)',
+                    'Chief Superintendent of Immigration (CSI)',
+                    'Superintendent of Immigration (SI)',
+                    'Deputy Superintendent of Immigration (DSI)',
+                    'Assistant Superintendent of Immigration 1 (ASI 1)',
+                    'Assistant Superintendent of Immigration 2 (ASI 2)',
+                    'Inspector of Immigration (II)',
+                    'Assistant Inspector of Immigration (AII)',
+                    'Immigration Assistant 1 (IA 1)',
+                    'Immigration Assistant 2 (IA 2)',
+                    'Immigration Assistant 3 (IA 3)',
+                ];
+                @endphp
+                <script>
+                    window.REDAS_NIS_RANKS = @json($nisRanks);
+                </script>
                 <div class="table-responsive">
                     <table class="nis-table">
                         <thead>
                             <tr>
-                                <th style="width:80px;">S/N</th>
-                                <th>Sub Unit</th>
-                                <th style="width:180px;">Strength</th>
+                                <th style="width:55px;">S/N</th>
+                                <th style="min-width:170px;">Sub Unit</th>
+                                <th style="min-width:230px;">Rank</th>
+                                <th style="width:110px;">Male</th>
+                                <th style="width:110px;">Female</th>
+                                <th style="width:120px;">Total</th>
+                                <th style="width:65px;">Action</th>
                             </tr>
                         </thead>
                         <tbody id="staffStrengthBody">
-                            <!-- Populated automatically from the Sub Units table above -->
+                            <!-- Populated automatically from the Sub Units entered above -->
                         </tbody>
                         <tfoot>
                             <tr class="total-row">
-                                <td colspan="2"><strong>TOTAL STAFF STRENGTH</strong></td>
+                                <td colspan="3"><strong>TOTAL STAFF STRENGTH</strong></td>
+                                <td><input type="number" readonly class="ni" id="staffStrengthMaleTotal" value="0"></td>
+                                <td><input type="number" readonly class="ni" id="staffStrengthFemaleTotal" value="0"></td>
                                 <td><input type="number" readonly class="ni" id="staffStrengthGrandTotal" value="0"></td>
+                                <td></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                <small style="color:var(--gray-500);">This section is automatically generated from the Sub Units entered above.</small>
+                <button type="button" class="add-row-btn" id="addStaffStrengthRow" data-row-target="staffStrengthBody" data-row-prefix="staff_strength">
+                    <i class="fas fa-plus"></i> Add Rank / Staff Row
+                </button>
+                <small style="display:block;margin-top:6px;color:var(--gray-500);">Sub Units are synced from 1a above. Select Rank and enter Male and Female counts — Row Total and Grand Totals calculate automatically.</small>
             </div>
         </div>
 

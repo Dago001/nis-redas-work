@@ -810,88 +810,189 @@
      */
     if (unitsBody && strengthBody && totalStrengthInput && document.getElementById("addProvostUnit")) {
 
-    // STAFF STRENGTH
+    // STAFF STRENGTH (Sub Unit, Rank, Male, Female, Auto-Total)
+    const maleTotalInput = document.getElementById("staffStrengthMaleTotal");
+    const femaleTotalInput = document.getElementById("staffStrengthFemaleTotal");
+    const addStaffStrengthBtn = document.getElementById("addStaffStrengthRow");
 
-    function calculateStaffStrengthTotal() {
-
-        let total = 0;
-
-        document.querySelectorAll(".staff-strength-input").forEach(input => {
-
-            total += Number(input.value) || 0;
-
-        });
-
-        totalStrengthInput.value = total;
-
+    function escStaffHtml(str) {
+        return String(str ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    function bindStrengthEvents() {
+    function getProvostUnitNames() {
+        return Array.from(document.querySelectorAll(".provost-unit-name"))
+            .map(el => el.value.trim())
+            .filter(Boolean);
+    }
 
-        document.querySelectorAll(".staff-strength-input").forEach(input => {
+    function buildUnitOptionsHtml(selectedVal) {
+        const units = getProvostUnitNames();
+        let html = '<option value="">-- Select Sub Unit --</option>';
+        units.forEach(u => {
+            const sel = u === selectedVal ? ' selected' : '';
+            html += `<option value="${escStaffHtml(u)}"${sel}>${escStaffHtml(u)}</option>`;
+        });
+        if (selectedVal && !units.includes(selectedVal)) {
+            html += `<option value="${escStaffHtml(selectedVal)}" selected>${escStaffHtml(selectedVal)}</option>`;
+        }
+        return html;
+    }
 
-            input.oninput = calculateStaffStrengthTotal;
+    function buildRankOptionsHtml(selectedVal) {
+        const ranks = window.REDAS_NIS_RANKS || [];
+        let html = '<option value="">-- Select Rank --</option>';
+        ranks.forEach(r => {
+            const sel = r === selectedVal ? ' selected' : '';
+            html += `<option value="${escStaffHtml(r)}"${sel}>${escStaffHtml(r)}</option>`;
+        });
+        if (selectedVal && !ranks.includes(selectedVal)) {
+            html += `<option value="${escStaffHtml(selectedVal)}" selected>${escStaffHtml(selectedVal)}</option>`;
+        }
+        return html;
+    }
 
+    function calculateStaffStrengthTotal() {
+        let maleTotal = 0;
+        let femaleTotal = 0;
+        let grandTotal = 0;
+
+        strengthBody.querySelectorAll("tr").forEach((row, index) => {
+            const snCell = row.querySelector("td:first-child");
+            if (snCell) snCell.textContent = index + 1;
+
+            const unitEl = row.querySelector(".staff-unit-select");
+            const rankEl = row.querySelector(".staff-rank-select");
+            const maleEl = row.querySelector(".staff-male-input");
+            const femaleEl = row.querySelector(".staff-female-input");
+            const rowTotalEl = row.querySelector(".staff-strength-input");
+
+            if (unitEl) unitEl.name = `staff_strength[${index}][unit]`;
+            if (rankEl) rankEl.name = `staff_strength[${index}][rank]`;
+            if (maleEl) maleEl.name = `staff_strength[${index}][male]`;
+            if (femaleEl) femaleEl.name = `staff_strength[${index}][female]`;
+            if (rowTotalEl) rowTotalEl.name = `staff_strength[${index}][strength]`;
+
+            const male = Number(maleEl?.value) || 0;
+            const female = Number(femaleEl?.value) || 0;
+            const rowSum = male + female;
+            if (rowTotalEl) rowTotalEl.value = rowSum;
+
+            maleTotal += male;
+            femaleTotal += female;
+            grandTotal += rowSum;
         });
 
+        if (maleTotalInput) maleTotalInput.value = maleTotal;
+        if (femaleTotalInput) femaleTotalInput.value = femaleTotal;
+        totalStrengthInput.value = grandTotal;
+    }
+
+    function createStaffStrengthRow(index, preset) {
+        const data = preset || {};
+        const maleVal = data.male !== undefined && data.male !== '' ? data.male : '';
+        const femaleVal = data.female !== undefined && data.female !== '' ? data.female : '';
+        const rowSum = (Number(maleVal) || 0) + (Number(femaleVal) || 0);
+        const row = document.createElement("tr");
+        row.classList.add("data-row");
+        row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>
+                <select class="ni ni-select staff-unit-select" name="staff_strength[${index}][unit]">
+                    ${buildUnitOptionsHtml(data.unit || '')}
+                </select>
+            </td>
+            <td>
+                <select class="ni ni-select staff-rank-select" name="staff_strength[${index}][rank]">
+                    ${buildRankOptionsHtml(data.rank || '')}
+                </select>
+            </td>
+            <td>
+                <input type="number" min="0" class="ni staff-male-input" name="staff_strength[${index}][male]" value="${escStaffHtml(maleVal)}" placeholder="0">
+            </td>
+            <td>
+                <input type="number" min="0" class="ni staff-female-input" name="staff_strength[${index}][female]" value="${escStaffHtml(femaleVal)}" placeholder="0">
+            </td>
+            <td>
+                <input type="number" readonly class="ni staff-strength-input" name="staff_strength[${index}][strength]" value="${rowSum}" style="font-weight:700;background:#f8fafc;">
+            </td>
+            <td>
+                <button type="button" class="btn-icon btn-danger remove-staff-row" title="Remove row">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        return row;
     }
 
     function renderStaffStrengthTable() {
+        const unitNames = getProvostUnitNames();
+        const existingRows = Array.from(strengthBody.querySelectorAll("tr"));
 
-        const existingStrengths = [];
-
-        document.querySelectorAll(".staff-strength-input").forEach(input => {
-
-            existingStrengths.push(input.value);
-
-        });
-
-        strengthBody.innerHTML = "";
-
-        document.querySelectorAll(".provost-unit-name").forEach((input, index) => {
-
-            const row = document.createElement("tr");
-
-            row.innerHTML = `
-
-            <td>${index + 1}</td>
-
-            <td>
-
-                <input
-                    type="hidden"
-                    name="staff_strength[${index}][unit]"
-                    value="${input.value}"
-                >
-
-                ${input.value || "-"}
-
-            </td>
-
-            <td>
-
-                <input
-                    type="number"
-                    min="0"
-                    class="ni staff-strength-input"
-                    name="staff_strength[${index}][strength]"
-                    value="${existingStrengths[index] || ''}"
-                    placeholder="0"
-                >
-
-            </td>
-
-        `;
-
-            strengthBody.appendChild(row);
-
-        });
-
-        bindStrengthEvents();
+        if (existingRows.length === 0) {
+            const seedUnits = unitNames.length ? unitNames : [''];
+            seedUnits.forEach((u, idx) => {
+                strengthBody.appendChild(createStaffStrengthRow(idx, { unit: u }));
+            });
+        } else {
+            // Keep all existing rows & user entries intact, just refresh the Sub Unit dropdown options
+            existingRows.forEach((row, idx) => {
+                const select = row.querySelector(".staff-unit-select");
+                if (!select) return;
+                const currentVal = select.value;
+                const fallbackVal = (!currentVal && unitNames[idx]) ? unitNames[idx] : currentVal;
+                select.innerHTML = buildUnitOptionsHtml(fallbackVal);
+            });
+            // If user added a new Sub Unit in 1a that isn't represented yet, append a row for it
+            const represented = new Set(Array.from(strengthBody.querySelectorAll(".staff-unit-select")).map(s => s.value).filter(Boolean));
+            unitNames.forEach(u => {
+                if (!represented.has(u)) {
+                    const emptyRow = Array.from(strengthBody.querySelectorAll("tr")).find(r => {
+                        const s = r.querySelector(".staff-unit-select");
+                        const m = r.querySelector(".staff-male-input");
+                        const f = r.querySelector(".staff-female-input");
+                        return s && !s.value && !m?.value && !f?.value;
+                    });
+                    if (emptyRow) {
+                        const s = emptyRow.querySelector(".staff-unit-select");
+                        s.innerHTML = buildUnitOptionsHtml(u);
+                        s.value = u;
+                    } else {
+                        strengthBody.appendChild(createStaffStrengthRow(strengthBody.querySelectorAll("tr").length, { unit: u }));
+                    }
+                    represented.add(u);
+                }
+            });
+        }
 
         calculateStaffStrengthTotal();
-
     }
+
+    strengthBody.addEventListener("input", function (e) {
+        if (e.target && (e.target.classList.contains("staff-male-input") || e.target.classList.contains("staff-female-input"))) {
+            calculateStaffStrengthTotal();
+        }
+    });
+
+    strengthBody.addEventListener("change", function (e) {
+        if (e.target && (e.target.classList.contains("staff-male-input") || e.target.classList.contains("staff-female-input"))) {
+            calculateStaffStrengthTotal();
+        }
+    });
+
+    strengthBody.addEventListener("click", function (e) {
+        const btn = e.target.closest(".remove-staff-row");
+        if (!btn) return;
+        if (strengthBody.querySelectorAll("tr").length <= 1) return;
+        btn.closest("tr").remove();
+        calculateStaffStrengthTotal();
+    });
+
+    addStaffStrengthBtn?.addEventListener("click", function () {
+        const idx = strengthBody.querySelectorAll("tr").length;
+        strengthBody.appendChild(createStaffStrengthRow(idx, {}));
+        calculateStaffStrengthTotal();
+    });
 
     // ADD SUB UNIT
 
