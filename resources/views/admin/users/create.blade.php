@@ -213,7 +213,6 @@
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="email">Email Address <span style="color:#dc2626;">*</span></label>
                     <input type="email" id="email" name="email" value="{{ old('email') }}" class="auth-input" placeholder="officer@immigration.gov.ng" required>
-                    <span class="iam-hint">Default password &amp; onboarding notifications will be sent to this address.</span>
                 </div>
             </div>
 
@@ -221,7 +220,6 @@
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="phone">Phone Number <span style="color:#dc2626;">*</span></label>
                     <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" class="auth-input" placeholder="e.g. 08031234567" minlength="7" maxlength="25" required>
-                    <span class="iam-hint">Official or active mobile contact number (mandatory).</span>
                 </div>
             </div>
         </div>
