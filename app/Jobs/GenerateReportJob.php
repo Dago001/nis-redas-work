@@ -10,6 +10,7 @@ use App\Models\UserNotification;
 use App\Services\AuditLogger;
 use App\Services\ExcelReportService;
 use App\Services\ReportAccess;
+use App\Services\ReportScopeService;
 use App\Support\CsvWriter;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
@@ -64,32 +65,15 @@ class GenerateReportJob implements ShouldQueue
         $scopeLabel = is_string($filters['scope_label'] ?? null) ? trim($filters['scope_label']) : '';
         $statusFilter = is_string($filters['status_filter'] ?? null) ? strtolower(trim($filters['status_filter'])) : 'all';
 
-        $query = ReportAccess::applyVisibility(
-            Application::query()->with('user:id,name,service_number'),
-            $user
-        )
-            ->whereDate('created_at', '>=', $dateFrom)
-            ->whereDate('created_at', '<=', $dateTo);
-
-        if (in_array($statusFilter, ['approved', 'pending', 'returned'], true)) {
-            $query->where('status', $statusFilter);
-        }
-
-        if (! empty($filters['command_code'])) {
-            $query->where('scope_code', strtoupper((string) $filters['command_code']));
-        } elseif (! empty($filters['directorate_code'])) {
-            $query->where('category', 'directorate')
-                ->where('scope_code', strtolower((string) $filters['directorate_code']));
-        } elseif (! empty($filters['cgis_unit_code'])) {
-            $query->where('category', 'cgis_unit')
-                ->where('scope_code', strtolower((string) $filters['cgis_unit_code']));
-        } elseif (! empty($filters['zone_code'])) {
-            $zoneCode = strtoupper((string) $filters['zone_code']);
-            $zoneCommands = array_keys((array) config("nis_hierarchy.zones.{$zoneCode}.commands", []));
-            $dbFormations = ReportAccess::formationCodesForZone($zoneCode);
-            $allZoneCodes = array_values(array_unique(array_merge([$zoneCode], $zoneCommands, $dbFormations)));
-            $query->whereIn('scope_code', $allZoneCodes);
-        }
+        $query = ReportScopeService::applyFilters(
+            Application::query()->with('user:id,name,service_number,user_category'),
+            $user,
+            array_merge($filters, [
+                'date_from' => $dateFrom,
+                'date_to' => $dateTo,
+                'status_filter' => $statusFilter,
+            ])
+        );
 
         $applications = $query->orderBy('created_at')->get();
 

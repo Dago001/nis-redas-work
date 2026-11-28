@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\GenerateReportJob;
+use App\Models\Application;
 use App\Models\GeneratedReport;
 use App\Models\User;
 use App\Services\AuditLogger;
 use App\Services\Files\SecureFileStorage;
-use App\Services\ReportAccess;
+use App\Services\ReportScopeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,30 +44,58 @@ class ReportGenerationController extends Controller
         'works-logistics' => 'works',
     ];
 
-    public const CGIS_UNITS = [
-        'actu' => 'ACTU (Anti-Corruption & Transparency Unit)',
-        'epms' => 'EPMS (Electronic Performance Management)',
-        'hostmanship' => 'Hostmanship Unit',
-        'pro-media' => 'PRO / Public Relations & Media',
-        'protocol' => 'Protocol Unit',
-        'provost' => 'Provost Unit',
-        'servicom' => 'SERVICOM Unit',
-    ];
+    public const CGIS_UNITS = ReportScopeService::CGIS_UNITS;
 
-    public function index(): View
+    public function index(Request $request): View
     {
         /** @var User $user */
         $user = Auth::user();
+        $ctx = $this->builderContext($user);
+
+        $activeFilters = [
+            'date_from' => (string) ($request->query('date_from') ?: now()->startOfYear()->format('Y-m-d')),
+            'date_to' => (string) ($request->query('date_to') ?: now()->format('Y-m-d')),
+            'status_filter' => (string) ($request->query('status_filter') ?: 'all'),
+            'category_filter' => (string) ($request->query('category_filter') ?: ''),
+            'zone_code' => (string) ($request->query('zone_code') ?: ''),
+            'command_code' => (string) ($request->query('command_code') ?: ''),
+            'directorate_code' => (string) ($request->query('directorate_code') ?: ''),
+            'section_code' => (string) ($request->query('section_code') ?: ''),
+            'cgis_unit_code' => (string) ($request->query('cgis_unit_code') ?: ''),
+        ];
+
+        $baseQuery = ReportScopeService::applyFilters(
+            Application::query()->with('user:id,name,service_number,user_category'),
+            $user,
+            $activeFilters
+        );
+
+        $kpiCounts = [
+            'total' => (clone $baseQuery)->count(),
+            'approved' => (clone $baseQuery)->where('status', 'approved')->count(),
+            'pending' => (clone $baseQuery)->where('status', 'pending')->count(),
+            'returned' => (clone $baseQuery)->whereIn('status', ['returned', 'rejected', 'queried'])->count(),
+        ];
+
+        $previewReturns = $baseQuery
+            ->latest('created_at')
+            ->paginate(15)
+            ->withQueryString();
 
         $recentReports = GeneratedReport::query()
             ->where('user_id', $user->id)
             ->latest()
-            ->limit(20)
+            ->limit(10)
             ->get();
 
         return view('user.states.reports', array_merge(
-            ['recentReports' => $recentReports],
-            $this->builderContext($user)
+            [
+                'recentReports' => $recentReports,
+                'activeFilters' => $activeFilters,
+                'kpiCounts' => $kpiCounts,
+                'previewReturns' => $previewReturns,
+            ],
+            $ctx
         ));
     }
 
@@ -76,7 +105,7 @@ class ReportGenerationController extends Controller
         $user = Auth::user();
         $ctx = $this->builderContext($user);
 
-        $allowedReportTypes = $ctx['isPrsSuper']
+        $allowedReportTypes = $ctx['scopeLevel'] === 'national'
             ? 'submission_summary,monthly_return,quarterly_return,annual_return,compliance_report,consolidated_summary,full_export'
             : 'submission_summary,monthly_return,quarterly_return,annual_return,compliance_report,full_export';
 
@@ -87,14 +116,15 @@ class ReportGenerationController extends Controller
             'sections' => ['nullable', 'array'],
             'sections.*' => ['string', 'max:50'],
             'format' => ['required', 'in:pdf,excel,csv'],
+            'category_filter' => ['nullable', 'in:,state,zone,directorate,cgis'],
             'zone_code' => ['nullable', 'string', 'max:30'],
             'command_code' => ['nullable', 'string', 'max:50'],
             'directorate_code' => ['nullable', 'string', 'max:50'],
+            'section_code' => ['nullable', 'string', 'max:80'],
             'cgis_unit_code' => ['nullable', 'string', 'max:50'],
             'status_filter' => ['nullable', 'in:all,approved,pending,returned'],
         ]);
 
-        // Enforce server-side scope & section lock
         $allowedSectionKeys = array_keys($ctx['availableSections']);
         if ($ctx['sectionsLocked']) {
             $sections = $allowedSectionKeys;
@@ -103,7 +133,6 @@ class ReportGenerationController extends Controller
                 array_values($validated['sections'] ?? []),
                 $allowedSectionKeys
             ));
-            // Empty or all sections selected means no artificial section exclusion
             $sections = ($requestedSections === [] || count($requestedSections) === count($allowedSectionKeys))
                 ? []
                 : $requestedSections;
@@ -114,11 +143,14 @@ class ReportGenerationController extends Controller
             'date_to' => $validated['date_to'],
             'sections' => $sections,
             'scope_label' => $ctx['scopeLabel'],
-            'is_prs_super' => $ctx['isPrsSuper'],
+            'scope_level' => $ctx['scopeLevel'],
             'status_filter' => $validated['status_filter'] ?? 'all',
         ];
 
-        if ($ctx['isPrsSuper']) {
+        if ($ctx['scopeLevel'] === 'national') {
+            if (! empty($validated['category_filter'])) {
+                $filters['category_filter'] = strtolower(trim($validated['category_filter']));
+            }
             if (! empty($validated['zone_code'])) {
                 $filters['zone_code'] = strtoupper(trim($validated['zone_code']));
             }
@@ -126,16 +158,18 @@ class ReportGenerationController extends Controller
                 $filters['command_code'] = strtoupper(trim($validated['command_code']));
             }
             if (! empty($validated['directorate_code'])) {
-                $filters['directorate_code'] = strtolower(trim($validated['directorate_code']));
+                $filters['directorate_code'] = ReportScopeService::normalizeDirectorateSlug($validated['directorate_code']);
             }
             if (! empty($validated['cgis_unit_code'])) {
                 $filters['cgis_unit_code'] = strtolower(trim($validated['cgis_unit_code']));
             }
-        } elseif ($user->user_category === 'zonal_commander' && ! empty($validated['command_code'])) {
+        } elseif ($ctx['scopeLevel'] === 'zone' && ! empty($validated['command_code'])) {
             $requestedCmd = strtoupper(trim($validated['command_code']));
             if (array_key_exists($requestedCmd, $ctx['zonalCommandOptions'])) {
                 $filters['command_code'] = $requestedCmd;
             }
+        } elseif ($ctx['scopeLevel'] === 'directorate' && ! empty($validated['section_code'])) {
+            $filters['section_code'] = trim($validated['section_code']);
         }
 
         $report = GeneratedReport::create([
@@ -200,21 +234,21 @@ class ReportGenerationController extends Controller
     }
 
     /**
-     * Resolve command/unit-scoped vs PRS Super & Comprehensive builder context.
+     * Resolve institutional scope & filter options for the authenticated user.
      *
      * @return array<string, mixed>
      */
     private function builderContext(User $user): array
     {
         $zonesConfig = (array) config('nis_hierarchy.zones', []);
-        $isPrsSuper = ReportAccess::isPrsViewer($user) || $user->directorateSlug() === 'prs';
+        $scopeLevel = ReportScopeService::scopeLevel($user);
 
-        if ($isPrsSuper) {
+        if ($scopeLevel === 'national') {
             $zoneOptions = [];
             $groupedCommands = [];
             foreach ($zonesConfig as $zoneCode => $zoneData) {
                 $zoneOptions[$zoneCode] = "{$zoneCode} - {$zoneData['name']}";
-                $cmdList = [];
+                $cmdList = [$zoneCode => "{$zoneCode} - {$zoneData['name']} (Zone HQ)"];
                 foreach (($zoneData['commands'] ?? []) as $cmdCode => $cmdName) {
                     $cmdList[$cmdCode] = "{$cmdCode} - {$cmdName}";
                 }
@@ -222,106 +256,112 @@ class ReportGenerationController extends Controller
             }
 
             return [
+                'scopeLevel' => 'national',
                 'isPrsSuper' => true,
-                'builderTitle' => 'PRS Super & Comprehensive Report Builder',
-                'builderSubtitle' => 'National multi-command intelligence & reporting across all 8 NIS Zones, 52 Commands, 10 Directorates, and 7 CGIS Units.',
-                'scopeLabel' => 'National Scope (PRS Comprehensive)',
-                'scopeBadge' => 'PRS SUPER ACCESS',
+                'builderTitle' => 'Report Builder',
+                'builderSubtitle' => 'National Scope — All Zones, State Commands, Formations, Directorates, and CGIS Units.',
+                'scopeLabel' => 'National Scope',
                 'availableSections' => self::ALL_SECTIONS,
                 'sectionsLocked' => false,
                 'zoneOptions' => $zoneOptions,
                 'groupedCommands' => $groupedCommands,
                 'zonalCommandOptions' => [],
-                'directorateOptions' => self::ALL_SECTIONS,
-                'cgisUnitOptions' => self::CGIS_UNITS,
+                'directorateOptions' => ReportScopeService::DIRECTORATES,
+                'directorateSectionOptions' => [],
+                'cgisUnitOptions' => ReportScopeService::CGIS_UNITS,
             ];
         }
 
-        // Directorate officer / non-PRS directorate admin -> strictly locked to their own directorate
-        if (in_array($user->user_category, ['directorate_user', 'directorate_admin'], true)) {
-            $dirSlug = $user->directorateSlug() ?? strtolower((string) $user->assigned_directorate_code);
-            $sectionKey = self::DIRECTORATE_SLUGS_TO_SECTION[$dirSlug] ?? $dirSlug;
-            $dirLabel = self::ALL_SECTIONS[$sectionKey] ?? strtoupper($dirSlug ?: 'Directorate');
-
-            return [
-                'isPrsSuper' => false,
-                'builderTitle' => "{$dirLabel} Directorate Report Builder",
-                'builderSubtitle' => "Generate PDF, Excel, or CSV reports strictly scoped to the {$dirLabel} Directorate.",
-                'scopeLabel' => "{$dirLabel} Directorate",
-                'scopeBadge' => 'DIRECTORATE SCOPED',
-                'availableSections' => [$sectionKey => $dirLabel],
-                'sectionsLocked' => true,
-                'zoneOptions' => [],
-                'groupedCommands' => [],
-                'zonalCommandOptions' => [],
-                'directorateOptions' => [],
-                'cgisUnitOptions' => [],
-            ];
-        }
-
-        // CGIS Unit officer / CGIS desk admin -> strictly locked to their own CGIS unit
-        if (in_array($user->user_category, ['cgis_unit_user', 'cgis_desk_admin'], true)) {
-            $unitSlug = $user->cgisUnitSlug() ?? strtolower((string) $user->assigned_cgis_unit_code);
-            $unitLabel = self::CGIS_UNITS[$unitSlug] ?? strtoupper($unitSlug ?: 'CGIS Unit');
-
-            return [
-                'isPrsSuper' => false,
-                'builderTitle' => "{$unitLabel} Report Builder",
-                'builderSubtitle' => "Generate PDF, Excel, or CSV reports strictly scoped to {$unitLabel}.",
-                'scopeLabel' => $unitLabel,
-                'scopeBadge' => 'CGIS UNIT SCOPED',
-                'availableSections' => [$unitSlug ?: 'cgis' => $unitLabel],
-                'sectionsLocked' => true,
-                'zoneOptions' => [],
-                'groupedCommands' => [],
-                'zonalCommandOptions' => [],
-                'directorateOptions' => [],
-                'cgisUnitOptions' => [],
-            ];
-        }
-
-        // Zonal Commander -> strictly locked to their own Zone & its child commands
-        if ($user->user_category === 'zonal_commander') {
+        if ($scopeLevel === 'zone') {
             $zoneCode = strtoupper(trim((string) ($user->primary_location_code ?: $user->assigned_zonal_command_code)));
             $zoneInfo = $zonesConfig[$zoneCode] ?? null;
             $zoneName = $zoneInfo['name'] ?? ($zoneCode !== '' ? $zoneCode : 'Assigned Zone');
             $zonalCommands = [];
+            if ($zoneCode !== '') {
+                $zonalCommands[$zoneCode] = "{$zoneCode} - {$zoneName} (Zone HQ)";
+            }
             foreach (($zoneInfo['commands'] ?? []) as $cmdCode => $cmdName) {
-                $zonalCommands[$cmdCode] = "{$cmdCode} - {$cmdName}";
+                $zonalCommands[strtoupper($cmdCode)] = strtoupper($cmdCode)." - {$cmdName}";
             }
 
             return [
+                'scopeLevel' => 'zone',
                 'isPrsSuper' => false,
-                'builderTitle' => "{$zoneName} Report Builder",
-                'builderSubtitle' => "Generate reports strictly for {$zoneName} and the ".count($zonalCommands).' commands under your zonal oversight.',
+                'builderTitle' => 'Report Builder',
+                'builderSubtitle' => "Zonal Scope — {$zoneCode} ({$zoneName}) and subordinate State Commands.",
                 'scopeLabel' => "{$zoneCode} - {$zoneName}",
-                'scopeBadge' => 'ZONAL SCOPED',
                 'availableSections' => self::ALL_SECTIONS,
                 'sectionsLocked' => false,
                 'zoneOptions' => [],
                 'groupedCommands' => [],
                 'zonalCommandOptions' => $zonalCommands,
                 'directorateOptions' => [],
+                'directorateSectionOptions' => [],
                 'cgisUnitOptions' => [],
             ];
         }
 
-        // Default: State / Formation Officer or Formation Desk Admin -> strictly locked to their Command
+        if ($scopeLevel === 'directorate') {
+            $dirSlug = strtolower(trim((string) ($user->directorateSlug() ?: $user->assigned_directorate_code)));
+            $sectionKey = self::DIRECTORATE_SLUGS_TO_SECTION[$dirSlug] ?? $dirSlug;
+            $dirLabel = ReportScopeService::DIRECTORATES[$dirSlug] ?? (self::ALL_SECTIONS[$sectionKey] ?? strtoupper($dirSlug ?: 'Directorate'));
+            $dirSections = ReportScopeService::sectionsForDirectorate($dirSlug);
+
+            return [
+                'scopeLevel' => 'directorate',
+                'isPrsSuper' => false,
+                'builderTitle' => 'Report Builder',
+                'builderSubtitle' => "Directorate Scope — {$dirLabel} and subordinate sections.",
+                'scopeLabel' => $dirLabel,
+                'availableSections' => [$sectionKey => $dirLabel],
+                'sectionsLocked' => true,
+                'zoneOptions' => [],
+                'groupedCommands' => [],
+                'zonalCommandOptions' => [],
+                'directorateOptions' => [],
+                'directorateSectionOptions' => $dirSections,
+                'cgisUnitOptions' => [],
+            ];
+        }
+
+        if ($scopeLevel === 'cgis') {
+            $unitSlug = strtolower(trim((string) ($user->cgisUnitSlug() ?: $user->assigned_cgis_unit_code)));
+            $unitLabel = ReportScopeService::CGIS_UNITS[$unitSlug] ?? strtoupper($unitSlug ?: 'CGIS Unit');
+
+            return [
+                'scopeLevel' => 'cgis',
+                'isPrsSuper' => false,
+                'builderTitle' => 'Report Builder',
+                'builderSubtitle' => "CGIS Office Scope — {$unitLabel}.",
+                'scopeLabel' => $unitLabel,
+                'availableSections' => [$unitSlug ?: 'cgis' => $unitLabel],
+                'sectionsLocked' => true,
+                'zoneOptions' => [],
+                'groupedCommands' => [],
+                'zonalCommandOptions' => [],
+                'directorateOptions' => [],
+                'directorateSectionOptions' => [],
+                'cgisUnitOptions' => [],
+            ];
+        }
+
+        // State / Formation Officer or Desk Admin
         $cmdCode = strtoupper(trim((string) ($user->primary_location_code ?: $user->assigned_state_code)));
         $cmdLabel = $this->resolveCommandLabel($cmdCode, $zonesConfig);
 
         return [
+            'scopeLevel' => 'state',
             'isPrsSuper' => false,
-            'builderTitle' => "{$cmdLabel} Report Builder",
-            'builderSubtitle' => "Generate PDF, Excel, or CSV reports strictly scoped to {$cmdLabel}.",
+            'builderTitle' => 'Report Builder',
+            'builderSubtitle' => "State Command Scope — {$cmdLabel}.",
             'scopeLabel' => $cmdLabel,
-            'scopeBadge' => 'COMMAND SCOPED',
             'availableSections' => self::ALL_SECTIONS,
             'sectionsLocked' => false,
             'zoneOptions' => [],
             'groupedCommands' => [],
             'zonalCommandOptions' => [],
             'directorateOptions' => [],
+            'directorateSectionOptions' => [],
             'cgisUnitOptions' => [],
         ];
     }
@@ -332,7 +372,7 @@ class ReportGenerationController extends Controller
     private function resolveCommandLabel(string $code, array $zonesConfig): string
     {
         if ($code === '') {
-            return 'Assigned Command';
+            return 'Assigned State Command';
         }
 
         foreach ($zonesConfig as $zoneCode => $zoneInfo) {
