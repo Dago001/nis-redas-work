@@ -15,10 +15,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $trustedProxies = array_values(array_filter(array_map(
-            static fn (string $proxy): string => trim($proxy),
-            explode(',', (string) env('TRUSTED_PROXIES', ''))
-        ), static fn (string $proxy): bool => $proxy !== '' && $proxy !== '*'));
+        $rawProxies = trim((string) env('TRUSTED_PROXIES', ''));
+        if ($rawProxies === '*' || filter_var(env('RENDER', false), FILTER_VALIDATE_BOOLEAN)) {
+            $trustedProxies = '*';
+        } else {
+            $trustedProxies = array_values(array_filter(array_map(
+                static fn (string $proxy): string => trim($proxy),
+                explode(',', $rawProxies)
+            ), static fn (string $proxy): bool => $proxy !== '' && $proxy !== '*'));
+        }
 
         $middleware->trustProxies(
             at: $trustedProxies,
