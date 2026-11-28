@@ -94,6 +94,13 @@
                     <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" class="auth-input" required>
                 </div>
             </div>
+
+            <div class="iam-grid-3" style="margin-top:14px;">
+                <div class="auth-form-group">
+                    <label class="form-label-nis" for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" value="{{ old('phone', $user->phone) }}" class="auth-input" placeholder="e.g. 08031234567" minlength="7" maxlength="25">
+                </div>
+            </div>
         </div>
 
         <div class="iam-section">

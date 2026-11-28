@@ -199,6 +199,9 @@ Route::middleware([Authenticate::class, 'abac.geo', 'can:viewPrsDashboard'])->gr
 Route::middleware([Authenticate::class])->group(function () {
     Route::get('/user/profile', [ProfileController::class, 'edit'])->name('user.profile');
     Route::patch('/user/profile', [ProfileController::class, 'update'])->middleware([\Illuminate\Routing\Middleware\ThrottleRequests::class . ':60,1'])->name('user.profile.update');
+    Route::post('/user/profile/photo', [ProfileController::class, 'updatePhoto'])->middleware([\Illuminate\Routing\Middleware\ThrottleRequests::class . ':30,1'])->name('user.profile.photo.update');
+    Route::delete('/user/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('user.profile.photo.destroy');
+    Route::get('/user/profile/photo/{user}', [ProfileController::class, 'showPhoto'])->name('user.profile.photo.show');
 
     // PDF export of a submitted return - owner or in-scope approver only (checked in controller).
     Route::get('/user/submissions/{application}/pdf', [DashboardController::class, 'downloadSubmissionPdf'])->name('user.submissions.pdf');

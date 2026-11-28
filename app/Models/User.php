@@ -52,6 +52,8 @@ class User extends Authenticatable
         'geofence_radius_km',
         'access_level',
         'email',
+        'phone',
+        'profile_photo_path',
         'email_verified_at',
         'password',
         'must_change_password',
@@ -156,6 +158,22 @@ class User extends Authenticatable
     /**
      * Canonical dashboard URL for this user based on their user_category.
      */
+    public function profilePhotoUrl(): ?string
+    {
+        if (empty($this->profile_photo_path)) {
+            return null;
+        }
+
+        try {
+            return route('user.profile.photo.show', [
+                'user' => $this->id,
+                'v' => optional($this->updated_at)->timestamp ?? time(),
+            ]);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
     public function dashboardUrl(): string
     {
         return match ($this->user_category) {

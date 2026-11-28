@@ -11,7 +11,13 @@
         {{-- Super Administrator User Menu --}}
         <div style="position:relative;">
             <button type="button" class="topbar-user" id="userMenuBtn" style="border:none;background:transparent;cursor:pointer;">
-                <div class="topbar-avatar">{{ strtoupper(substr(auth()->user()->name ?? 'SA', 0, 2)) }}</div>
+                <div class="topbar-avatar" style="overflow:hidden;padding:0;">
+                    @if(auth()->user()?->profilePhotoUrl())
+                        <img src="{{ auth()->user()->profilePhotoUrl() }}" alt="{{ auth()->user()->name }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+                    @else
+                        {{ strtoupper(substr(auth()->user()->name ?? 'SA', 0, 2)) }}
+                    @endif
+                </div>
                 <div class="topbar-user-info">
                     <div class="topbar-user-name">{{ auth()->user()->name ?? 'Super Administrator' }}</div>
                     <div class="topbar-user-role">Super Administrator &bull; {{ auth()->user()->service_number ?? 'HQ' }}</div>

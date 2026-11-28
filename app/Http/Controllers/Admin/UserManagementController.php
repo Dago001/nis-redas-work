@@ -333,6 +333,7 @@ class UserManagementController extends Controller
             'geofence_lng' => 'nullable|numeric|between:-180,180',
             'geofence_radius_km' => 'nullable|integer|min:1|max:500',
             'email' => 'required|string|email|max:255|unique:users',
+            'phone' => ['required', 'string', 'min:7', 'max:25', 'regex:/^[0-9+\-\s()]+$/'],
             'password' => ['required', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
         ], [
@@ -384,6 +385,7 @@ class UserManagementController extends Controller
             'geofence_radius_km' => isset($validated['geofence_radius_km']) && $validated['geofence_radius_km'] !== '' ? (int) $validated['geofence_radius_km'] : 25,
             'access_level' => $normalized['access_level'],
             'email' => strtolower(trim($validated['email'])),
+            'phone' => trim($validated['phone']),
             'email_verified_at' => $requireEmailVerification ? null : now(),
             'password' => Hash::make($validated['password']),
             'must_change_password' => true,
@@ -457,6 +459,7 @@ class UserManagementController extends Controller
             'geofence_lng' => 'nullable|numeric|between:-180,180',
             'geofence_radius_km' => 'nullable|integer|min:1|max:500',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
+            'phone' => ['nullable', 'string', 'min:7', 'max:25', 'regex:/^[0-9+\-\s()]+$/'],
             'password' => ['nullable', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
         ], [
@@ -507,6 +510,7 @@ class UserManagementController extends Controller
             'geofence_radius_km' => array_key_exists('geofence_radius_km', $validated) && $validated['geofence_radius_km'] !== null && $validated['geofence_radius_km'] !== '' ? (int) $validated['geofence_radius_km'] : ($user->geofence_radius_km ?? 25),
             'access_level' => $normalized['access_level'],
             'email' => strtolower(trim($validated['email'])),
+            'phone' => array_key_exists('phone', $validated) && $validated['phone'] !== null && trim((string) $validated['phone']) !== '' ? trim((string) $validated['phone']) : $user->phone,
             'is_enabled' => $request->boolean('is_enabled', true),
             'password' => ! empty($validated['password']) ? Hash::make($validated['password']) : $user->password,
             'must_change_password' => ! empty($validated['password']) ? true : $user->must_change_password,
