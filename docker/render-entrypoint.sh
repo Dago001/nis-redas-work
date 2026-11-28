@@ -3,6 +3,12 @@ set -e
 
 PORT="${PORT:-10000}"
 
+# Map Render's DATABASE_URL to Laravel 12's DB_URL and enforce SSL for Neon PostgreSQL
+if [ -z "${DB_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
+    export DB_URL="${DATABASE_URL}"
+fi
+export DB_SSLMODE="${DB_SSLMODE:-require}"
+
 # Configure Apache to listen on Render's injected PORT
 sed -i "s/Listen 80/Listen ${PORT}/g" /etc/apache2/ports.conf
 sed -i "s/:80>/:${PORT}>/g" /etc/apache2/sites-available/000-default.conf
