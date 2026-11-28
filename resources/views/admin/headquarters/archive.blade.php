@@ -52,7 +52,7 @@
                             <th>Period</th>
                             <th style="text-align:center;">Documents</th>
                             <th>Approved</th>
-                            <th></th>
+                            <th style="text-align:right;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,8 +62,8 @@
                                 $docCount = count((array) ($data['supporting_documents'] ?? [])) + count((array) ($data['attachments'] ?? []));
                             @endphp
                             <tr>
-                                <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '-' }}</td>
+                                <td style="font-weight:700;color:#0f172a;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
+                                <td style="font-weight:600;text-transform:uppercase;">{{ strtoupper((string) ($data['command_name'] ?? $return->scope_code ?? '-')) }}</td>
                                 <td>
                                     {{ $data['reporting_officer'] ?? $return->user->name ?? '-' }}
                                     @if($return->user?->service_number)
