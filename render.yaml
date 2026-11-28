@@ -3,7 +3,6 @@ services:
     name: nis-redas-staging
     runtime: docker
     plan: free
-    region: frankfurt
     branch: feature/redas-security-workflow-remediation
     healthCheckPath: /up
     envVars:
