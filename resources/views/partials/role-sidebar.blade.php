@@ -2,8 +2,8 @@
     $navUser = auth()->user();
     $navCat = $navUser?->user_category;
     $navRole = $navUser?->role;
-    $isSuperAdmin = $navUser && ($navCat === 'super_admin' || $navRole === 'super_admin');
-    $isHqAdmin = $navUser && ! $isSuperAdmin && (in_array($navCat, ['hq_admin', 'admin'], true) || in_array($navRole, ['hq_admin', 'admin'], true));
+    $isSuperAdmin = $navUser && ($navCat === 'super_admin' || ($navCat === null && $navRole === 'super_admin'));
+    $isHqAdmin = $navUser && ! $isSuperAdmin && (in_array($navCat, ['hq_admin', 'admin'], true) || ($navCat === null && in_array($navRole, ['hq_admin', 'admin'], true)));
     $isReviewer = in_array($navCat, ['desk_admin', 'zonal_commander', 'directorate_admin', 'cgis_desk_admin'], true);
     $isZonalAdmin = $navCat === 'zonal_commander';
     $homeRoute = $navUser ? $navUser->dashboardUrl() : route('user.dashboard');

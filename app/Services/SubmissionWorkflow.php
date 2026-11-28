@@ -291,18 +291,24 @@ class SubmissionWorkflow
                 ]
             );
 
-            DB::afterCommit(function () use ($locked, $currentStage, $nextStage): void {
+            DB::afterCommit(function () use ($locked, $actor, $currentStage, $nextStage): void {
+                $ref = 'RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT);
+                $stageNice = ucwords(str_replace('_', ' ', $currentStage));
+                $nextNice = ucwords(str_replace('_', ' ', $nextStage));
+
                 if ($nextStage === self::STAGE_APPROVED) {
                     self::notifySubmitter(
                         $locked,
-                        'Return approved',
-                        'Your return RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT).' has completed the review workflow and is approved.'
+                        "Return Approved ({$ref})",
+                        "Your return {$ref} was approved by {$actor->name} and has completed the full approval workflow.",
+                        'approved'
                     );
                 } else {
                     self::notifySubmitter(
                         $locked,
-                        'Return advanced',
-                        'Your return RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT).' was approved at '.str_replace('_', ' ', $currentStage).' and moved to '.str_replace('_', ' ', $nextStage).'.'
+                        "Return Approved at {$stageNice} ({$ref})",
+                        "Your return {$ref} was approved by {$actor->name} at {$stageNice} and forwarded to {$nextNice}.",
+                        'approved'
                     );
                     self::notifyPendingReviewers($locked);
                 }
@@ -371,11 +377,14 @@ class SubmissionWorkflow
                 ]
             );
 
-            DB::afterCommit(function () use ($locked, $currentStage, $comment): void {
+            DB::afterCommit(function () use ($locked, $actor, $currentStage, $comment): void {
+                $ref = 'RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT);
+                $stageNice = ucwords(str_replace('_', ' ', $currentStage));
                 self::notifySubmitter(
                     $locked,
-                    'Return returned for correction',
-                    'Your return RET-'.str_pad((string) $locked->id, 5, '0', STR_PAD_LEFT).' was sent back at '.str_replace('_', ' ', $currentStage).'.'.($comment ? ' Reason: '.$comment : '')
+                    "Return Rejected at {$stageNice} ({$ref})",
+                    "Your return {$ref} was returned for correction by {$actor->name} at {$stageNice}.".($comment ? " Reason: {$comment}" : ''),
+                    'rejected'
                 );
 
                 SubmissionRejected::dispatch($locked, $comment);
@@ -487,9 +496,79 @@ class SubmissionWorkflow
     }
 
     /**
+     * Ensure a reviewer has an in-app notification for every pending submission currently
+     * awaiting their action (covers submissions created before the reviewer account existed).
+     */
+    public static function syncPendingNotificationsFor(User $reviewer): void
+    {
+        $stage = self::stageForApprover($reviewer);
+        if ($stage === null) {
+            return;
+        }
+
+        $pending = self::pendingQueryForApprover($reviewer)->limit(25)->get();
+        if ($pending->isEmpty()) {
+            return;
+        }
+
+        $existing = UserNotification::query()
+            ->where('user_id', $reviewer->id)
+            ->where('type', 'workflow')
+            ->where('tag', 'review')
+            ->get(['payload_json']);
+
+        $notifiedKeys = [];
+        foreach ($existing as $n) {
+            $p = is_array($n->payload_json) ? $n->payload_json : [];
+            if (isset($p['application_id'], $p['stage'])) {
+                $notifiedKeys[$p['application_id'].':'.$p['stage']] = true;
+            }
+        }
+
+        $stageLabel = match ($stage) {
+            self::STAGE_DESK_REVIEW => 'Desk Admin Review',
+            self::STAGE_ZONAL_REVIEW => 'Zonal Admin Review',
+            self::STAGE_DIRECTORATE_REVIEW => 'Directorate Admin Review',
+            self::STAGE_CGIS_DESK_REVIEW => 'CGIS Desk Admin Review',
+            self::STAGE_HQ_REVIEW => 'HQ Admin Review',
+            default => ucwords(str_replace('_', ' ', $stage)),
+        };
+
+        foreach ($pending as $application) {
+            if ($application->user_id === $reviewer->id) {
+                continue;
+            }
+            $key = $application->id.':'.$stage;
+            if (isset($notifiedKeys[$key])) {
+                continue;
+            }
+
+            $ref = 'RET-'.str_pad((string) $application->id, 5, '0', STR_PAD_LEFT);
+            $submitterName = $application->user?->name
+                ?? ($application->return_data['reporting_officer'] ?? 'Command Officer');
+            $scopeCode = strtoupper((string) ($application->scope_code ?? ''));
+            $scopeName = $scopeCode !== ''
+                ? (GeolocationService::stateNameFromCode($scopeCode) ?? $scopeCode)
+                : 'Command';
+
+            UserNotification::create([
+                'user_id' => $reviewer->id,
+                'type' => 'workflow',
+                'title' => "Action Required: {$ref}",
+                'description' => "Submitted by {$submitterName} ({$scopeName}) — awaiting {$stageLabel}. Click to approve or reject.",
+                'tag' => 'review',
+                'action_url' => self::reviewUrlForApprover($reviewer, $application),
+                'payload_json' => ['application_id' => $application->id, 'stage' => $stage],
+                'is_read' => false,
+            ]);
+            $notifiedKeys[$key] = true;
+        }
+    }
+
+    /**
      * Notify the submission owner about a workflow event on their return.
      */
-    public static function notifySubmitter(Application $application, string $title, string $description): void
+    public static function notifySubmitter(Application $application, string $title, string $description, string $tag = 'return'): void
     {
         $owner = $application->user;
         if ($owner === null) {
@@ -501,9 +580,10 @@ class SubmissionWorkflow
             'type' => 'workflow',
             'title' => $title,
             'description' => $description,
-            'tag' => 'return',
+            'tag' => $tag,
             'action_url' => self::submitterUrl($owner, $application),
             'payload_json' => ['application_id' => $application->id, 'status' => $application->status],
+            'is_read' => false,
         ]);
     }
 

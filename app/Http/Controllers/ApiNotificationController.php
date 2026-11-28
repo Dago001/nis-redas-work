@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\UserNotification;
+use App\Services\SubmissionWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -11,6 +12,9 @@ class ApiNotificationController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
+        if ($user) {
+            SubmissionWorkflow::syncPendingNotificationsFor($user);
+        }
         $unreadOnly = $request->boolean('unread');
 
         $query = UserNotification::query()
@@ -45,6 +49,9 @@ class ApiNotificationController extends Controller
     public function count(Request $request)
     {
         $user = Auth::user();
+        if ($user) {
+            SubmissionWorkflow::syncPendingNotificationsFor($user);
+        }
 
         $unread = UserNotification::query()
             ->where('user_id', $user->id)

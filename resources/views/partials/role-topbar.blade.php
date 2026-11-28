@@ -2,8 +2,8 @@
     $topUser = auth()->user();
     $topCat = $topUser?->user_category;
     $topRole = $topUser?->role;
-    $isSuperAdmin = $topUser && ($topCat === 'super_admin' || $topRole === 'super_admin');
-    $isHqAdmin = $topUser && ! $isSuperAdmin && (in_array($topCat, ['hq_admin', 'admin'], true) || in_array($topRole, ['hq_admin', 'admin'], true));
+    $isSuperAdmin = $topUser && ($topCat === 'super_admin' || ($topCat === null && $topRole === 'super_admin'));
+    $isHqAdmin = $topUser && ! $isSuperAdmin && (in_array($topCat, ['hq_admin', 'admin'], true) || ($topCat === null && in_array($topRole, ['hq_admin', 'admin'], true)));
     $homeRoute = $topUser ? $topUser->dashboardUrl() : route('user.dashboard');
 
     $breadcrumbLabel = match ($topCat) {

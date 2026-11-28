@@ -157,10 +157,39 @@ class WorkflowInAppNotificationsTest extends TestCase
         $this->assertFalse((bool) $dirNotif->is_read);
         $this->assertStringContainsString('Directorate Admin Review', $dirNotif->description);
 
-        // 5. Directorate Admin rejects -> Directorate Officer is notified with reason
+        // 5. Directorate Admin rejects -> Directorate Officer gets real-time rejected notification
         SubmissionWorkflow::reject($dirApp, $dirAdmin, 'Please verify server counts');
         $officerNotif = UserNotification::query()->where('user_id', $dirOfficer->id)->latest('id')->first();
         $this->assertNotNull($officerNotif, 'Directorate Officer was not notified on rejection.');
+        $this->assertSame('rejected', $officerNotif->tag);
         $this->assertStringContainsString('Please verify server counts', $officerNotif->description);
+
+        // 6. Newly provisioned Directorate Admin auto-syncs pending in-scope return notifications & keeps Directorate Admin sidebar
+        $lateDirAdmin = $this->makeUser([
+            'name' => 'Late ICT Admin',
+            'service_number' => '91009',
+            'email' => 'lateict91009@nis.gov.ng',
+            'role' => 'admin',
+            'user_category' => 'directorate_admin',
+            'primary_location_type' => 'directorate',
+            'primary_location_code' => 'ict',
+            'assigned_directorate_code' => 'ict',
+            'access_level' => 2,
+        ]);
+
+        // Submit another ICT return, clear lateDirAdmin's notifications to simulate pre-existing submission
+        $dirApp2 = SubmissionWorkflow::create($dirOfficer, [
+            'period' => '2026-11',
+            'directorate_slug' => 'ict',
+            'reporting_officer' => $dirOfficer->name,
+        ]);
+        UserNotification::query()->where('user_id', $lateDirAdmin->id)->delete();
+
+        $this->actingAs($lateDirAdmin)->get(route('user.desk.home'))
+            ->assertOk()
+            ->assertSee('Directorate Admin Menu')
+            ->assertDontSee('Headquarters Menu')
+            ->assertSee('data-initial-unread="1"', false)
+            ->assertSee('Action Required: RET-'.str_pad((string) $dirApp2->id, 5, '0', STR_PAD_LEFT));
     }
 }

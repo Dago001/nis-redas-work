@@ -5,6 +5,8 @@
 
     if ($notifUser) {
         try {
+            \App\Services\SubmissionWorkflow::syncPendingNotificationsFor($notifUser);
+
             $notifUnreadCount = \App\Models\UserNotification::query()
                 ->where('user_id', $notifUser->id)
                 ->where('is_read', false)
@@ -50,7 +52,7 @@
                     [$iconBg, $iconColor, $iconClass] = match ($tag) {
                         'review', 'consolidated' => ['#fef3c7', '#b45309', 'fas fa-file-signature'],
                         'return', 'approved' => ['#dcfce7', '#15803d', 'fas fa-check-circle'],
-                        'alert', 'security' => ['#fee2e2', '#dc2626', 'fas fa-exclamation-triangle'],
+                        'rejected', 'alert', 'security' => ['#fee2e2', '#dc2626', 'fas fa-times-circle'],
                         default => ['#e0f2fe', '#0369a1', 'fas fa-bell'],
                     };
                     $href = $item->action_url ?: $notifAllUrl;
@@ -118,7 +120,7 @@
         const t = String(tag || 'workflow').toLowerCase();
         if (t === 'review' || t === 'consolidated') return ['#fef3c7', '#b45309', 'fas fa-file-signature'];
         if (t === 'return' || t === 'approved') return ['#dcfce7', '#15803d', 'fas fa-check-circle'];
-        if (t === 'alert' || t === 'security') return ['#fee2e2', '#dc2626', 'fas fa-exclamation-triangle'];
+        if (t === 'rejected' || t === 'alert' || t === 'security') return ['#fee2e2', '#dc2626', 'fas fa-times-circle'];
         return ['#e0f2fe', '#0369a1', 'fas fa-bell'];
     }
 
@@ -168,19 +170,32 @@
         if (!item) return;
         const existing = document.getElementById('redasLiveNotifToast');
         if (existing) existing.remove();
+        const tag = String(item.tag || 'workflow').toLowerCase();
+        const isRejected = tag === 'rejected';
+        const isReview = tag === 'review' || tag === 'consolidated';
+        const borderCol = isRejected ? '#dc2626' : (isReview ? '#d97706' : '#006838');
+        const outerBorder = isRejected ? '#fecaca' : (isReview ? '#fde68a' : '#bbf7d0');
+        const iconBg = isRejected ? '#fee2e2' : (isReview ? '#fef3c7' : '#dcfce7');
+        const iconFg = isRejected ? '#dc2626' : (isReview ? '#b45309' : '#15803d');
+        const iconCls = isRejected ? 'fas fa-times-circle' : (isReview ? 'fas fa-file-signature' : 'fas fa-check-circle');
+        const actionLabel = isReview ? 'Review &amp; Act now' : (isRejected ? 'View Rejection Reason' : 'View Updated Status');
+
         const toast = document.createElement('div');
         toast.id = 'redasLiveNotifToast';
-        toast.style.cssText = 'position:fixed;top:18px;right:18px;z-index:9999;width:340px;max-width:calc(100vw - 32px);background:#fff;border:1px solid #bbf7d0;border-left:4px solid #006838;border-radius:12px;box-shadow:0 14px 36px rgba(15,23,42,.18);padding:12px 14px;display:flex;align-items:flex-start;gap:10px;';
+        toast.style.cssText = 'position:fixed;top:18px;right:18px;z-index:9999;width:360px;max-width:calc(100vw - 32px);background:#fff;border:1px solid ' + outerBorder + ';border-left:4px solid ' + borderCol + ';border-radius:12px;box-shadow:0 14px 36px rgba(15,23,42,.20);padding:13px 15px;display:flex;align-items:flex-start;gap:11px;';
         const href = esc(item.action_url || allUrl);
-        toast.innerHTML = '<div style="width:32px;height:32px;border-radius:8px;background:#dcfce7;color:#15803d;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-bell"></i></div>'
+        toast.innerHTML = '<div style="width:34px;height:34px;border-radius:8px;background:' + iconBg + ';color:' + iconFg + ';display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="' + iconCls + '"></i></div>'
             + '<div style="flex:1;min-width:0;">'
             + '<div style="font-size:.82rem;font-weight:700;color:#0f172a;">' + esc(item.title) + '</div>'
             + '<div style="font-size:.74rem;color:#475569;margin-top:2px;line-height:1.35;">' + esc(item.description) + '</div>'
-            + '<a href="' + href + '" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:.75rem;font-weight:700;color:#006838;text-decoration:none;">Review now <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>'
+            + '<div style="display:flex;align-items:center;gap:12px;margin-top:7px;">'
+            + '<a href="' + href + '" style="display:inline-flex;align-items:center;gap:4px;font-size:.75rem;font-weight:700;color:' + iconFg + ';text-decoration:none;">' + actionLabel + ' <i class="fas fa-arrow-right" style="font-size:.65rem;"></i></a>'
+            + '<button type="button" onclick="window.location.reload()" style="background:none;border:none;padding:0;font-size:.73rem;font-weight:600;color:#64748b;cursor:pointer;text-decoration:underline;">Refresh page</button>'
+            + '</div>'
             + '</div>'
             + '<button type="button" aria-label="Close" style="background:none;border:none;color:#94a3b8;font-size:1rem;cursor:pointer;line-height:1;" onclick="this.parentElement.remove()">&times;</button>';
         document.body.appendChild(toast);
-        setTimeout(function () { toast.remove(); }, 8000);
+        setTimeout(function () { toast.remove(); }, 12000);
     }
 
     function syncNotifications(announceNew) {
@@ -244,8 +259,8 @@
         }
     });
 
-    /* Poll every 12s while tab is active so next reviewers get near-instant in-app notifications */
-    setInterval(function () { syncNotifications(true); }, 12000);
+    /* Poll every 5s while tab is active so reviewers & submitters get real-time in-app notifications */
+    setInterval(function () { syncNotifications(true); }, 5000);
 })();
 </script>
 @endonce
