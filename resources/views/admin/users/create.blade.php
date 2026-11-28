@@ -135,13 +135,6 @@
         </a>
     </div>
 
-    <div class="iam-notice">
-        <i class="fas fa-shield-halved" style="margin-top:2px;flex-shrink:0;"></i>
-        <div>
-            <strong>Zero-Trust Onboarding Enforced:</strong> The officer's <strong>Service No</strong> is their login username. A verification link is sent to their official email, and on first sign-in they must enroll in <strong>Google Authenticator</strong> and <strong>change their initial password</strong>.
-        </div>
-    </div>
-
     @if($errors->any())
         <div class="alert alert-danger" style="margin-bottom:16px;border-radius:12px;">
             <strong style="display:block;margin-bottom:4px;"><i class="fas fa-exclamation-triangle me-1"></i> Please correct the following:</strong>
