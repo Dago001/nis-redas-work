@@ -37,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'mfa.pending' => \App\Http\Middleware\RequireMfaPending::class,
         ]);
 
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckMaintenanceMode::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\RequirePasswordChange::class);
 
         // Defense-in-depth global middleware:

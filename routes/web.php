@@ -345,6 +345,10 @@ Route::middleware([Authenticate::class, 'access:category=hq_admin|super_admin,lo
 
     Route::get('/admin/settings', [AdminSettingController::class, 'index'])->name('admin.settings.index');
     Route::put('/admin/settings', [AdminSettingController::class, 'update'])->name('admin.settings.update');
+    Route::post('/admin/settings/backup', [AdminSettingController::class, 'createBackup'])->name('admin.settings.backup.create');
+    Route::get('/admin/settings/backup/{filename}/download', [AdminSettingController::class, 'downloadBackup'])->name('admin.settings.backup.download');
+    Route::delete('/admin/settings/backup/{filename}', [AdminSettingController::class, 'deleteBackup'])->name('admin.settings.backup.delete');
+    Route::post('/admin/settings/clear-cache', [AdminSettingController::class, 'clearCache'])->name('admin.settings.clear-cache');
 
     Route::get('/admin/audit-log', [AdminAuditLogController::class, 'index'])->name('admin.audit-log.index');
 
