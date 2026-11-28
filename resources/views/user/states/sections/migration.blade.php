@@ -959,16 +959,26 @@
 
             const data = {};
             new FormData(form).forEach((value, key) => {
+                if (typeof File !== 'undefined' && value instanceof File) return;
                 data[key] = value;
             });
+            data.__saved_at = new Date().toISOString();
 
             const draftKey = 'redas_migration_draft_' + (document.querySelector('[name="report_period"]')?.value || 'default');
-            localStorage.setItem(draftKey, JSON.stringify(data));
-            if (window.REDAS && typeof window.REDAS.showToast === 'function') {
-                window.REDAS.showToast('Draft saved successfully.', 'success');
-            } else {
-                alert('Draft saved successfully.');
-            }
+            try { localStorage.setItem(draftKey, JSON.stringify(data)); } catch (e) {}
+            const fileSave = (window.RedasDraftFiles && typeof window.RedasDraftFiles.save === 'function')
+                ? window.RedasDraftFiles.save(draftKey, form)
+                : Promise.resolve(0);
+            fileSave.then(fileCount => {
+                const msg = fileCount > 0
+                    ? `Draft saved successfully (including ${fileCount} attached document${fileCount === 1 ? '' : 's'}).`
+                    : 'Draft saved successfully.';
+                if (window.REDAS && typeof window.REDAS.showToast === 'function') {
+                    window.REDAS.showToast(msg, 'success');
+                } else {
+                    alert(msg);
+                }
+            });
         }
 
         contents.forEach(content => {

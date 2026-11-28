@@ -287,6 +287,9 @@
         tr.querySelector('.draft-discard-btn').addEventListener('click', function () {
             if (!window.confirm('Discard this saved draft? This cannot be undone.')) return;
             try { localStorage.removeItem(draft.key); } catch (e) {}
+            if (window.RedasDraftFiles && typeof window.RedasDraftFiles.clear === 'function') {
+                window.RedasDraftFiles.clear(draft.key);
+            }
             tr.remove();
         });
 

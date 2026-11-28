@@ -271,8 +271,14 @@
                 const form = document.getElementById('returnForm');
                 if (!form) return;
                 const data = {};
-                new FormData(form).forEach((v, k) => { data[k] = v; });
+                new FormData(form).forEach((v, k) => {
+                    if (typeof File !== 'undefined' && v instanceof File) return;
+                    data[k] = v;
+                });
                 try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) { }
+                if (window.RedasDraftFiles && typeof window.RedasDraftFiles.save === 'function') {
+                    window.RedasDraftFiles.save(DRAFT_KEY, form);
+                }
                 if (ind) ind.className = 'autosave-indicator saved';
                 if (text) text.textContent = 'Draft saved at ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
             }, 1500);
@@ -294,8 +300,27 @@
 
         /* ── Save Draft button ── */
         document.getElementById('saveDraftBtn')?.addEventListener('click', () => {
-            triggerAutoSave();
-            if (window.REDAS) window.REDAS.showToast('Draft saved successfully.', 'success');
+            const form = document.getElementById('returnForm');
+            if (form) {
+                const data = {};
+                new FormData(form).forEach((v, k) => {
+                    if (typeof File !== 'undefined' && v instanceof File) return;
+                    data[k] = v;
+                });
+                try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
+                const fileSave = (window.RedasDraftFiles && typeof window.RedasDraftFiles.save === 'function')
+                    ? window.RedasDraftFiles.save(DRAFT_KEY, form)
+                    : Promise.resolve(0);
+                fileSave.then(fileCount => {
+                    const msg = fileCount > 0
+                        ? `Draft saved successfully (including ${fileCount} attached document${fileCount === 1 ? '' : 's'}).`
+                        : 'Draft saved successfully.';
+                    if (window.REDAS) window.REDAS.showToast(msg, 'success');
+                });
+            } else {
+                triggerAutoSave();
+                if (window.REDAS) window.REDAS.showToast('Draft saved successfully.', 'success');
+            }
         });
 
         /* ── Clear form ── */
@@ -303,6 +328,9 @@
             if (!confirm('Clear all form data? This cannot be undone.')) return;
             document.getElementById('returnForm')?.reset();
             localStorage.removeItem(DRAFT_KEY);
+            if (window.RedasDraftFiles && typeof window.RedasDraftFiles.clear === 'function') {
+                window.RedasDraftFiles.clear(DRAFT_KEY);
+            }
             if (window.REDAS) window.REDAS.showToast('Form cleared.', 'info');
         });
 
@@ -471,6 +499,10 @@
                 if (text) text.textContent = 'Draft restored';
                 updateWorkflow();
                 checkTabFill();
+                const legacyForm = document.getElementById('returnForm');
+                if (legacyForm && window.RedasDraftFiles && typeof window.RedasDraftFiles.restore === 'function') {
+                    window.RedasDraftFiles.restore(DRAFT_KEY, legacyForm);
+                }
             }
         } catch (e) { }
 
@@ -1349,6 +1381,7 @@
 
 
 </script>
+@include('partials.draft-files-script')
 </body>
 
 </html>

@@ -328,6 +328,9 @@
     tr.querySelector('.draft-discard-btn').addEventListener('click', function () {
         if (!window.confirm('Discard this saved draft? This cannot be undone.')) return;
         try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+        if (window.RedasDraftFiles && typeof window.RedasDraftFiles.clear === 'function') {
+            window.RedasDraftFiles.clear(DRAFT_KEY);
+        }
         tr.remove();
         var emptyTr = emptyRow ? emptyRow.closest('tr') : null;
         var remaining = Array.from(tbody.querySelectorAll('tr')).filter(function (r) { return r !== emptyTr; });
