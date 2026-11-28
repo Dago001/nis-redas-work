@@ -416,31 +416,33 @@
         </div>
         <div class="card-body no-pad">
             <div class="table-responsive">
-                <table class="redas-table" style="min-width:680px;">
+                <table class="nis-table" style="width:100%;min-width:720px;border-collapse:collapse;">
                     <thead>
-                        <tr>
-                            <th>Return</th>
-                            <th>Officer</th>
-                            <th>Category</th>
-                            <th>Period</th>
-                            <th>Approved</th>
-                            <th></th>
+                        <tr style="background:#f8fafc;">
+                            <th style="width:120px;text-align:left;padding:11px 16px;">Return</th>
+                            <th style="width:130px;text-align:left;padding:11px 16px;">Formation</th>
+                            <th style="text-align:left;padding:11px 16px;">Officer</th>
+                            <th style="width:120px;text-align:left;padding:11px 16px;">Category</th>
+                            <th style="width:120px;text-align:left;padding:11px 16px;">Period</th>
+                            <th style="width:140px;text-align:left;padding:11px 16px;">Approved</th>
+                            <th style="width:100px;text-align:right;padding:11px 16px;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($latestApproved as $return)
                             <tr>
-                                <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $return->user->name ?? '-' }}</td>
-                                <td>{{ $return->displayCategory() }}</td>
-                                <td>{{ $return->report_period ?? ($return->return_data['report_period'] ?? ($return->return_data['period'] ?? '-')) }}</td>
-                                <td>{{ optional($return->updated_at)->format('d M Y') }}</td>
-                                <td style="text-align:right;">
+                                <td style="text-align:left;padding:11px 16px;font-weight:700;color:#0f172a;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
+                                <td style="text-align:left;padding:11px 16px;font-weight:600;text-transform:uppercase;">{{ strtoupper((string) ($return->return_data['command_name'] ?? $return->scope_code ?? '-')) }}</td>
+                                <td style="text-align:left;padding:11px 16px;">{{ $return->user->name ?? '-' }}</td>
+                                <td style="text-align:left;padding:11px 16px;">{{ $return->displayCategory() }}</td>
+                                <td style="text-align:left;padding:11px 16px;">{{ $return->report_period ?? ($return->return_data['report_period'] ?? ($return->return_data['period'] ?? '-')) }}</td>
+                                <td style="text-align:left;padding:11px 16px;white-space:nowrap;">{{ optional($return->updated_at)->format('d M Y') }}</td>
+                                <td style="text-align:right;padding:11px 16px;">
                                     <a href="{{ route('superadmin.returns.show', $return) }}" class="btn-nis btn-ghost" style="padding:6px 12px;font-size:.75rem;">View</a>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6" style="text-align:center;color:var(--gray-400);padding:24px;">No approved returns yet.</td></tr>
+                            <tr><td colspan="7" style="text-align:center;color:var(--gray-400);padding:24px;">No approved returns yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

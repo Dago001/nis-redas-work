@@ -65,18 +65,30 @@ class SuperAdminController extends Controller
             ],
         ];
 
-        $categoryCounts = Application::query()
-            ->selectRaw('category, count(*) as aggregate')
-            ->groupBy('category')
-            ->pluck('aggregate', 'category');
+        $allAppsForSplit = Application::query()
+            ->with('user:id,user_category')
+            ->get(['id', 'category', 'scope_code', 'user_id']);
+
+        $splitBuckets = [
+            'State' => 0,
+            'Zone' => 0,
+            'Directorate' => 0,
+            'CGIS Unit' => 0,
+        ];
+        foreach ($allAppsForSplit as $splitApp) {
+            $bucket = $splitApp->displayCategory();
+            if (isset($splitBuckets[$bucket])) {
+                $splitBuckets[$bucket]++;
+            }
+        }
 
         $categoryChart = [
             'labels' => ['State Commands', 'Zonal Commands', 'Directorates', 'CGIS Units'],
             'data' => [
-                (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_STATE] ?? 0),
-                (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_ZONE] ?? 0),
-                (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_DIRECTORATE] ?? 0),
-                (int) ($categoryCounts[SubmissionWorkflow::CATEGORY_CGIS] ?? 0),
+                $splitBuckets['State'],
+                $splitBuckets['Zone'],
+                $splitBuckets['Directorate'],
+                $splitBuckets['CGIS Unit'],
             ],
         ];
 
@@ -115,6 +127,7 @@ class SuperAdminController extends Controller
             ->where('category', SubmissionWorkflow::CATEGORY_STATE)
             ->whereNotNull('scope_code')
             ->where('scope_code', '!=', '')
+            ->where('scope_code', 'not like', 'ZONE-%')
             ->groupBy('scope_code')
             ->orderByDesc('aggregate')
             ->limit(10)
