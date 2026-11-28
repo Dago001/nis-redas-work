@@ -208,16 +208,16 @@
         </div>
         <div class="card-body no-pad">
             <div class="table-responsive">
-                <table class="nis-table" style="width:100%;border-collapse:collapse;min-width:820px;">
+                <table class="nis-table" style="width:100%;border-collapse:collapse;min-width:920px;">
                     <thead>
                         <tr style="background:#f8fafc;">
-                            <th style="width:76px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">ID</th>
-                            <th style="width:155px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Command / Scope</th>
-                            <th style="width:165px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Officer</th>
-                            <th style="width:125px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Report Period</th>
-                            <th style="width:170px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Status</th>
-                            <th style="width:135px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Approved</th>
-                            <th style="text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
+                            <th style="width:64px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">ID</th>
+                            <th style="width:145px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Command / Scope</th>
+                            <th style="width:155px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Officer</th>
+                            <th style="width:120px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Report Period</th>
+                            <th style="width:125px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Status</th>
+                            <th style="width:140px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Approved</th>
+                            <th style="width:235px;text-align:right;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -255,15 +255,15 @@
                                     </span>
                                 </td>
                                 <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;white-space:nowrap;">{{ optional($submission->updated_at)->format('d M Y, H:i') }}</td>
-                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;">
-                                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                                        <a href="{{ route('desk.admin.submissions.show', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;">
+                                <td style="padding:10px 12px;border-bottom:1px solid #f1f5f9;text-align:right;white-space:nowrap;">
+                                    <div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:nowrap;">
+                                        <a href="{{ route('desk.admin.submissions.show', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:5px 10px;font-size:.75rem;white-space:nowrap;">
                                             <i class="fas fa-eye"></i> View
                                         </a>
-                                        <a href="{{ route('user.submissions.pdf', $submission) }}" class="btn-nis btn-sm btn-outline-nis" style="padding:6px 12px;">
+                                        <a href="{{ route('user.submissions.pdf', $submission) }}" class="btn-nis btn-sm btn-outline-nis" style="padding:5px 10px;font-size:.75rem;white-space:nowrap;">
                                             <i class="fas fa-file-pdf"></i> PDF
                                         </a>
-                                        <a href="{{ route('desk.admin.submissions.download', $submission) }}" class="btn-nis btn-sm btn-outline-nis" style="padding:6px 12px;">
+                                        <a href="{{ route('desk.admin.submissions.download', $submission) }}" class="btn-nis btn-sm btn-outline-nis" style="padding:5px 10px;font-size:.75rem;white-space:nowrap;">
                                             <i class="fas fa-download"></i> Download
                                         </a>
                                     </div>
