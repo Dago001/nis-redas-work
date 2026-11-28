@@ -6,9 +6,10 @@
     $isHqAdmin = $navUser && ! $isSuperAdmin && (in_array($navCat, ['hq_admin', 'admin'], true) || ($navCat === null && in_array($navRole, ['hq_admin', 'admin'], true)));
     $isReviewer = in_array($navCat, ['desk_admin', 'zonal_commander', 'directorate_admin', 'cgis_desk_admin'], true);
     $isZonalAdmin = $navCat === 'zonal_commander';
+    $isPrsAdmin = $navCat === 'directorate_admin' && $navUser?->directorateSlug() === 'prs';
     $homeRoute = $navUser ? $navUser->dashboardUrl() : route('user.dashboard');
 
-    $brandSub = match ($navCat) {
+    $brandSub = $isPrsAdmin ? 'PRS Directorate Portal' : match ($navCat) {
         'zonal_commander' => 'Zonal Admin Portal',
         'zonal_officer' => 'Zonal Officer Portal',
         'directorate_admin' => 'Directorate Admin Portal',
@@ -19,7 +20,7 @@
         default => $navRole === 'directorate' ? 'Directorate Portal' : 'State Officer Portal',
     };
 
-    $reviewerMenuLabel = match ($navCat) {
+    $reviewerMenuLabel = $isPrsAdmin ? 'PRS Directorate Menu' : match ($navCat) {
         'zonal_commander' => 'Zonal Admin Menu',
         'directorate_admin' => 'Directorate Admin Menu',
         'cgis_desk_admin' => 'CGIS Desk Menu',
@@ -48,6 +49,36 @@
                 <span class="link-icon"><i class="fas fa-th-large"></i></span>
                 <span class="link-text">Review Dashboard</span>
             </a>
+            @if($isPrsAdmin)
+            <a href="{{ route('consolidated.index') }}" class="sidebar-link {{ request()->routeIs('consolidated.*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-layer-group"></i></span>
+                <span class="link-text">Consolidated Reports</span>
+            </a>
+
+            <div class="sidebar-section-label">National Collation (PRS)</div>
+            @can('viewPrsDashboard')
+            <a href="{{ route('prs.dashboard') }}" class="sidebar-link {{ request()->routeIs('prs.dashboard', 'prs.originals.*', 'prs.consolidated.*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-chart-pie"></i></span>
+                <span class="link-text">PRS Central Dashboard</span>
+            </a>
+            <a href="{{ route('prs.indicators') }}" class="sidebar-link {{ request()->routeIs('prs.indicators') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-sliders-h"></i></span>
+                <span class="link-text">Indicators Catalog</span>
+            </a>
+            @endcan
+            <a href="{{ route('user.reports') }}" class="sidebar-link {{ request()->routeIs('user.reports*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-file-export"></i></span>
+                <span class="link-text">National Report Builder</span>
+            </a>
+            <a href="{{ route('user.archive') }}" class="sidebar-link {{ request()->routeIs('user.archive*') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-archive"></i></span>
+                <span class="link-text">Archived Documents</span>
+            </a>
+            <a href="{{ route('user.notifications') }}" class="sidebar-link {{ request()->is('user/notifications') ? 'active' : '' }}">
+                <span class="link-icon"><i class="fas fa-bell"></i></span>
+                <span class="link-text">Notifications</span>
+            </a>
+            @else
             @if(in_array($navCat, ['zonal_commander', 'directorate_admin'], true))
             <a href="{{ route('consolidated.index') }}" class="sidebar-link {{ request()->routeIs('consolidated.*') ? 'active' : '' }}">
                 <span class="link-icon"><i class="fas fa-layer-group"></i></span>
@@ -72,6 +103,7 @@
                 <span class="link-icon"><i class="fas fa-bell"></i></span>
                 <span class="link-text">Notifications</span>
             </a>
+            @endif
         @elseif($navCat === 'directorate_user')
             <div class="sidebar-section-label">Directorate Menu</div>
             <a href="{{ route('user.directorates.dashboard') }}" class="sidebar-link {{ request()->routeIs('user.directorates.dashboard') ? 'active' : '' }}">

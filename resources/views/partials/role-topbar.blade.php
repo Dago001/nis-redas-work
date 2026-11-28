@@ -4,9 +4,10 @@
     $topRole = $topUser?->role;
     $isSuperAdmin = $topUser && ($topCat === 'super_admin' || ($topCat === null && $topRole === 'super_admin'));
     $isHqAdmin = $topUser && ! $isSuperAdmin && (in_array($topCat, ['hq_admin', 'admin'], true) || ($topCat === null && in_array($topRole, ['hq_admin', 'admin'], true)));
+    $isPrsAdmin = $topCat === 'directorate_admin' && $topUser?->directorateSlug() === 'prs';
     $homeRoute = $topUser ? $topUser->dashboardUrl() : route('user.dashboard');
 
-    $breadcrumbLabel = match ($topCat) {
+    $breadcrumbLabel = $isPrsAdmin ? 'PRS Directorate Portal' : match ($topCat) {
         'zonal_commander' => 'Zonal Admin Portal',
         'zonal_officer' => 'Zonal Officer Portal',
         'directorate_admin' => 'Directorate Admin Portal',
@@ -17,7 +18,7 @@
         default => $topRole === 'directorate' ? 'Directorate Portal' : 'State Officer Portal',
     };
 
-    $roleSubLabel = match ($topCat) {
+    $roleSubLabel = $isPrsAdmin ? 'PRS Directorate Admin' : match ($topCat) {
         'zonal_commander' => 'Zonal Admin',
         'zonal_officer' => 'Zonal Officer',
         'directorate_admin' => 'Directorate Admin',
