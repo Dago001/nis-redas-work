@@ -42,11 +42,18 @@ class AdminAuditLogController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('ip_address', 'like', "%{$search}%")
-                    ->orWhere('location', 'like', "%{$search}%")
-                    ->orWhere('action', 'like', "%{$search}%")
-                    ->orWhereRaw("JSON_EXTRACT(details, '$') LIKE ?", ["%{$search}%"]);
+            $driver = \Illuminate\Support\Facades\DB::getDriverName();
+            $query->where(function ($q) use ($search, $driver) {
+                $likeOp = $driver === 'pgsql' ? 'ilike' : 'like';
+                $q->where('ip_address', $likeOp, "%{$search}%")
+                    ->orWhere('location', $likeOp, "%{$search}%")
+                    ->orWhere('action', $likeOp, "%{$search}%");
+
+                if ($driver === 'pgsql') {
+                    $q->orWhereRaw('CAST(details AS TEXT) ILIKE ?', ["%{$search}%"]);
+                } else {
+                    $q->orWhereRaw("JSON_EXTRACT(details, '$') LIKE ?", ["%{$search}%"]);
+                }
             });
         }
 
