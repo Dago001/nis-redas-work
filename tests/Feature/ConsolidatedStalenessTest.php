@@ -65,7 +65,10 @@ class ConsolidatedStalenessTest extends TestCase
         $report->refresh();
         $this->assertSame(1, $report->approved_revision_no);
 
-        // Officer updates pending submission -> creates v2 -> flags consolidated report stale
+        // Simulate source return being unlocked/returned for correction -> officer updates -> creates v2 -> flags consolidated report stale
+        $app->refresh();
+        $app->forceFill(['status' => 'returned', 'workflow_stage' => 'desk_review'])->save();
+
         $this->actingAs($officer)->put(route('user.returns.update', $app), [
             'command_name' => 'Lagos',
             'period' => '2026-11',

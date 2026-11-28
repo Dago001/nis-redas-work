@@ -159,10 +159,23 @@ class AuditLogTest extends TestCase
         ]);
 
         $this->actingAs($user)->put('/admin/settings', [
+            'maintenance_mode' => false,
+            'maintenance_message' => 'Scheduled maintenance in progress.',
+            'system_banner_enabled' => false,
+            'system_banner_message' => '',
+            'system_banner_level' => 'info',
+            'submissions_open' => true,
+            'submission_deadline_day' => 28,
+            'allow_return_resubmission' => true,
+            'mfa_required' => true,
+            'session_timeout_minutes' => 120,
+            'max_login_attempts' => 5,
+            'force_password_change_on_create' => true,
             'abac_enabled' => false,
             'abac_location_enforcement' => true,
             'abac_hq_bypass' => false,
             'abac_allowed_countries' => 'Nigeria',
+            'default_geofence_radius_km' => 15,
             'geolocation_provider' => 'ip-api',
             'geolocation_cache_ttl' => 1440,
             'geolocation_fallback_state' => 'FC',

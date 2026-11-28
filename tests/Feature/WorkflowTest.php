@@ -323,7 +323,7 @@ class WorkflowTest extends TestCase
 
         $this->assertDatabaseHas('user_notifications', [
             'user_id' => $user->id,
-            'title' => 'Return returned for correction',
+            'title' => 'Return Rejected at Directorate Review (RET-' . str_pad((string) $application->id, 5, '0', STR_PAD_LEFT) . ')',
         ]);
     }
 }

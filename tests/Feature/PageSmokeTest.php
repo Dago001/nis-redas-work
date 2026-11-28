@@ -111,7 +111,7 @@ class PageSmokeTest extends TestCase
                 "Super Admin sidebar route [{$routeName}] returned {$response->getStatusCode()} instead of 200."
             );
             $response->assertSee('Super Admin Console');
-            $response->assertSee('saNotifDot');
+            $response->assertSee('notifBtn');
             $response->assertDontSee('ICT Admin');
         }
 
@@ -120,6 +120,7 @@ class PageSmokeTest extends TestCase
             'name' => 'CIS New Officer',
             'email' => 'new.officer@nis.gov.ng',
             'service_number' => '44556',
+            'phone' => '08031234567',
             'role' => 'officer',
             'user_category' => 'state_user',
             'primary_location_type' => 'state',

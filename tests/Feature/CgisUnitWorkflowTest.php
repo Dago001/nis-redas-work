@@ -264,6 +264,7 @@ class CgisUnitWorkflowTest extends TestCase
         $this->actingAs($admin)->post(route('admin.users.store'), [
             'name' => 'EPMS Unit Officer',
             'service_number' => '0101',
+            'phone' => '08031234567',
             'role' => 'unit_officer',
             'user_category' => 'cgis_unit_user',
             'primary_location_type' => 'unit',
@@ -292,6 +293,7 @@ class CgisUnitWorkflowTest extends TestCase
         $this->actingAs($admin)->post(route('admin.users.store'), [
             'name' => 'Bad Combo',
             'service_number' => '0102',
+            'phone' => '08031234568',
             'role' => 'officer',
             'user_category' => 'cgis_unit_user',
             'primary_location_type' => 'headquarters',

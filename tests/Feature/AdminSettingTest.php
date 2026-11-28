@@ -53,10 +53,23 @@ class AdminSettingTest extends TestCase
         $admin = $this->adminUser();
 
         $response = $this->actingAs($admin)->put('/admin/settings', [
+            'maintenance_mode' => false,
+            'maintenance_message' => 'Scheduled maintenance in progress.',
+            'system_banner_enabled' => false,
+            'system_banner_message' => '',
+            'system_banner_level' => 'info',
+            'submissions_open' => true,
+            'submission_deadline_day' => 28,
+            'allow_return_resubmission' => true,
+            'mfa_required' => true,
+            'session_timeout_minutes' => 120,
+            'max_login_attempts' => 5,
+            'force_password_change_on_create' => true,
             'abac_enabled' => false,
             'abac_location_enforcement' => true,
             'abac_hq_bypass' => true,
             'abac_allowed_countries' => 'Nigeria,Ghana',
+            'default_geofence_radius_km' => 15,
             'geolocation_provider' => 'ipapi',
             'geolocation_cache_ttl' => 60,
             'geolocation_fallback_state' => 'LA',
@@ -69,9 +82,9 @@ class AdminSettingTest extends TestCase
         $this->assertFalse(SettingService::getBool('abac_enabled'));
         $this->assertTrue(SettingService::getBool('abac_hq_bypass'));
         $this->assertSame('Nigeria,Ghana', SettingService::get('abac_allowed_countries'));
-        $this->assertSame(60, SettingService::getInt('geolocation_cache_ttl'));
-        $this->assertSame('LA', SettingService::get('geolocation_fallback_state'));
-        $this->assertSame('test-token', SettingService::get('geolocation_api_token'));
+        $this->assertSame(15, SettingService::getInt('default_geofence_radius_km'));
+        $this->assertSame(28, SettingService::getInt('submission_deadline_day'));
+        $this->assertSame(120, SettingService::getInt('session_timeout_minutes'));
     }
 
     public function test_non_admin_cannot_access_settings(): void

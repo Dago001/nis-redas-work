@@ -64,6 +64,7 @@ class ZonalOfficerToZonalAdminWorkflowTest extends TestCase
                 'rank' => 'CSI',
                 'service_number' => '81001',
                 'email' => 'zonal.officer.a@immigration.gov.ng',
+                'phone' => '08031234567',
                 'user_category' => 'zonal_officer',
                 'assigned_zonal_command_code' => 'ZONE-A',
                 'password' => 'Secure@12',

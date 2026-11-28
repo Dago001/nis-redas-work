@@ -59,6 +59,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '41234',
             'rank' => 'CIS',
             'email' => 'ibrahim.musa@immigration.gov.ng',
+            'phone' => '08031234561',
             'user_category' => 'directorate_admin',
             'assigned_directorate_code' => 'prs',
             'is_enabled' => '1',
@@ -91,6 +92,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '5123',
             'rank' => 'CSI',
             'email' => 'chinedu.okafor@immigration.gov.ng',
+            'phone' => '08031234562',
             'user_category' => 'desk_admin',
             'assigned_state_code' => 'LA',
             'is_enabled' => '1',
@@ -115,6 +117,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '99881',
             'rank' => 'DCG',
             'email' => 'escalate@immigration.gov.ng',
+            'phone' => '08031234563',
             'user_category' => 'super_admin',
             'password' => 'Secure@12',
             'password_confirmation' => 'Secure@12',
@@ -127,6 +130,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '99882',
             'rank' => 'CGIS',
             'email' => 'amina.bello@immigration.gov.ng',
+            'phone' => '08031234564',
             'user_category' => 'super_admin',
             'password' => 'Secure@12',
             'password_confirmation' => 'Secure@12',
@@ -150,7 +154,7 @@ class UserProvisioningTest extends TestCase
 
         // Uniform Super Admin layout + live notification bell
         $response->assertSee('Super Admin Console');
-        $response->assertSee('saNotifDot');
+        $response->assertSee('notifBtn');
 
         // Officer Identity fields
         $response->assertSee('Surname');
@@ -211,6 +215,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '63001',
             'rank' => 'SI',
             'email' => 'musa.nogeo@immigration.gov.ng',
+            'phone' => '08031234565',
             'user_category' => 'state_user',
             'assigned_state_code' => 'LASC',
             'geolocation_enabled' => '0',
@@ -229,6 +234,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '63002',
             'rank' => 'SI',
             'email' => 'ngozi.geo@immigration.gov.ng',
+            'phone' => '08031234566',
             'user_category' => 'state_user',
             'assigned_state_code' => 'LASC',
             'geolocation_enabled' => '1',
@@ -247,6 +253,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '63002',
             'rank' => 'SI',
             'email' => 'ngozi.geo@immigration.gov.ng',
+            'phone' => '08031234566',
             'user_category' => 'state_user',
             'assigned_state_code' => 'LASC',
             'geolocation_enabled' => '0',
@@ -268,6 +275,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '61111',
             'rank' => 'SI',
             'email' => 'tunde.mmia@immigration.gov.ng',
+            'phone' => '08031234567',
             'user_category' => 'state_user',
             'assigned_state_code' => 'MMIA',
             'password' => 'Secure@12',
@@ -285,6 +293,7 @@ class UserProvisioningTest extends TestCase
             'service_number' => '61112',
             'rank' => 'DSI',
             'email' => 'hauwa.hrm@immigration.gov.ng',
+            'phone' => '08031234568',
             'user_category' => 'directorate_user',
             'assigned_directorate_code' => 'hrm',
             'assigned_section_code' => 'RECRUITMENT',
@@ -311,6 +320,7 @@ class UserProvisioningTest extends TestCase
                 'service_number' => $sn,
                 'rank' => 'CSI',
                 'email' => strtolower($cmd).'@immigration.gov.ng',
+                'phone' => '08031234569',
                 'user_category' => 'desk_admin',
                 'assigned_state_code' => $cmd,
                 'password' => 'Secure@12',

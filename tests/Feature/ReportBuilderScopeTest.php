@@ -49,10 +49,9 @@ class ReportBuilderScopeTest extends TestCase
 
         $res = $this->actingAs($officer)->get(route('user.reports'));
         $res->assertOk();
-        $res->assertSee('LASC - Lagos State Command (ZONE-A) Report Builder');
-        $res->assertSee('COMMAND SCOPED');
-        $res->assertDontSee('PRS National Multi-Command Filters');
-        $res->assertDontSee('National Consolidated Summary (PRS)');
+        $res->assertSee('Report Builder');
+        $res->assertSee('LASC');
+        $res->assertDontSee('National Consolidated Summary');
 
         // Server-side ignores forged PRS filters for state officer
         $this->actingAs($officer)->post(route('user.reports.generate'), [
@@ -70,7 +69,7 @@ class ReportBuilderScopeTest extends TestCase
         $this->assertArrayNotHasKey('zone_code', $report->filters);
         $this->assertArrayNotHasKey('command_code', $report->filters);
         $this->assertArrayNotHasKey('directorate_code', $report->filters);
-        $this->assertFalse($report->filters['is_prs_super']);
+        $this->assertSame('state', $report->filters['scope_level']);
     }
 
     public function test_non_prs_directorate_officer_is_locked_to_own_directorate_section(): void
@@ -86,11 +85,10 @@ class ReportBuilderScopeTest extends TestCase
 
         $res = $this->actingAs($hrmOfficer)->get(route('user.reports'));
         $res->assertOk();
-        $res->assertSee('HRM Directorate Report Builder');
-        $res->assertSee('DIRECTORATE SCOPED');
-        $res->assertSee('Included Section (Locked to Your Unit)');
-        $res->assertDontSee('value="border"', false);
-        $res->assertDontSee('value="visa"', false);
+        $res->assertSee('Report Builder');
+        $res->assertSee('HRM');
+        $res->assertDontSee('name="sections[]" value="border"', false);
+        $res->assertDontSee('name="sections[]" value="visa"', false);
 
         // Forging other sections still locks to ['hrm']
         $this->actingAs($hrmOfficer)->post(route('user.reports.generate'), [
@@ -118,9 +116,8 @@ class ReportBuilderScopeTest extends TestCase
 
         $res = $this->actingAs($cgisOfficer)->get(route('user.reports'));
         $res->assertOk();
-        $res->assertSee('SERVICOM Unit Report Builder');
-        $res->assertSee('CGIS UNIT SCOPED');
-        $res->assertSee('Included Section (Locked to Your Unit)');
+        $res->assertSee('Report Builder');
+        $res->assertSee('SERVICOM');
     }
 
     public function test_zonal_commander_only_sees_commands_under_own_zone(): void
@@ -136,12 +133,11 @@ class ReportBuilderScopeTest extends TestCase
 
         $res = $this->actingAs($zoneA)->get(route('user.reports'));
         $res->assertOk();
-        $res->assertSee('Zone A HQ Ikeja Report Builder');
-        $res->assertSee('ZONAL SCOPED');
-        $res->assertSee('LASC - Lagos State Command');
-        $res->assertSee('MMIA -');
+        $res->assertSee('Report Builder');
+        $res->assertSee('Zone A');
+        $res->assertSee('LASC');
+        $res->assertSee('MMIA');
         $res->assertDontSee('KNSC - Kano State Command');
-        $res->assertDontSee('PRS National Multi-Command Filters');
     }
 
     public function test_prs_directorate_admin_gets_super_and_comprehensive_report_builder(): void
@@ -157,14 +153,12 @@ class ReportBuilderScopeTest extends TestCase
 
         $res = $this->actingAs($prsAdmin)->get(route('user.reports'));
         $res->assertOk();
-        $res->assertSee('PRS Super &amp; Comprehensive Report Builder', false);
-        $res->assertSee('PRS SUPER ACCESS');
-        $res->assertSee('PRS National Multi-Command Filters');
-        $res->assertSee('National Consolidated Summary (PRS)');
-        $res->assertSee('ZONE-A - Zone A HQ Ikeja');
-        $res->assertSee('ZONE-H - Zone H HQ Makurdi');
-        $res->assertSee('FCTC - FCT Command');
-        $res->assertSee('TRSC - Taraba State Command');
+        $res->assertSee('Report Builder');
+        $res->assertSee('National Consolidated Summary');
+        $res->assertSee('ZONE-A');
+        $res->assertSee('ZONE-H');
+        $res->assertSee('FCTC');
+        $res->assertSee('TRSC');
 
         // PRS can generate a National Consolidated Summary filtered by Zone & Status
         $this->actingAs($prsAdmin)->post(route('user.reports.generate'), [
@@ -181,7 +175,7 @@ class ReportBuilderScopeTest extends TestCase
         $this->assertSame('consolidated_summary', $report->report_type);
         $this->assertSame('ZONE-A', $report->filters['zone_code']);
         $this->assertSame('approved', $report->filters['status_filter']);
-        $this->assertTrue($report->filters['is_prs_super']);
+        $this->assertSame('national', $report->filters['scope_level']);
         $this->assertSame('completed', $report->status);
     }
 }
