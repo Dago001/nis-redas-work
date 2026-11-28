@@ -3,9 +3,14 @@ set -e
 
 PORT="${PORT:-10000}"
 
-# Map Render's DATABASE_URL to Laravel 12's DB_URL and enforce SSL for Neon PostgreSQL
+# Map Render's DATABASE_URL to Laravel 12's DB_URL, switch Neon pooler to direct
+# endpoint (prevents PgBouncer "cached plan must not change result type" with PHP PDO),
+# and enforce SSL for Neon PostgreSQL.
 if [ -z "${DB_URL:-}" ] && [ -n "${DATABASE_URL:-}" ]; then
     export DB_URL="${DATABASE_URL}"
+fi
+if [ -n "${DB_URL:-}" ] && echo "${DB_URL}" | grep -q -- "-pooler\."; then
+    export DB_URL="$(echo "${DB_URL}" | sed 's/-pooler\./\./g')"
 fi
 export DB_SSLMODE="${DB_SSLMODE:-require}"
 
