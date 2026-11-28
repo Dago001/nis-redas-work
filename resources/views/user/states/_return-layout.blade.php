@@ -178,6 +178,7 @@
         </div>
     </form>
 
+    @include('partials.draft-files-script')
     <script>
     (function () {
         var form = document.getElementById('stateReturnForm');
@@ -215,12 +216,23 @@
         var DRAFT_KEY = 'redas_state_draft';
         function saveDraft() {
             var data = {};
-            new FormData(form).forEach(function (v, k) { data[k] = v; });
+            new FormData(form).forEach(function (v, k) {
+                if (typeof File !== 'undefined' && v instanceof File) return;
+                data[k] = v;
+            });
             data.__saved_at = new Date().toISOString();
             try { localStorage.setItem(DRAFT_KEY, JSON.stringify(data)); } catch (e) {}
             var status = document.getElementById('stateDraftStatus');
             if (status) status.textContent = 'Draft saved at ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-            alert('Draft saved successfully.');
+            var fileSave = (window.RedasDraftFiles && typeof window.RedasDraftFiles.save === 'function')
+                ? window.RedasDraftFiles.save(DRAFT_KEY, form)
+                : Promise.resolve(0);
+            fileSave.then(function (fileCount) {
+                var msg = fileCount > 0
+                    ? 'Draft saved successfully (including ' + fileCount + ' attached document' + (fileCount === 1 ? '' : 's') + ').'
+                    : 'Draft saved successfully.';
+                alert(msg);
+            });
         }
         var saveBtn = document.getElementById('stateSaveDraftBtn');
         if (saveBtn) saveBtn.addEventListener('click', saveDraft);
@@ -342,9 +354,19 @@
             });
         }
 
-        /* Restore any saved draft, then let section scripts recompute totals. */
+        /* Restore any saved draft (fields + attached files), then let section scripts recompute totals. */
         loadDraft();
         form.dispatchEvent(new Event('input', { bubbles: true }));
+        var restoreStateFiles = function () {
+            if (window.RedasDraftFiles && typeof window.RedasDraftFiles.restore === 'function') {
+                window.RedasDraftFiles.restore(DRAFT_KEY, form);
+            }
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', restoreStateFiles);
+        } else {
+            setTimeout(restoreStateFiles, 0);
+        }
 
         /* Directorate sections nest tabs several levels deep (outer directorate
            tab > inner entry-tab, migration's own data-m-tab panels, or
@@ -432,9 +454,12 @@
 
     @if (session('status'))
     <script>
-        /* The return was submitted successfully: clear the saved draft. */
+        /* The return was submitted successfully: clear the saved draft (fields + files). */
         (function () {
             try { localStorage.removeItem('redas_state_draft'); } catch (e) {}
+            if (window.RedasDraftFiles && typeof window.RedasDraftFiles.clear === 'function') {
+                window.RedasDraftFiles.clear('redas_state_draft');
+            }
         })();
     </script>
     @endif

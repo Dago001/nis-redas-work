@@ -395,22 +395,64 @@
         const attachList = document.getElementById('attachList');
         let attachedFiles = [];
 
+        function syncAttachInput() {
+            if (!attachInput) return;
+            try {
+                const dt = new DataTransfer();
+                attachedFiles.forEach(f => dt.items.add(f));
+                attachInput.files = dt.files;
+            } catch (e) {}
+        }
+
+        function renderAttachList() {
+            if (!attachList) return;
+            attachList.innerHTML = '';
+            attachedFiles.forEach((f, idx) => {
+                const item = document.createElement('div');
+                item.className = 'attach-item';
+                const icon = f.type.includes('pdf') ? 'fas fa-file-pdf' : f.type.includes('image') ? 'fas fa-file-image' : 'fas fa-file-word';
+                const safeName = String(f.name || 'Document')
+                    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                const sizeKb = Math.max(1, Math.round((f.size || 0) / 1024));
+                item.innerHTML = `<i class="${icon}" style="color:var(--nis-600);"></i><span>${safeName}</span><span style="color:var(--gray-400);font-size:.7rem;">(${sizeKb}KB)</span><button type="button" class="remove-attach" data-idx="${idx}" title="Remove file"><i class="fas fa-times"></i></button>`;
+                attachList.appendChild(item);
+            });
+        }
+
+        attachList?.addEventListener('click', e => {
+            const btn = e.target.closest('.remove-attach');
+            if (!btn) return;
+            const idx = Number(btn.dataset.idx);
+            if (!Number.isNaN(idx) && idx >= 0 && idx < attachedFiles.length) {
+                attachedFiles.splice(idx, 1);
+                syncAttachInput();
+                renderAttachList();
+            }
+        });
+
         attachZone?.addEventListener('click', () => attachInput?.click());
         attachZone?.addEventListener('dragover', e => { e.preventDefault(); attachZone.classList.add('dragover'); });
         attachZone?.addEventListener('dragleave', () => attachZone.classList.remove('dragover'));
         attachZone?.addEventListener('drop', e => { e.preventDefault(); attachZone.classList.remove('dragover'); addFiles(e.dataTransfer.files); });
         attachInput?.addEventListener('change', () => addFiles(attachInput.files));
+        attachInput?.addEventListener('redas:files-restored', e => {
+            attachedFiles = Array.from((e.detail && e.detail.files) ? e.detail.files : (attachInput.files || []));
+            syncAttachInput();
+            renderAttachList();
+        });
 
         function addFiles(files) {
-            Array.from(files).forEach(f => {
-                if (f.size > 10 * 1024 * 1024) { alert(`${f.name} exceeds 10MB limit.`); return; }
-                attachedFiles.push(f);
-                const item = document.createElement('div');
-                item.className = 'attach-item';
-                const icon = f.type.includes('pdf') ? 'fas fa-file-pdf' : f.type.includes('image') ? 'fas fa-file-image' : 'fas fa-file-word';
-                item.innerHTML = `<i class="${icon}" style="color:var(--nis-600);"></i><span>${f.name}</span><span style="color:var(--gray-400);font-size:.7rem;">(${(f.size / 1024).toFixed(0)}KB)</span><button type="button" class="remove-attach" onclick="this.parentElement.remove();"><i class="fas fa-times"></i></button>`;
-                attachList?.appendChild(item);
+            Array.from(files || []).forEach(f => {
+                if (f.size > 20 * 1024 * 1024) { alert(`${f.name} exceeds 20MB limit.`); return; }
+                const exists = attachedFiles.some(existing =>
+                    existing.name === f.name && existing.size === f.size && existing.lastModified === f.lastModified
+                );
+                if (!exists) {
+                    attachedFiles.push(f);
+                }
             });
+            syncAttachInput();
+            renderAttachList();
         }
 
         /* ── Load saved draft on page load (skipped when editing an existing

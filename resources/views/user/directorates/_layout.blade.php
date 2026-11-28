@@ -153,6 +153,7 @@
     @endif
 
     {{-- Global wiring for the Preview tab and action buttons of every directorate form --}}
+    @include('partials.draft-files-script')
     <script>
     (function () {
         var form = document.querySelector('main form') || document.querySelector('form[action*="directorates"]');
@@ -200,10 +201,22 @@
         function saveDraft() {
             if (!form) return;
             var data = {};
-            new FormData(form).forEach(function (v, k) { data[k] = v; });
+            new FormData(form).forEach(function (v, k) {
+                if (typeof File !== 'undefined' && v instanceof File) return;
+                data[k] = v;
+            });
             data.__saved_at = new Date().toISOString();
-            try { localStorage.setItem(draftKey(), JSON.stringify(data)); } catch (e) {}
-            alert('Draft saved successfully.');
+            var key = draftKey();
+            try { localStorage.setItem(key, JSON.stringify(data)); } catch (e) {}
+            var fileSave = (window.RedasDraftFiles && typeof window.RedasDraftFiles.save === 'function')
+                ? window.RedasDraftFiles.save(key, form)
+                : Promise.resolve(0);
+            fileSave.then(function (fileCount) {
+                var msg = fileCount > 0
+                    ? 'Draft saved successfully (including ' + fileCount + ' attached document' + (fileCount === 1 ? '' : 's') + ').'
+                    : 'Draft saved successfully.';
+                alert(msg);
+            });
         }
         bindOnce('.hrm-save-draft-btn', saveDraft);
         bindOnce('.border-save-draft-btn', saveDraft);
@@ -371,23 +384,39 @@
             if (periodField && !periodField.readOnly) periodField.value = requestedDraftPeriod;
         }
 
-        /* Restore any saved draft, then let page scripts recompute totals from the values. */
+        /* Restore any saved draft (fields + attached files), then let page scripts recompute totals. */
         loadDraft();
-        if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
+        if (form) {
+            form.dispatchEvent(new Event('input', { bubbles: true }));
+            var restoreFiles = function () {
+                if (window.RedasDraftFiles && typeof window.RedasDraftFiles.restore === 'function') {
+                    window.RedasDraftFiles.restore(draftKey(), form);
+                }
+            };
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', restoreFiles);
+            } else {
+                setTimeout(restoreFiles, 0);
+            }
+        }
     })();
     </script>
 
     @if (session('status'))
     <script>
         /* The return was submitted successfully: clear this directorate's saved
-           drafts so the dashboard no longer offers them for resuming. */
+           drafts (including IndexedDB files) so the dashboard no longer offers them. */
         (function () {
             var slug = @json($slug ?? 'directorate');
+            var prefix = 'redas_' + slug + '_draft_';
             try {
                 Object.keys(localStorage)
-                    .filter(function (k) { return k.indexOf('redas_' + slug + '_draft_') === 0; })
+                    .filter(function (k) { return k.indexOf(prefix) === 0; })
                     .forEach(function (k) { localStorage.removeItem(k); });
             } catch (e) {}
+            if (window.RedasDraftFiles && typeof window.RedasDraftFiles.clearPrefix === 'function') {
+                window.RedasDraftFiles.clearPrefix(prefix);
+            }
         })();
     </script>
     @endif
