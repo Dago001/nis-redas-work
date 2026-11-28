@@ -1731,6 +1731,7 @@ body.auth-page {
 }
 
 @media (max-width: 768px) {
+    .topbar-toggle { display: none !important; }
     .redas-sidebar {
         transform: translateX(-100%);
         width: var(--sidebar-width) !important;
