@@ -83,7 +83,7 @@
                             @endphp
                             <tr>
                                 <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '-' }}</td>
+                                <td style="text-transform:uppercase;font-weight:600;">{{ strtoupper((string) ($data['command_name'] ?? $return->scope_code ?? '-')) }}</td>
                                 <td>{{ $return->displayCategory() }}</td>
                                 <td>
                                     {{ $data['reporting_officer'] ?? $return->user->name ?? '-' }}
