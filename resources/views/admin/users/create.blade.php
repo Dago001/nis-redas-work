@@ -161,17 +161,17 @@
             <div class="iam-grid-3" style="margin-bottom:14px;">
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="surname">Surname <span style="color:#dc2626;">*</span></label>
-                    <input type="text" id="surname" name="surname" value="{{ old('surname') }}" class="auth-input" placeholder="Surname" required>
+                    <input type="text" id="surname" name="surname" value="{{ old('surname') }}" class="auth-input" placeholder="Surname" pattern="[A-Za-z\s'\-\.]+" title="Letters only — numbers are not allowed" required>
                 </div>
 
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="first_name">First Name <span style="color:#dc2626;">*</span></label>
-                    <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" class="auth-input" placeholder="First Name" required>
+                    <input type="text" id="first_name" name="first_name" value="{{ old('first_name') }}" class="auth-input" placeholder="First Name" pattern="[A-Za-z\s'\-\.]+" title="Letters only — numbers are not allowed" required>
                 </div>
 
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="middle_name">Middle Name</label>
-                    <input type="text" id="middle_name" name="middle_name" value="{{ old('middle_name') }}" class="auth-input" placeholder="Middle Name (optional)">
+                    <input type="text" id="middle_name" name="middle_name" value="{{ old('middle_name') }}" class="auth-input" placeholder="Middle Name (optional)" pattern="[A-Za-z\s'\-\.]*" title="Letters only — numbers are not allowed">
                 </div>
             </div>
 
@@ -212,7 +212,7 @@
             <div class="iam-grid-3" style="margin-top:14px;">
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="phone">Phone Number <span style="color:#dc2626;">*</span></label>
-                    <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" class="auth-input" placeholder="e.g. 08031234567" minlength="7" maxlength="25" required>
+                    <input type="tel" id="phone" name="phone" value="{{ old('phone') }}" class="auth-input" placeholder="e.g. 08031234567" inputmode="numeric" pattern="[0-9]{11}" minlength="11" maxlength="11" title="Phone Number must be exactly 11 digits (0-9)" required>
                 </div>
             </div>
         </div>
@@ -461,7 +461,19 @@
         catSel?.addEventListener('change', updateScopePanel);
         updateScopePanel();
 
-        // 3. Live 5-rule password checklist + strong password generator + copy
+        // 3. Live input guards: 11-digit phone only + letters-only names
+        const phoneInput = document.getElementById('phone');
+        phoneInput?.addEventListener('input', () => {
+            phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 11);
+        });
+        ['surname', 'first_name', 'middle_name'].forEach((id) => {
+            const el = document.getElementById(id);
+            el?.addEventListener('input', () => {
+                el.value = el.value.replace(/[^A-Za-z\s'\-\.]/g, '');
+            });
+        });
+
+        // 4. Live 5-rule password checklist + strong password generator + copy
         const pw1 = document.getElementById('password');
         const pw2 = document.getElementById('password_confirmation');
         const genBtn = document.getElementById('generatePwBtn');

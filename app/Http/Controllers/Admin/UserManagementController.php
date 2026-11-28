@@ -312,10 +312,10 @@ class UserManagementController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'surname' => 'nullable|string|max:100|required_without:name',
-            'first_name' => 'nullable|string|max:100|required_without:name',
-            'middle_name' => 'nullable|string|max:100',
-            'name' => 'nullable|string|max:255|required_without_all:surname,first_name',
+            'surname' => ['nullable', 'string', 'max:100', 'required_without:name', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
+            'first_name' => ['nullable', 'string', 'max:100', 'required_without:name', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
+            'middle_name' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
+            'name' => ['nullable', 'string', 'max:255', 'required_without_all:surname,first_name', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
             'rank' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::NIS_RANKS))],
             'service_number' => ['required', 'string', 'regex:/^[0-9]{4,5}$/', 'unique:users'],
             'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_officer,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
@@ -333,11 +333,16 @@ class UserManagementController extends Controller
             'geofence_lng' => 'nullable|numeric|between:-180,180',
             'geofence_radius_km' => 'nullable|integer|min:1|max:500',
             'email' => 'required|string|email|max:255|unique:users',
-            'phone' => ['required', 'string', 'min:7', 'max:25', 'regex:/^[0-9+\-\s()]+$/'],
+            'phone' => ['required', 'string', 'regex:/^[0-9]{11}$/'],
             'password' => ['required', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
         ], [
             'service_number.regex' => 'Service number must be 4 or 5 digits only (e.g. 1234 or 12345).',
+            'phone.regex' => 'Phone number must be exactly 11 digits (numbers only, no letters).',
+            'surname.regex' => 'Surname must contain letters only (no numbers allowed).',
+            'first_name.regex' => 'First name must contain letters only (no numbers allowed).',
+            'middle_name.regex' => 'Middle name must contain letters only (no numbers allowed).',
+            'name.regex' => 'Name must contain letters only (no numbers allowed).',
         ]);
 
         // Privilege escalation guard: only Super Admin can create Super Admin accounts
@@ -438,10 +443,10 @@ class UserManagementController extends Controller
         }
 
         $validated = $request->validate([
-            'surname' => 'nullable|string|max:100|required_without:name',
-            'first_name' => 'nullable|string|max:100|required_without:name',
-            'middle_name' => 'nullable|string|max:100',
-            'name' => 'nullable|string|max:255|required_without_all:surname,first_name',
+            'surname' => ['nullable', 'string', 'max:100', 'required_without:name', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
+            'first_name' => ['nullable', 'string', 'max:100', 'required_without:name', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
+            'middle_name' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
+            'name' => ['nullable', 'string', 'max:255', 'required_without_all:surname,first_name', 'regex:/^[A-Za-z\s\'\-\.]+$/'],
             'rank' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::NIS_RANKS))],
             'service_number' => ['required', 'string', 'regex:/^[0-9]{4,5}$/', 'unique:users,service_number,'.$user->id],
             'user_category' => 'required|in:state_user,desk_admin,directorate_user,directorate_admin,zonal_officer,zonal_commander,cgis_unit_user,cgis_desk_admin,hq_admin,admin,super_admin',
@@ -459,11 +464,16 @@ class UserManagementController extends Controller
             'geofence_lng' => 'nullable|numeric|between:-180,180',
             'geofence_radius_km' => 'nullable|integer|min:1|max:500',
             'email' => 'required|string|email|max:255|unique:users,email,'.$user->id,
-            'phone' => ['nullable', 'string', 'min:7', 'max:25', 'regex:/^[0-9+\-\s()]+$/'],
+            'phone' => ['nullable', 'string', 'regex:/^[0-9]{11}$/'],
             'password' => ['nullable', 'string', Password::min(6)->mixedCase()->numbers()->symbols(), 'confirmed'],
             'is_enabled' => 'sometimes|boolean',
         ], [
             'service_number.regex' => 'Service number must be 4 or 5 digits only (e.g. 1234 or 12345).',
+            'phone.regex' => 'Phone number must be exactly 11 digits (numbers only, no letters).',
+            'surname.regex' => 'Surname must contain letters only (no numbers allowed).',
+            'first_name.regex' => 'First name must contain letters only (no numbers allowed).',
+            'middle_name.regex' => 'Middle name must contain letters only (no numbers allowed).',
+            'name.regex' => 'Name must contain letters only (no numbers allowed).',
         ]);
 
         if ($validated['user_category'] === 'super_admin' && ! $this->isActorSuperAdmin($request->user())) {

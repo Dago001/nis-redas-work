@@ -109,14 +109,46 @@ class ProfilePhotoAndPhoneTest extends TestCase
             'is_enabled' => '1',
         ])->assertSessionHasErrors('phone');
 
-        // Providing phone succeeds and persists
+        // Non-11-digit or letters in phone fail validation
         $this->actingAs($superAdmin)->post(route('admin.users.store'), [
             'surname' => 'Bello',
             'first_name' => 'Musa',
             'service_number' => '97003',
             'rank' => 'CSI',
             'email' => 'musa97003@nis.gov.ng',
-            'phone' => '+234 803 555 0199',
+            'phone' => '0803555019', // only 10 digits
+            'user_category' => 'state_user',
+            'assigned_state_code' => 'LASC',
+            'assigned_zonal_command_code' => 'ZONE-A',
+            'password' => 'Secure@12',
+            'password_confirmation' => 'Secure@12',
+            'is_enabled' => '1',
+        ])->assertSessionHasErrors('phone');
+
+        // Numbers in name fields fail validation
+        $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'surname' => 'Bello123',
+            'first_name' => 'Musa9',
+            'service_number' => '97003',
+            'rank' => 'CSI',
+            'email' => 'musa97003@nis.gov.ng',
+            'phone' => '08035550199',
+            'user_category' => 'state_user',
+            'assigned_state_code' => 'LASC',
+            'assigned_zonal_command_code' => 'ZONE-A',
+            'password' => 'Secure@12',
+            'password_confirmation' => 'Secure@12',
+            'is_enabled' => '1',
+        ])->assertSessionHasErrors(['surname', 'first_name']);
+
+        // Providing exact 11-digit phone and letters-only names succeeds and persists
+        $this->actingAs($superAdmin)->post(route('admin.users.store'), [
+            'surname' => 'Bello',
+            'first_name' => 'Musa',
+            'service_number' => '97003',
+            'rank' => 'CSI',
+            'email' => 'musa97003@nis.gov.ng',
+            'phone' => '08035550199',
             'user_category' => 'state_user',
             'assigned_state_code' => 'LASC',
             'assigned_zonal_command_code' => 'ZONE-A',
@@ -127,6 +159,6 @@ class ProfilePhotoAndPhoneTest extends TestCase
           ->assertSessionHasNoErrors();
 
         $created = User::where('service_number', '97003')->firstOrFail();
-        $this->assertSame('+234 803 555 0199', $created->phone);
+        $this->assertSame('08035550199', $created->phone);
     }
 }

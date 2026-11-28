@@ -59,17 +59,17 @@
             <div class="iam-grid-3" style="margin-bottom:14px;">
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="surname">Surname <span style="color:#dc2626;">*</span></label>
-                    <input type="text" id="surname" name="surname" value="{{ old('surname', $defaultSurname) }}" class="auth-input" required>
+                    <input type="text" id="surname" name="surname" value="{{ old('surname', $defaultSurname) }}" class="auth-input" pattern="[A-Za-z\s'\-\.]+" title="Letters only — numbers are not allowed" required>
                 </div>
 
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="first_name">First Name <span style="color:#dc2626;">*</span></label>
-                    <input type="text" id="first_name" name="first_name" value="{{ old('first_name', $defaultFirst) }}" class="auth-input" required>
+                    <input type="text" id="first_name" name="first_name" value="{{ old('first_name', $defaultFirst) }}" class="auth-input" pattern="[A-Za-z\s'\-\.]+" title="Letters only — numbers are not allowed" required>
                 </div>
 
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="middle_name">Middle Name</label>
-                    <input type="text" id="middle_name" name="middle_name" value="{{ old('middle_name', $defaultMiddle) }}" class="auth-input">
+                    <input type="text" id="middle_name" name="middle_name" value="{{ old('middle_name', $defaultMiddle) }}" class="auth-input" pattern="[A-Za-z\s'\-\.]*" title="Letters only — numbers are not allowed">
                 </div>
             </div>
 
@@ -98,7 +98,7 @@
             <div class="iam-grid-3" style="margin-top:14px;">
                 <div class="auth-form-group">
                     <label class="form-label-nis" for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" value="{{ old('phone', $user->phone) }}" class="auth-input" placeholder="e.g. 08031234567" minlength="7" maxlength="25">
+                    <input type="tel" id="phone" name="phone" value="{{ old('phone', $user->phone) }}" class="auth-input" placeholder="e.g. 08031234567" inputmode="numeric" pattern="[0-9]{11}" minlength="11" maxlength="11" title="Phone Number must be exactly 11 digits (0-9)">
                 </div>
             </div>
         </div>
@@ -239,6 +239,12 @@
     (function () {
         const snInput = document.getElementById('service_number');
         snInput?.addEventListener('input', () => { snInput.value = snInput.value.replace(/\D/g, '').slice(0, 5); });
+        const phoneInput = document.getElementById('phone');
+        phoneInput?.addEventListener('input', () => { phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 11); });
+        ['surname', 'first_name', 'middle_name'].forEach((id) => {
+            const el = document.getElementById(id);
+            el?.addEventListener('input', () => { el.value = el.value.replace(/[^A-Za-z\s'\-\.]/g, ''); });
+        });
 
         const catSel = document.getElementById('user_category');
         const panels = {
