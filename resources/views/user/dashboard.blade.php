@@ -166,8 +166,10 @@
                 </div>
             </div>
 
-            <!-- Right Column: Mini chart + Quick Actions -->
+            <!-- Right Column: Workflow Tracker + Mini chart + Quick Actions -->
             <div style="display:flex;flex-direction:column;gap:20px;">
+
+                @include('partials.return-workflow-tracker', ['submissions' => $submissions])
 
                 <!-- Submission trend -->
                 <div class="redas-card delay-3">

@@ -5,7 +5,13 @@
         <div>
             <h1 class="page-title" style="margin-bottom:4px;">
                 <i class="{{ $unit['icon'] ?? 'fas fa-building-columns' }}" style="margin-right:8px;"></i>
-                {{ $unit['name'] ?? 'CGIS Unit' }} Unit Dashboard
+                @php
+                    $unitDisplayTitle = $unit['name'] ?? 'CGIS Unit';
+                    if (! str_ends_with(strtolower($unitDisplayTitle), 'unit')) {
+                        $unitDisplayTitle .= ' Unit';
+                    }
+                @endphp
+                {{ $unitDisplayTitle }} Dashboard
             </h1>
             <p class="page-subtitle">
                 Welcome back, <strong>{{ auth()->user()?->name ?? 'Officer' }}</strong> -
@@ -126,10 +132,12 @@
                                             <a href="{{ route('user.cgis-units.submissions.print', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;" title="Print" target="_blank">
                                                 <i class="fas fa-print"></i>
                                             </a>
-                                            @if($status !== 'approved')
+                                            @can('update', $submission)
                                                 <a href="{{ route('user.cgis-units.submissions.edit', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;" title="Update">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
+                                            @endcan
+                                            @can('delete', $submission)
                                                 <form method="POST" action="{{ route('user.cgis-units.submissions.destroy', $submission) }}" style="display:inline;" onsubmit="return confirm('Delete this submission permanently? This cannot be undone.');">
                                                     @csrf
                                                     @method('DELETE')
@@ -137,7 +145,7 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
-                                            @endif
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
@@ -156,8 +164,11 @@
 
         <!-- Right column -->
         <div style="display:flex;flex-direction:column;gap:20px;">
+            <!-- Return Workflow Tracker -->
+            @include('partials.return-workflow-tracker', ['submissions' => $submissions])
+
             <!-- Unit information -->
-            <div class="redas-card animate-fade-up delay-3">
+            <div class="redas-card animate-fade-up delay-4">
                 <div class="card-head">
                     <div class="card-head-title">
                         <div class="card-head-icon" style="background:#fef9c3;color:#a16207;">

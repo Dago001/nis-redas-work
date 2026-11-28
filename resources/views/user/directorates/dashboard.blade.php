@@ -148,10 +148,12 @@
                                             <a href="{{ route('user.directorates.submissions.print', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;" title="Print" target="_blank">
                                                 <i class="fas fa-print"></i>
                                             </a>
-                                            @if($status !== 'approved')
+                                            @can('update', $submission)
                                                 <a href="{{ route('user.directorates.submissions.edit', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:6px 12px;" title="Update">
                                                     <i class="fas fa-pen"></i>
                                                 </a>
+                                            @endcan
+                                            @can('delete', $submission)
                                                 <form method="POST" action="{{ route('user.directorates.submissions.destroy', $submission) }}" style="display:inline;" onsubmit="return confirm('Delete this submission permanently? This cannot be undone.');">
                                                     @csrf
                                                     @method('DELETE')
@@ -159,7 +161,7 @@
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
-                                            @endif
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
@@ -178,8 +180,11 @@
 
         <!-- Right column -->
         <div style="display:flex;flex-direction:column;gap:20px;">
-            <!-- Notifications -->
-            <div class="redas-card animate-fade-up delay-3">
+            <!-- Return Workflow Tracker -->
+            @include('partials.return-workflow-tracker', ['submissions' => $submissions])
+
+            <!-- Directorate Information -->
+            <div class="redas-card animate-fade-up delay-4">
                 <div class="card-head">
                     <div class="card-head-title">
                         <div class="card-head-icon" style="background:#fef9c3;color:#a16207;">

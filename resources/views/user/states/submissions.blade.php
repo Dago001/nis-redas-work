@@ -120,10 +120,12 @@
                                     <a href="{{ route('user.returns.show', $submission) }}" class="btn-nis btn-ghost btn-sm" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    @if($status !== 'approved')
+                                    @can('update', $submission)
                                     <a href="{{ route('user.returns.edit', $submission) }}" class="btn-nis btn-sm" style="background:var(--gold-50);border:1px solid var(--gold-300);color:var(--gold-700);padding:4px 8px;" title="Edit & Resubmit">
                                         <i class="fas fa-edit"></i>
                                     </a>
+                                    @endcan
+                                    @can('delete', $submission)
                                     <form method="POST" action="{{ route('user.returns.destroy', $submission) }}" style="display:inline;" onsubmit="return confirm('Delete this return permanently? This cannot be undone.');">
                                         @csrf
                                         @method('DELETE')
@@ -131,7 +133,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
-                                    @endif
+                                    @endcan
                                 </div>
                             </td>
                         </tr>

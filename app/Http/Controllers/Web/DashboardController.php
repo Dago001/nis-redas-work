@@ -698,10 +698,10 @@ class DashboardController extends Controller
         $isStateUser = in_array($user?->user_category, ['state_user', 'zonal_officer'], true);
         $homeUrl = $isStateUser ? route('user.submissions') : $this->formHomeUrl($user);
 
-        if (strtolower((string) $application->status) === 'approved') {
+        if (! $user?->can('update', $application)) {
             return redirect()
                 ->to($homeUrl)
-                ->with('status', 'Approved submissions cannot be edited.');
+                ->with('error', 'Returns that have already been approved cannot be edited.');
         }
 
         if ($isStateUser) {
