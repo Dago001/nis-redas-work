@@ -54,14 +54,14 @@
                         @csrf
                         <div>
                             <input type="file" id="profilePhotoInput" name="photo" accept="image/jpeg,image/png,image/webp" required style="font-size:.82rem;color:#334155;width:100%;">
-                            <div style="font-size:.74rem;color:#64748b;margin-top:4px;">Accepted formats: JPG, PNG, or WEBP (max 2 MB). Your photo appears in the portal header.</div>
+                            <div style="font-size:.74rem;color:#64748b;margin-top:4px;">Accepted formats: JPG, PNG, or WEBP (max 5 MB). Saved independently — no password required.</div>
                             @error('photo')
                                 <div class="inline-error" style="margin-top:4px;"><i class="fas fa-circle-xmark"></i> {{ $message }}</div>
                             @enderror
                         </div>
                         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
                             <button type="submit" class="btn-nis btn-primary-nis btn-sm">
-                                <i class="fas fa-upload"></i> {{ $user->profilePhotoUrl() ? 'Change Photo' : 'Upload Photo' }}
+                                <i class="fas fa-save"></i> {{ $user->profilePhotoUrl() ? 'Save New Photo' : 'Save Photo' }}
                             </button>
                             @if($user->profilePhotoUrl())
                                 <button type="button" class="btn-nis btn-ghost btn-sm" style="color:#b91c1c;" onclick="document.getElementById('removePhotoForm').submit();">

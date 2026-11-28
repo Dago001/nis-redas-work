@@ -14,7 +14,14 @@ class RequirePasswordChange
      * Routes a user with a pending password change may still reach, so they
      * can actually complete the change and log out.
      */
-    private const EXEMPT_ROUTES = ['user.profile', 'user.profile.update', 'logout'];
+    private const EXEMPT_ROUTES = [
+        'user.profile',
+        'user.profile.update',
+        'user.profile.photo.update',
+        'user.profile.photo.destroy',
+        'user.profile.photo.show',
+        'logout',
+    ];
 
     /**
      * Force a logged-in user with a pending password change to the profile

@@ -46,12 +46,12 @@ class ProfileController extends Controller
     public function updatePhoto(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'photo' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ], [
             'photo.required' => 'Please choose an image file to upload.',
             'photo.image' => 'The uploaded file must be a valid image.',
             'photo.mimes' => 'Profile photo must be a JPG, PNG, or WEBP image.',
-            'photo.max' => 'Profile photo must not exceed 2 MB.',
+            'photo.max' => 'Profile photo must not exceed 5 MB.',
         ]);
 
         /** @var User $user */
