@@ -152,3 +152,52 @@
     </nav>
 </aside>
 @endif
+
+@once
+<script>
+(function () {
+    const STORAGE_KEY = 'redas_sidebar_scroll_top';
+    const aside = document.getElementById('redasSidebar');
+    if (!aside) return;
+
+    const nav = aside.querySelector('.sidebar-nav');
+    const scroller = (nav && nav.scrollHeight > nav.clientHeight) ? nav : aside;
+
+    // 1. Restore saved scroll position immediately before paint
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved !== null) {
+        const y = parseInt(saved, 10);
+        if (!Number.isNaN(y) && y >= 0) {
+            scroller.scrollTop = y;
+            if (nav) nav.scrollTop = y;
+            aside.scrollTop = y;
+        }
+    }
+
+    // 2. Ensure the active menu item is always visible in the sidebar viewport
+    const activeLink = aside.querySelector('.sidebar-link.active');
+    if (activeLink) {
+        const sRect = scroller.getBoundingClientRect();
+        const aRect = activeLink.getBoundingClientRect();
+        if (aRect.top < sRect.top || aRect.bottom > sRect.bottom) {
+            activeLink.scrollIntoView({ block: 'center', behavior: 'instant' });
+        }
+    }
+
+    function persistScroll() {
+        const top = (nav && nav.scrollTop > 0) ? nav.scrollTop : aside.scrollTop;
+        try {
+            sessionStorage.setItem(STORAGE_KEY, String(Math.round(top)));
+        } catch (e) {}
+    }
+
+    nav?.addEventListener('scroll', persistScroll, { passive: true });
+    aside.addEventListener('scroll', persistScroll, { passive: true });
+    aside.addEventListener('click', (e) => {
+        if (e.target.closest('a.sidebar-link')) {
+            persistScroll();
+        }
+    });
+})();
+</script>
+@endonce
