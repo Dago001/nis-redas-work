@@ -54,6 +54,8 @@ class User extends Authenticatable
         'email',
         'phone',
         'profile_photo_path',
+        'profile_photo_data',
+        'profile_photo_mime',
         'email_verified_at',
         'password',
         'must_change_password',
@@ -75,6 +77,7 @@ class User extends Authenticatable
         'remember_token',
         'mfa_secret',
         'mfa_backup_codes',
+        'profile_photo_data',
     ];
 
     /**
@@ -160,7 +163,11 @@ class User extends Authenticatable
      */
     public function profilePhotoUrl(): ?string
     {
-        if (empty($this->profile_photo_path)) {
+        $hasDbData = ! empty($this->profile_photo_data);
+        $hasDiskFile = ! empty($this->profile_photo_path)
+            && \Illuminate\Support\Facades\Storage::disk('local')->exists($this->profile_photo_path);
+
+        if (! $hasDbData && ! $hasDiskFile) {
             return null;
         }
 
