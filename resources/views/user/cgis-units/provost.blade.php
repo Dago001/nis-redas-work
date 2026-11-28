@@ -123,12 +123,42 @@
             </div>
             <div class="card-body">
                 @php
+                $armsJson = json_decode(file_get_contents(resource_path('js/arms.json')) ?: '{}', true);
+                $armsByCategory = collect($armsJson['arms'] ?? [])
+                    ->filter(fn ($item) => ($item['category'] ?? '') !== 'Unspecified' && strtolower((string) ($item['name'] ?? '')) !== 'others')
+                    ->groupBy('category')
+                    ->map(fn ($items) => collect($items)->pluck('name')->values()->all())
+                    ->toArray();
+
+                // Ensure common NIS-issued firearms are present in their respective categories
+                foreach (['Tavor', 'GPMG'] as $extraRifle) {
+                    $cat = $extraRifle === 'GPMG' ? 'Light and General-Purpose Machine Guns' : 'Assault and Service Rifles';
+                    if (! in_array($extraRifle, $armsByCategory[$cat] ?? [], true)) {
+                        $armsByCategory[$cat][] = $extraRifle;
+                    }
+                }
+                if (! in_array('Scorpion EVO 3', $armsByCategory['Submachine Guns'] ?? [], true)) {
+                    $armsByCategory['Submachine Guns'][] = 'Scorpion EVO 3';
+                }
+                foreach (['CZ-09 Pistol', 'HS-09 Pistol'] as $extraPistol) {
+                    if (! in_array($extraPistol, $armsByCategory['Pistols and Handguns'] ?? [], true)) {
+                        $armsByCategory['Pistols and Handguns'][] = $extraPistol;
+                    }
+                }
+
+                $ammoJson = json_decode(file_get_contents(resource_path('js/ammunition.json')) ?: '{}', true);
+                $ammoList = array_values(array_filter($ammoJson['ammunition'] ?? [], fn ($a) => strtolower((string) $a) !== 'others'));
+
                 $firearmGroups = [
-                    ['title' => '2A. Firearms: Provost / Security', 'body' => 'provostFirearmsBody', 'prefix' => 'provost_firearms', 'count' => 'provostFirearmCount', 'ammo' => 'provostAmmoTotal'],
-                    ['title' => '2B. Firearms: RRS', 'body' => 'rrsFirearmsBody', 'prefix' => 'rrs_firearms', 'count' => 'rrsFirearmCount', 'ammo' => 'rrsAmmoTotal'],
-                    ['title' => '2C. Firearms: JTF', 'body' => 'jtfFirearmsBody', 'prefix' => 'jtf_firearms', 'count' => 'jtfFirearmCount', 'ammo' => 'jtfAmmoTotal'],
+                    ['title' => '2A. Firearms: Provost / Security', 'body' => 'provostFirearmsBody', 'prefix' => 'provost_firearms', 'count' => 'provostFirearmCount', 'qty' => 'provostFirearmQtyTotal', 'ammo' => 'provostAmmoTotal'],
+                    ['title' => '2B. Firearms: RRS', 'body' => 'rrsFirearmsBody', 'prefix' => 'rrs_firearms', 'count' => 'rrsFirearmCount', 'qty' => 'rrsFirearmQtyTotal', 'ammo' => 'rrsAmmoTotal'],
+                    ['title' => '2C. Firearms: JTF', 'body' => 'jtfFirearmsBody', 'prefix' => 'jtf_firearms', 'count' => 'jtfFirearmCount', 'qty' => 'jtfFirearmQtyTotal', 'ammo' => 'jtfAmmoTotal'],
                 ];
                 @endphp
+                <script>
+                    window.REDAS_PROVOST_ARMS = @json($armsByCategory);
+                    window.REDAS_PROVOST_AMMO = @json($ammoList);
+                </script>
                 @foreach($firearmGroups as $group)
                 <div class="nis-subsection" @if(!$loop->first) style="margin-top:20px;" @endif>
                     <div class="nis-subsection-title"><i class="fas fa-gun"></i> {{ $group['title'] }}</div>
@@ -136,28 +166,59 @@
                         <table class="nis-table">
                             <thead>
                                 <tr>
-                                    <th style="width:70px;">S/N</th>
-                                    <th>Type</th>
-                                    <th style="width:180px;">Ammunition</th>
-                                    <th style="width:90px;">Action</th>
+                                    <th style="width:55px;">S/N</th>
+                                    <th style="min-width:220px;">Firearm Type</th>
+                                    <th style="width:125px;">No. of Firearms</th>
+                                    <th style="min-width:210px;">Ammunition Type</th>
+                                    <th style="width:125px;">No. of Rounds</th>
+                                    <th style="width:70px;">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="{{ $group['body'] }}">
                                 <tr class="data-row">
                                     <td>1</td>
-                                    <td><input type="text" class="ni firearm-type" name="{{ $group['prefix'] }}[0][type]"></td>
-                                    <td><input type="number" min="0" class="ni firearm-ammo" name="{{ $group['prefix'] }}[0][ammunition]"></td>
-                                    <td><button type="button" class="btn-icon btn-danger remove-firearm-row"><i class="fas fa-trash"></i></button></td>
+                                    <td>
+                                        <select class="ni ni-select firearm-type" name="{{ $group['prefix'] }}[0][type]">
+                                            <option value="">-- Select Firearm --</option>
+                                            @foreach($armsByCategory as $category => $weapons)
+                                                <optgroup label="{{ $category }}">
+                                                    @foreach($weapons as $weapon)
+                                                        <option value="{{ $weapon }}">{{ $weapon }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endforeach
+                                            <option value="Other">Other (Specify manually)</option>
+                                        </select>
+                                        <input type="text" class="ni firearm-type-other" name="{{ $group['prefix'] }}[0][type_other]"
+                                            placeholder="Specify firearm type" style="display:none;margin-top:6px;" disabled>
+                                    </td>
+                                    <td>
+                                        <input type="number" min="0" class="ni firearm-qty" name="{{ $group['prefix'] }}[0][quantity]" placeholder="0">
+                                    </td>
+                                    <td>
+                                        <select class="ni ni-select firearm-ammo-type" name="{{ $group['prefix'] }}[0][ammunition_type]">
+                                            <option value="">-- Select Ammunition --</option>
+                                            @foreach($ammoList as $ammo)
+                                                <option value="{{ $ammo }}">{{ $ammo }}</option>
+                                            @endforeach
+                                            <option value="Other">Other (Specify manually)</option>
+                                        </select>
+                                        <input type="text" class="ni firearm-ammo-other" name="{{ $group['prefix'] }}[0][ammunition_type_other]"
+                                            placeholder="Specify ammunition type" style="display:none;margin-top:6px;" disabled>
+                                    </td>
+                                    <td>
+                                        <input type="number" min="0" class="ni firearm-ammo" name="{{ $group['prefix'] }}[0][ammunition]" placeholder="0">
+                                    </td>
+                                    <td><button type="button" class="btn-icon btn-danger remove-firearm-row" title="Remove row"><i class="fas fa-trash"></i></button></td>
                                 </tr>
                             </tbody>
                             <tfoot>
                                 <tr class="total-row">
-                                    <td colspan="2"><strong>Total Firearm Types</strong></td>
-                                    <td><input readonly id="{{ $group['count'] }}" class="ni" value="1"></td>
-                                </tr>
-                                <tr class="total-row">
-                                    <td colspan="2"><strong>Total Ammunition</strong></td>
+                                    <td colspan="2"><strong>Total Firearms (<span id="{{ $group['count'] }}">1</span> entry)</strong></td>
+                                    <td><input readonly id="{{ $group['qty'] }}" class="ni" value="0"></td>
+                                    <td style="text-align:right;"><strong>Total Ammunition (Rounds)</strong></td>
                                     <td><input readonly id="{{ $group['ammo'] }}" class="ni" value="0"></td>
+                                    <td></td>
                                 </tr>
                             </tfoot>
                         </table>

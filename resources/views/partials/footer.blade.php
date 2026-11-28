@@ -931,14 +931,63 @@
 
         const tbody = document.getElementById(config.body);
 
-        const countInput = document.getElementById(config.count);
+        const countEl = document.getElementById(config.count);
+
+        const qtyTotalInput = document.getElementById(config.qty);
 
         const ammoTotalInput = document.getElementById(config.ammo);
 
         if (!tbody) return;
 
+        function escHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function buildArmsOptionsHtml() {
+            const armsByCat = window.REDAS_PROVOST_ARMS || {};
+            let html = '<option value="">-- Select Firearm --</option>';
+            Object.keys(armsByCat).forEach((cat) => {
+                html += `<optgroup label="${escHtml(cat)}">`;
+                (armsByCat[cat] || []).forEach((weapon) => {
+                    html += `<option value="${escHtml(weapon)}">${escHtml(weapon)}</option>`;
+                });
+                html += '</optgroup>';
+            });
+            html += '<option value="Other">Other (Specify manually)</option>';
+            return html;
+        }
+
+        function buildAmmoOptionsHtml() {
+            const ammoList = window.REDAS_PROVOST_AMMO || [];
+            let html = '<option value="">-- Select Ammunition --</option>';
+            ammoList.forEach((ammo) => {
+                html += `<option value="${escHtml(ammo)}">${escHtml(ammo)}</option>`;
+            });
+            html += '<option value="Other">Other (Specify manually)</option>';
+            return html;
+        }
+
+        function syncOtherInput(selectEl, otherSelector) {
+            if (!selectEl) return;
+            const row = selectEl.closest('tr');
+            const otherInput = row ? row.querySelector(otherSelector) : null;
+            if (!otherInput) return;
+            const isOther = selectEl.value === 'Other';
+            otherInput.style.display = isOther ? 'block' : 'none';
+            otherInput.disabled = !isOther;
+            otherInput.required = isOther;
+            if (!isOther) {
+                otherInput.value = '';
+            }
+        }
+
         function updateTotals() {
 
+            let qtyTotal = 0;
             let ammoTotal = 0;
 
             const rows = tbody.querySelectorAll("tr");
@@ -947,31 +996,61 @@
 
                 row.querySelector("td:first-child").textContent = index + 1;
 
-                row.querySelector(".firearm-type").name =
-                    `${config.prefix}[${index}][type]`;
+                const typeEl = row.querySelector(".firearm-type");
+                const typeOtherEl = row.querySelector(".firearm-type-other");
+                const qtyEl = row.querySelector(".firearm-qty");
+                const ammoTypeEl = row.querySelector(".firearm-ammo-type");
+                const ammoOtherEl = row.querySelector(".firearm-ammo-other");
+                const ammoEl = row.querySelector(".firearm-ammo");
 
-                row.querySelector(".firearm-ammo").name =
-                    `${config.prefix}[${index}][ammunition]`;
-
-                ammoTotal += Number(
-                    row.querySelector(".firearm-ammo").value
-                ) || 0;
+                if (typeEl) {
+                    typeEl.name = `${config.prefix}[${index}][type]`;
+                    syncOtherInput(typeEl, '.firearm-type-other');
+                }
+                if (typeOtherEl) typeOtherEl.name = `${config.prefix}[${index}][type_other]`;
+                if (qtyEl) {
+                    qtyEl.name = `${config.prefix}[${index}][quantity]`;
+                    qtyTotal += Number(qtyEl.value) || 0;
+                }
+                if (ammoTypeEl) {
+                    ammoTypeEl.name = `${config.prefix}[${index}][ammunition_type]`;
+                    syncOtherInput(ammoTypeEl, '.firearm-ammo-other');
+                }
+                if (ammoOtherEl) ammoOtherEl.name = `${config.prefix}[${index}][ammunition_type_other]`;
+                if (ammoEl) {
+                    ammoEl.name = `${config.prefix}[${index}][ammunition]`;
+                    ammoTotal += Number(ammoEl.value) || 0;
+                }
 
             });
 
-            countInput.value = rows.length;
-
-            ammoTotalInput.value = ammoTotal;
+            if (countEl) {
+                if (countEl.tagName === 'INPUT') countEl.value = rows.length;
+                else countEl.textContent = rows.length;
+            }
+            if (qtyTotalInput) qtyTotalInput.value = qtyTotal;
+            if (ammoTotalInput) ammoTotalInput.value = ammoTotal;
 
         }
 
         tbody.addEventListener("input", function (e) {
-            if (e.target && e.target.classList && e.target.classList.contains("firearm-ammo")) {
+            if (e.target && e.target.classList && (e.target.classList.contains("firearm-ammo") || e.target.classList.contains("firearm-qty"))) {
                 updateTotals();
             }
         });
         tbody.addEventListener("change", function (e) {
-            if (e.target && e.target.classList && e.target.classList.contains("firearm-ammo")) {
+            if (!e.target || !e.target.classList) return;
+            if (e.target.classList.contains("firearm-type")) {
+                syncOtherInput(e.target, '.firearm-type-other');
+                if (e.target.value === 'Other') {
+                    e.target.closest('tr')?.querySelector('.firearm-type-other')?.focus();
+                }
+            } else if (e.target.classList.contains("firearm-ammo-type")) {
+                syncOtherInput(e.target, '.firearm-ammo-other');
+                if (e.target.value === 'Other') {
+                    e.target.closest('tr')?.querySelector('.firearm-ammo-other')?.focus();
+                }
+            } else if (e.target.classList.contains("firearm-ammo") || e.target.classList.contains("firearm-qty")) {
                 updateTotals();
             }
         });
@@ -981,6 +1060,8 @@
             const button = e.target.closest(".remove-firearm-row");
 
             if (!button) return;
+
+            if (tbody.querySelectorAll("tr").length <= 1) return;
 
             button.closest("tr").remove();
 
@@ -1001,10 +1082,40 @@
                     <td>${index + 1}</td>
 
                     <td>
+                        <select class="ni ni-select firearm-type" name="${config.prefix}[${index}][type]">
+                            ${buildArmsOptionsHtml()}
+                        </select>
                         <input
                             type="text"
-                            class="ni firearm-type"
-                            name="${config.prefix}[${index}][type]"
+                            class="ni firearm-type-other"
+                            name="${config.prefix}[${index}][type_other]"
+                            placeholder="Specify firearm type"
+                            style="display:none;margin-top:6px;"
+                            disabled
+                        >
+                    </td>
+
+                    <td>
+                        <input
+                            type="number"
+                            min="0"
+                            class="ni firearm-qty"
+                            name="${config.prefix}[${index}][quantity]"
+                            placeholder="0"
+                        >
+                    </td>
+
+                    <td>
+                        <select class="ni ni-select firearm-ammo-type" name="${config.prefix}[${index}][ammunition_type]">
+                            ${buildAmmoOptionsHtml()}
+                        </select>
+                        <input
+                            type="text"
+                            class="ni firearm-ammo-other"
+                            name="${config.prefix}[${index}][ammunition_type_other]"
+                            placeholder="Specify ammunition type"
+                            style="display:none;margin-top:6px;"
+                            disabled
                         >
                     </td>
 
@@ -1014,18 +1125,18 @@
                             min="0"
                             class="ni firearm-ammo"
                             name="${config.prefix}[${index}][ammunition]"
+                            placeholder="0"
                         >
                     </td>
 
                     <td>
-
                         <button
                             type="button"
                             class="btn-icon btn-danger remove-firearm-row"
+                            title="Remove row"
                         >
                             <i class="fas fa-trash"></i>
                         </button>
-
                     </td>
                     `;
 
@@ -1048,6 +1159,8 @@
 
         count: "provostFirearmCount",
 
+        qty: "provostFirearmQtyTotal",
+
         ammo: "provostAmmoTotal"
 
     });
@@ -1060,6 +1173,8 @@
 
         count: "rrsFirearmCount",
 
+        qty: "rrsFirearmQtyTotal",
+
         ammo: "rrsAmmoTotal"
 
     });
@@ -1071,6 +1186,8 @@
         prefix: "jtf_firearms",
 
         count: "jtfFirearmCount",
+
+        qty: "jtfFirearmQtyTotal",
 
         ammo: "jtfAmmoTotal"
 
