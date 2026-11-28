@@ -217,7 +217,7 @@
                             <th style="width:120px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Report Period</th>
                             <th style="width:125px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Status</th>
                             <th style="width:140px;text-align:left;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Approved</th>
-                            <th style="width:235px;text-align:right;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
+                            <th style="width:175px;text-align:right;padding:10px 12px;font-size:.73rem;color:#475569;border-bottom:1px solid #e5e7eb;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -259,9 +259,6 @@
                                     <div style="display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:nowrap;">
                                         <a href="{{ route('desk.admin.submissions.show', $submission) }}" class="btn-nis btn-sm btn-ghost" style="padding:5px 10px;font-size:.75rem;white-space:nowrap;">
                                             <i class="fas fa-eye"></i> View
-                                        </a>
-                                        <a href="{{ route('user.submissions.pdf', $submission) }}" class="btn-nis btn-sm btn-outline-nis" style="padding:5px 10px;font-size:.75rem;white-space:nowrap;">
-                                            <i class="fas fa-file-pdf"></i> PDF
                                         </a>
                                         <a href="{{ route('desk.admin.submissions.download', $submission) }}" class="btn-nis btn-sm btn-outline-nis" style="padding:5px 10px;font-size:.75rem;white-space:nowrap;">
                                             <i class="fas fa-download"></i> Download
