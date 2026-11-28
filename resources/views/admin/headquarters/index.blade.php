@@ -148,12 +148,13 @@
                         <tr>
                             <th>Ref</th>
                             <th>Formation</th>
+                            <th>Category</th>
                             <th>Officer</th>
                             <th>Period</th>
                             <th>Stage</th>
                             <th>Status</th>
                             <th>Submitted</th>
-                            <th></th>
+                            <th style="text-align:right;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -167,19 +168,20 @@
                                 };
                             @endphp
                             <tr>
-                                <td style="font-weight:600;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
-                                <td>{{ $data['command_name'] ?? $return->scope_code ?? '-' }}</td>
+                                <td style="font-weight:700;color:#0f172a;">RET-{{ str_pad($return->id, 5, '0', STR_PAD_LEFT) }}</td>
+                                <td style="font-weight:600;text-transform:uppercase;">{{ strtoupper((string) ($data['command_name'] ?? $return->scope_code ?? '-')) }}</td>
+                                <td>{{ $return->displayCategory() }}</td>
                                 <td>{{ $data['reporting_officer'] ?? $return->user->name ?? '-' }}</td>
-                                <td>{{ $data['report_period'] ?? '-' }}</td>
+                                <td>{{ $return->report_period ?? ($data['report_period'] ?? ($data['period'] ?? '-')) }}</td>
                                 <td style="text-transform:capitalize;">{{ str_replace('_', ' ', $return->workflow_stage) }}</td>
                                 <td><span class="status-badge {{ $badge }}">{{ ucfirst($return->status) }}</span></td>
-                                <td>{{ optional($return->created_at)->format('d M Y') }}</td>
+                                <td style="white-space:nowrap;">{{ optional($return->created_at)->format('d M Y') }}</td>
                                 <td style="text-align:right;">
                                     <a href="{{ route('admin.hq.returns.show', $return) }}" class="btn-nis btn-ghost" style="padding:6px 12px;font-size:.75rem;">View</a>
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="8" style="text-align:center;color:var(--gray-400);padding:24px;">No returns recorded yet.</td></tr>
+                            <tr><td colspan="9" style="text-align:center;color:var(--gray-400);padding:24px;">No returns recorded yet.</td></tr>
                         @endforelse
                     </tbody>
                 </table>
